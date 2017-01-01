@@ -1,5 +1,7 @@
 # uBasic
 Port of ubasic into c#
 
-Blend of and Jack W. Crenshaw
-Copyright (C) 1988 Jack W. Crenshaw. All rights reserved. 
+Blend of and Jack W. Crenshaw and Adam Dunkels
+
+Copyright (c) 2006, Adam Dunkels.
+Copyright (C) 1988 Jack W. Crenshaw. 
