@@ -31,10 +31,11 @@
 using System;
 using log4net;
 using System.Collections.Generic;
+using uBasicLibrary;
 
 namespace Altair
 {
-    public class Tokenizer
+    public class Tokenizer // : ITokenizer
     {
         #region Variables
 
@@ -42,7 +43,8 @@ namespace Altair
 
         public enum Token : int
         {
-            TOKENIZER_NULL = 0,
+            TOKENIZER_NULL = -1,
+            TOKENIZER_NONE = 0,
             TOKENIZER_ERROR = 1,
             TOKENIZER_ENDOFINPUT,
             TOKENIZER_INTEGER,
@@ -86,9 +88,8 @@ namespace Altair
             TOKENIZER_SEMICOLON,
             TOKENIZER_PLUS,
             TOKENIZER_MINUS,
-            TOKENIZER_AND,
-            TOKENIZER_OR,
-            TOKENIZER_XOR,
+            TOKENIZER_AMPERSAND,
+            TOKENIZER_BAR,
             TOKENIZER_ASTR,
             TOKENIZER_SLASH,
             TOKENIZER_MOD,
@@ -130,7 +131,10 @@ namespace Altair
             TOKENIZER_ASC,
             TOKENIZER_LEN,
             TOKENIZER_SGN,
-            TOKENIZER_STR
+            TOKENIZER_STR,
+			TOKENIZER_AND,
+            TOKENIZER_OR,
+            TOKENIZER_XOR,
         };
 
         int ptr;
@@ -216,9 +220,10 @@ namespace Altair
                 new  TokenKeyword("right$", Token.TOKENIZER_RIGHT),
                 new  TokenKeyword("str$", Token.TOKENIZER_STR),
                 new  TokenKeyword("sgn", Token.TOKENIZER_SGN),
-                new  TokenKeyword("sgn", Token.TOKENIZER_ASC),
+                new  TokenKeyword("asc", Token.TOKENIZER_ASC),
                 new  TokenKeyword("len", Token.TOKENIZER_LEN),
                 //new  TokenKeyword("pos", Token.TOKENIZER_POS),
+				//new  TokenKeyword("spc", Token.TOKENIZER_SPC),
                 new  TokenKeyword("val", Token.TOKENIZER_VAL),
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
@@ -229,7 +234,7 @@ namespace Altair
 
         #region Methods
 
-        public void AcceptToken(Tokenizer.Token token)
+        public void AcceptToken(Token token)
         {
             Debug("accept: Enter");
             if (token != GetToken())
@@ -275,11 +280,11 @@ namespace Altair
             }
             else if(source[ptr] == '&')
             {
-                token = Token.TOKENIZER_AND;
+                token = Token.TOKENIZER_AMPERSAND;
             }
             else if(source[ptr] == '|')
             {
-                token = Token.TOKENIZER_OR;
+                token = Token.TOKENIZER_BAR;
             }
             else if(source[ptr] == '*')
             {
@@ -330,7 +335,7 @@ namespace Altair
 
         public Token GetNextToken()
         {
-            Token token = 0;
+            Token token = Token.TOKENIZER_NONE;
             int i;
             string c = "";
 
@@ -422,7 +427,7 @@ namespace Altair
 
                 // <varable> ::= <letter> | <letter> "$" |<letter> <digit> | <letter> <digit> "$" | <letter> "(" | <letter> "$" "("
 
-                if (token == 0)
+                if (token == Token.TOKENIZER_NONE)
                 {
                     if ((source[ptr] >= 'a' && source[ptr] <= 'z') || (source[ptr] >= 'A' && source[ptr] <= 'Z'))
                     {
@@ -708,7 +713,7 @@ namespace Altair
 
         private void Debug(string message)
         {
-            if (log.IsDebugEnabled == true) { log.Debug(message); }
+            log.Debug(message);
         }
 
         //--------------------------------------------------------------
@@ -716,7 +721,7 @@ namespace Altair
 
         private void Info(string message)
         {
-            if (log.IsInfoEnabled == true) { log.Info(message); }
+           log.Info(message);
         }
 
         //--------------------------------------------------------------
@@ -724,8 +729,7 @@ namespace Altair
 
         private void Err(string s)
         {
-            //consoleIO.Error("Error: " + s + "@" + current_line_number + "\n");
-            if (log.IsErrorEnabled == true) { log.Error(s); }
+            log.Error(s);
         }
 
         //--------------------------------------------------------------

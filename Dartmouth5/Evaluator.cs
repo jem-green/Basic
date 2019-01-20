@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Text;
 using log4net;
-using ubasicLibrary;
+using uBasicLibrary;
 
 namespace Dartmouth5
 {
@@ -25,63 +25,62 @@ namespace Dartmouth5
 
         const int MAX_VARNUM = 26;
         int[] variables = new int[MAX_VARNUM];
-        Hashtable string_variables;
-        Hashtable numeric_variables;
-        Hashtable numeric_array_variables;
-        Hashtable string_array_variables;
+        Hashtable stringVariables;
+        Hashtable numericVariables;
+        Hashtable numericArrayVariables;
+        Hashtable stringArrayVariables;
 
         // functions
 
-        public struct function_index
+        public struct FunctionIndex
         {
             private int programTextPosition;
             private int @params;
             private string[] param;
 
-            public function_index(int pos, int parameters, string[] parameter)
+            public FunctionIndex(int pos, int parameters, string[] parameter)
             {
                 this.programTextPosition = pos;
                 this.@params = parameters;
                 this.param = parameter;
             }
-            public int program_text_position { get { return programTextPosition; } }
-            public int parameters { get { return @params; } }
-            public string[] parameter { get { return param; } }
+            public int ProgramTextPosition { get { return programTextPosition; } }
+            public int Parameters { get { return @params; } }
+            public string[] Parameter { get { return param; } }
 
         }
         const int MAX_FUNCTIONS = 26;
-        public function_index[] functions;
+        public FunctionIndex[] functions;
 
         int randomize = 0;
 
         #endregion
-
         #region Constructors
 
         public Evaluator(Tokenizer tokenizer)
         {
             stack = new Stack<object>();
             this.tokenizer = tokenizer;
-            string_variables = new Hashtable();
-            numeric_variables = new Hashtable();
-            numeric_array_variables = new Hashtable();
-            string_array_variables = new Hashtable();
-            functions = new function_index[MAX_FUNCTIONS];
+            stringVariables = new Hashtable();
+            numericVariables = new Hashtable();
+            numericArrayVariables = new Hashtable();
+            stringArrayVariables = new Hashtable();
+            functions = new FunctionIndex[MAX_FUNCTIONS];
         }
 
         #endregion Constructors
-
         #region Properties
 
 
 
         #endregion Properties
-
         #region Methods
 
         public void Randomize()
         {
+            Debug("Randomize: Enter");
             randomize = Environment.TickCount;
+            Debug("Randomize: Enter");
         }
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace Dartmouth5
             }
             op = tokenizer.GetToken();
             Debug("Expression: token " + Convert.ToString(op));
-            while (op == Tokenizer.Token.TOKENIZER_PLUS || op == Tokenizer.Token.TOKENIZER_MINUS || op == Tokenizer.Token.TOKENIZER_AND || op == Tokenizer.Token.TOKENIZER_OR)
+            while (op == Tokenizer.Token.TOKENIZER_PLUS || op == Tokenizer.Token.TOKENIZER_MINUS)
             {
                 tokenizer.NextToken();
                 Term();
@@ -122,16 +121,6 @@ namespace Dartmouth5
                     case Tokenizer.Token.TOKENIZER_MINUS:
                         {
                             Subtract();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_AND:
-                        {
-                            //t1 = t1 & t2;
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_OR:
-                        {
-                            //t1 = t1 | t2;
                             break;
                         }
                 }
@@ -241,7 +230,7 @@ namespace Dartmouth5
         {
             object f;
             string varName = "";
-            function_index function;
+            FunctionIndex function;
             int num = 0;
 
             Debug("Factor: Enter");
@@ -281,17 +270,17 @@ namespace Dartmouth5
 
                         // assign the expressions to the variables in the correct order
 
-                        for (int i = function.parameters - 1; i >= 0; i--)
+                        for (int i = function.Parameters - 1; i >= 0; i--)
                         {
                             f = PopDouble();
                             Debug("Factor: function numeric " + Convert.ToString(f));
-                            SetNumericVariable(function.parameter[i], (double)f);
+                            SetNumericVariable(function.Parameter[i], (double)f);
                         }
 
                         // now jump to the function execute and then restore the position and continue 
 
                         int current_pos = tokenizer.GetPosition();
-                        tokenizer.Init(function.program_text_position);
+                        tokenizer.Init(function.ProgramTextPosition);
                         Expression();
                         tokenizer.Init(current_pos);
                         break;
@@ -940,7 +929,7 @@ namespace Dartmouth5
         // 1 - length -> first
         // 0 - string -> second
 
-        private void right()
+        private void Right()
         {
             object first;
             object second;
@@ -1703,10 +1692,10 @@ namespace Dartmouth5
             // Not sure what happens if the variable doesnt exit
             // think this should error but wonder what the specification says
 
-            if (string_variables.ContainsKey(varName))
+            if (stringVariables.ContainsKey(varName))
             {
-                Debug("get string variable:" + (string)string_variables[varName]);
-                return ((string)string_variables[varName]);
+                Debug("get string variable:" + (string)stringVariables[varName]);
+                return ((string)stringVariables[varName]);
             }
             else
             {
@@ -1716,10 +1705,10 @@ namespace Dartmouth5
 
         public double GetNumericVariable(string varName)
         {
-            if (numeric_variables.ContainsKey(varName))
+            if (numericVariables.ContainsKey(varName))
             {
-                Debug("get numeric variable:" + (double)numeric_variables[varName]);
-                return ((double)numeric_variables[varName]);
+                Debug("get numeric variable:" + (double)numericVariables[varName]);
+                return ((double)numericVariables[varName]);
             }
             else
             {
@@ -1729,11 +1718,11 @@ namespace Dartmouth5
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            ubasicLibrary.Array data;
+            uBasicLibrary.Array data;
 
-            if (numeric_array_variables.ContainsKey(varName))
+            if (numericArrayVariables.ContainsKey(varName))
             {
-                data = (ubasicLibrary.Array)numeric_array_variables[varName];
+                data = (uBasicLibrary.Array)numericArrayVariables[varName];
                 return ((double)data.Get(position));
             }
             else
@@ -1744,11 +1733,11 @@ namespace Dartmouth5
 
         public string GetStringArrayVariable(string varName, int positions, int[] position)
         {
-            ubasicLibrary.Array data;
+            uBasicLibrary.Array data;
 
-            if (string_array_variables.ContainsKey(varName))
+            if (stringArrayVariables.ContainsKey(varName))
             {
-                data = (ubasicLibrary.Array)string_array_variables[varName];
+                data = (uBasicLibrary.Array)stringArrayVariables[varName];
                 return ((string)data.Get(position));
             }
             else
@@ -1759,24 +1748,24 @@ namespace Dartmouth5
 
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            ubasicLibrary.Array data;
-            if (numeric_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (numericArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new ubasicLibrary.Array(varName, dimensions, dimension,(double)0);
-            numeric_array_variables.Add(varName, data);
+            data = new uBasicLibrary.Array(varName, dimensions, dimension,(double)0);
+            numericArrayVariables.Add(varName, data);
         }
 
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            ubasicLibrary.Array data;
-            if (string_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (stringArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new ubasicLibrary.Array(varName, dimensions, dimension, (string)"");
-            string_array_variables.Add(varName, data);
+            data = new uBasicLibrary.Array(varName, dimensions, dimension, (string)"");
+            stringArrayVariables.Add(varName, data);
         }
 
         public void SetIntVariable(int varnum, int integer)
@@ -1789,36 +1778,36 @@ namespace Dartmouth5
 
         public void SetStringVariable(string varName, string value)
         {
-            if (string_variables.ContainsKey(varName))
+            if (stringVariables.ContainsKey(varName))
             {
-                string_variables.Remove(varName);
+                stringVariables.Remove(varName);
             }
-            string_variables.Add(varName, value);
+            stringVariables.Add(varName, value);
             Debug("varName=" + varName + " value=" + value);
         }
 
         public void SetNumericVariable(string varName, double number)
         {
-            if (numeric_variables.ContainsKey(varName))
+            if (numericVariables.ContainsKey(varName))
             {
-                numeric_variables.Remove(varName);
+                numericVariables.Remove(varName);
             }
-            numeric_variables.Add(varName, number);
+            numericVariables.Add(varName, number);
             Debug("varName=" + varName + " number=" + number);
         }
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
 
-            ubasicLibrary.Array data;
-            if (!numeric_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (!numericArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
                 int[] dimension = new int[10];
                 dimension[0] = 1;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
-            data = (ubasicLibrary.Array)numeric_array_variables[varName];
+            data = (uBasicLibrary.Array)numericArrayVariables[varName];
             data.Set(position, number);
         
             Debug("varName=" + varName + " number=" + number);
@@ -1827,15 +1816,15 @@ namespace Dartmouth5
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
 
-            ubasicLibrary.Array data;
-            if (!string_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (!stringArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
                 int[] dimension = new int[10];
                 dimension[0] = 1;
                 DeclareStringArrayVariable(varName, positions, dimension);
             }
-            data = (ubasicLibrary.Array)string_array_variables[varName];
+            data = (uBasicLibrary.Array)stringArrayVariables[varName];
             data.Set(position, value);
 
             Debug("varName=" + varName + " value=" + value);

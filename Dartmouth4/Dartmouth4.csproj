@@ -46,9 +46,9 @@
     <Compile Include="tokenizer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ubasicLibrary\ubasicLibrary.csproj">
+    <ProjectReference Include="..\ubasicLibrary\uBasicLibrary.csproj">
       <Project>{33460a7a-630e-4782-80a0-5c9f69b2d372}</Project>
-      <Name>ubasicLibrary</Name>
+      <Name>uBasicLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

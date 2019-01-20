@@ -28,11 +28,11 @@
  *
  */
 
-using System;
 using log4net;
+using System;
 using System.Collections.Generic;
 using System.Collections;
-using ubasicLibrary;
+using uBasicLibrary;
 
 namespace Dartmouth2
 {
@@ -58,54 +58,54 @@ namespace Dartmouth2
         // Gosub
 
         const int MAX_GOSUB_STACK_DEPTH = 10;
-        int[] gosub_stack = new int[MAX_GOSUB_STACK_DEPTH];
-        int gosub_stack_ptr;
+        int[] gosubStack = new int[MAX_GOSUB_STACK_DEPTH];
+        int gosubStackPtr;
 
         // for-next
 
-        private struct for_state
+        public struct ForState
         {
             private int posAfterFor;
             private string forVariable;
             private double _to;
             private double _step;
 
-            public for_state(int pos_after_for, string for_variable, double to, double step)
+            public ForState(int PositionAfterFor, string ForVariable, double from, double to, double step)
             {
-                this.posAfterFor = pos_after_for;
-                this.forVariable = for_variable;
+                this.posAfterFor = PositionAfterFor;
+                this.forVariable = ForVariable;
                 this._to = to;
                 this._step = step;
             }
 
-            public int pos_after_for { get { return posAfterFor; } set { posAfterFor = value; } }
-            public string for_variable { get { return forVariable; } set { forVariable = value; } }
-            public double to { get { return _to; } set { _to = value; } }
-            public double step { get { return _step; } set { _step = value; } }
+            public int PositionAfterFor { get { return posAfterFor; } set { posAfterFor = value; } }
+            public string ForVariable { get { return forVariable; } set { forVariable = value; } }
+            public double To { get { return _to; } set { _to = value; } }
+            public double Step { get { return _step; } set { _step = value; } }
         }
 
-        const int MAX_FOR_STACK_DEPTH = 4;
-        for_state[] for_stack = new for_state[MAX_FOR_STACK_DEPTH];
-        static int for_stack_ptr;
+        const int MAX_forStack_DEPTH = 4;
+        ForState[] forStack = new ForState[MAX_forStack_DEPTH];
+        static int forStackPointer;
 
         // lines
 
-        private struct line_index
+        private struct LineIndex
         {
             private int lineNumber;
             private int programTextPosition;
 
-            public line_index(int line_number, int program_text_position)
+            public LineIndex(int line_number, int program_text_position)
             {
                 this.lineNumber = line_number;
                 this.programTextPosition = program_text_position;
             }
 
-            public int line_number { get { return lineNumber; } }
-            public int program_text_position { get { return programTextPosition; } }
+            public int LineNumber { get { return lineNumber; } }
+            public int ProgramTextPosition { get { return programTextPosition; } }
         }
 
-        List<line_index> lidx;
+        List<LineIndex> lidx;
 
         // Data
 
@@ -118,11 +118,10 @@ namespace Dartmouth2
         private char[] program;
 
         private Tokenizer tokenizer;
-        private Evaluator evaluation;
+        private Evaluator evaluator;
 
         int nested = 0;
-
-        int current_line_number = 0;
+        int currentLineNumber = 0;
 
         #endregion
 
@@ -130,10 +129,10 @@ namespace Dartmouth2
 
         public Interpreter(char[] program, IConsoleIO consoleIO)
         {
-            this.consoleIO = consoleIO;
-            lidx = new List<line_index>();
+            this.consoleIO = consoleIO;        
+            lidx = new List<LineIndex>();
             tokenizer = new Tokenizer(program);
-            evaluation = new Evaluator(tokenizer);
+            evaluator = new Evaluator(tokenizer);
             this.program = program;
         }
 
@@ -145,50 +144,52 @@ namespace Dartmouth2
         {
             Debug("Init: Enter");
             program_ptr = pos;
-            for_stack_ptr = 0;
-            gosub_stack_ptr = 0;
-            index_free();
+            forStackPointer = 0;
+            gosubStackPtr = 0;
+            IndexFree();
             tokenizer.Init(pos);
             ended = false;
             Debug("Init: Exit");
         }
 
-        private void index_free()
+        private void IndexFree()
         {
+            Debug("IndexFree: Enter");
             lidx.Clear();
+            Debug("IndexFree: Exit");
         }
 
-        private int index_find(int linenum)
+        private int IndexFind(int linenum)
         {
             int line = 0;
-            Debug("index_find: Enter");
-            line_index idx = lidx.Find(x => x.line_number == linenum);
-            if (idx.line_number == 0)
+            Debug("IndexFind: Enter");
+            LineIndex idx = lidx.Find(x => x.LineNumber == linenum);
+            if (idx.LineNumber == 0)
             {
-                Debug("index_find: Returning zero for " + linenum);
+                Debug("IndexFind: Returning zero for " + linenum);
                 line = 0;
             }
             else
             {
-                Debug("index_find: Returning index for line " + Convert.ToString(linenum));
-                line = idx.program_text_position;
+                Debug("IndexFind: Returning index for line " + Convert.ToString(linenum));
+                line = idx.ProgramTextPosition;
             }
-            Debug("index_find: Exit");
+            Debug("IndexFind: Exit");
             return (line);
         }
 
-        private void index_add(int linenum, int sourcepos)
+        private void IndexAdd(int linenum, int sourcepos)
         {
-            Debug("index_add: Enter");
-            line_index idx = new line_index(linenum, sourcepos);
+            Debug("IndexAdd: Enter");
+            LineIndex idx = new LineIndex(linenum, sourcepos);
             lidx.Add(idx);
-            Debug("index_add: Adding index for line " + Convert.ToString(linenum) + " @ " + Convert.ToString(sourcepos));
-            Debug("index_add: Exit");
+            Debug("IndexAdd: Adding index for line " + Convert.ToString(linenum) + " @ " + Convert.ToString(sourcepos));
+            Debug("IndexAdd: Exit");
         }
 
-        private void jump_linenum_slow(int linenum)
+        private void JumpLineNumberSlow(int linenum)
         {
-            Debug("jump_linenumber_slow: Enter");
+            Debug("JumpLinenumberSlow: Enter");
             tokenizer.Init(program_ptr);
 
             while (tokenizer.GetInteger() != linenum)
@@ -209,39 +210,43 @@ namespace Dartmouth2
 
                 }
                 while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_INTEGER);
-                Debug("jump_linenum_slow: Found line " + tokenizer.GetInteger());
+                Debug("JumpLineNumber_slow: Found line " + tokenizer.GetInteger());
             }
-            Debug("jump_linenumber_slow: Exit");
+            Debug("JumpLinenumberSlow: Exit");
         }
 
-        private void jump_linenum(int linenum)
+        /// <summary>
+        /// Jump to a specific line number
+        /// </summary>
+        /// <param name="linenum"></param>
+        private void JumpLineNumber(int linenum)
         {
-            Debug("jump_linenum: Enter");
-            int pos = index_find(linenum);
+            Debug("JumpLineNumber: Enter");
+            int pos = IndexFind(linenum);
             if (pos > 0)
             {
-                Debug("jump_linenum: Going to line " + linenum);
+                Debug("JumpLineNumber: Going to line " + linenum);
                 tokenizer.GotoPosition(pos);
             }
             else
             {
                 // We'll try to find a yet-unindexed line to jump to.
-                Debug("jump_linenum: Calling jump_linenum_slow " + linenum);
-                jump_linenum_slow(linenum);
+                Debug("JumpLineNumber: Calling JumpLineNumber_slow " + linenum);
+                JumpLineNumberSlow(linenum);
             }
-            current_line_number = linenum;
-            Debug("jump_linenumber: Exit");
+            currentLineNumber = linenum;
+            Debug("JumpLineNumberber: Exit");
         }
 
 
-        private bool read_data(int pos)
+        private bool ReadData(int pos)
         {
             bool read = false;
             int current_pos = tokenizer.GetPosition();
             Double number = 0;
             bool negative = false;
 
-            Debug("read_data: Enter");
+            Debug("ReadData: Enter");
             tokenizer.Init(pos);
             do
             {
@@ -250,6 +255,8 @@ namespace Dartmouth2
                     tokenizer.NextToken();
                 }
                 while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_DATA) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
+                Debug("ReadData: Read");
+				Info("READ");
 
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_DATA)
                 {
@@ -268,14 +275,14 @@ namespace Dartmouth2
                             number = tokenizer.GetNumber();
                             if (negative == true)
                             {
-                                Debug("read_data: add number " + -number);
+                                Debug("ReadData: add number " + -number);
                                 data.Enqueue(-number);
                                 negative = false;
                                 read = true;
                             }
                             else
                             {
-                                Debug("read_data: add number " + number);
+                                Debug("ReadData: add number " + number);
                                 data.Enqueue(number);
                                 read = true;
                             }
@@ -286,14 +293,14 @@ namespace Dartmouth2
                             number = tokenizer.GetNumber();
                             if (negative == true)
                             {
-                                Debug("read_data: add integer " + -number);
+                                Debug("ReadData: add integer " + -number);
                                 data.Enqueue(-number);
                                 negative = false;
                                 read = true;
                             }
                             else
                             {
-                                Debug("read_data: add integer " + number);
+                                Debug("ReadData: add integer " + number);
                                 data.Enqueue(number);
                                 read = true;
                             }
@@ -301,7 +308,7 @@ namespace Dartmouth2
                         }
                         else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING)
                         {
-                            Debug("read_data: add string " + tokenizer.Getstring());
+                            Debug("ReadData: add string " + tokenizer.Getstring());
                             data.Enqueue(tokenizer.Getstring());
                             read = true;
                             tokenizer.NextToken();
@@ -317,15 +324,15 @@ namespace Dartmouth2
                             tokenizer.NextToken();
                         }
                     }
-                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.IsFinished() == false));
 
                     dataPos = tokenizer.GetPosition();
-                    Debug("read_data: Found data");
+                    Debug("ReadData: Found data");
                 }
             }
             while ((read == false) && (tokenizer.IsFinished() == false));
             tokenizer.Init(current_pos);
-            Debug("read_data: Exit");
+            Debug("ReadData: Exit");
             return (read);
         }
 
@@ -337,21 +344,21 @@ namespace Dartmouth2
         // <statement_separator> ::= ":"
         // <eol> ::= <cr> <lf> | <cr>
 
-        // <statement> ::= <data_statement> | <def_statement> | <if_statement> | <let_statement> | <dim_statement>
+        // <statement> ::= <DataStatement> | <DefStatement> | <IfStatement> | <LetStatement> | <DimStatement>
         //
-        // <if_statement> ::= "IF" <relation> "THEN"
+        // <IfStatement> ::= "IF" <relation> "THEN"
         // <relation> ::= <expression> <relop> <expression>
         // <relop> ::= "<" | ">" | "=" | "<=" | ">="
         //
-        // <let_statement> ::= "LET" <variable> "=" <expression> [ <separator> <variable> "=" <expression> ]*
+        // <LetStatement> ::= "LET" <variable> "=" <expression> [ <separator> <variable> "=" <expression> ]*
         // <variable> ::= <string_variable> | <numeric_variable> | <array_variable>
         // <string_variable> ::= <alpha> [<digit>] "$"
         // <numeric_variable> ::= <alpha> [<digit>]
         // <array_viarable> ::= <alpha> [<digit>] "(" <expression> [ <separator> <expression> ]* ")" 
         //
-        // <dim_statement> ::= "DIM" <array_variable> [ <separator> <array_variable> ]*
+        // <DimStatement> ::= "DIM" <array_variable> [ <separator> <array_variable> ]*
         //
-        // <print_statement> ::= "PRINT" <string_variable> | <numeric_variable> | <expresion> | "TAB" "(" <expression> ")" | "
+        // <PrintStatement> ::= "PRINT" <string_variable> | <numeric_variable> | <expresion> | "TAB" "(" <expression> ")" | "
 
         // <expression> ::= <term> [ <addop> <term> ]*
         // <addop> ::= "+" | "-"
@@ -364,19 +371,22 @@ namespace Dartmouth2
         // <quote> ::= """ | "'"
 
         /// <summary>
-        /// Line_Statement
+        /// LineStatement
         /// </summary>
-        private void line_statement()
+        private void LineStatement()
         {
-            Debug("line_statement: Enter");
-            current_line_number = tokenizer.GetInteger();
-            Debug("----------- Line number " + current_line_number + " ---------");
-            index_add(current_line_number, tokenizer.GetPosition());
+            Debug("LineStatement: Enter");
+            currentLineNumber = tokenizer.GetInteger();
+            Info("----------- Line number " + currentLineNumber + " ---------");
+            IndexAdd(currentLineNumber, tokenizer.GetPosition());
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
             Statement();
-            Debug("line_statement: Exit");
+            Debug("LineStatement: Exit");
         }
 
+        /// <summary>
+        /// Statement
+        /// </summary>
         private void Statement()
         {
             bool inline = false;
@@ -396,80 +406,80 @@ namespace Dartmouth2
                 {
                     case Tokenizer.Token.TOKENIZER_DATA:
                         {
-                            data_statement();
+                            DataStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_PRINT:
                         {
-                            print_statement();
+                            PrintStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_IF:
                         {
-                            inline = if_statement();
+                            inline = IfStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_GOTO:
                         {
-                            goto_statement();
+                            GotoStatement();
                             inline = false;
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_GOSUB:
                         {
-                            gosub_statement();
+                            GosubStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_RETURN:
                         {
-                            return_statement();
+                            ReturnStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_FOR:
                         {
-                            for_statement();
+                            ForStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_NEXT:
                         {
-                            next_statement();
+                            NextStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_END:
                         {
-                            end_statement();
+                            EndStatement();
                             break;
                         }
-                    case Tokenizer.Token.TOKENIZER_STOP:
+					case Tokenizer.Token.TOKENIZER_STOP:
                         {
-                            stop_statement();
+                            StopStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_LET:
                         {
                             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
-                            let_statement();
+                            LetStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_REM:
                         {
-                            rem_statement();
+                            RemStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DIM:
                         {
-                            dim_statement();
+                            DimStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_READ:
                         {
                             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_READ);
-                            read_statement();
+                            ReadStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DEF:
                         {
-                            def_statement();
+                            DefStatement();
                             break;
                         }
                     default:
@@ -496,34 +506,41 @@ namespace Dartmouth2
                     inline = false;
                 }
             }
-            while (inline == true);
+            while ((inline == true) && (tokenizer.IsFinished() == false));
             nested = nested - 1;
 
-            Debug("statement: Exit");
+            Debug("Statement: Exit");
 
         }
 
-        private void data_statement()
+        private void DataStatement()
         {
-            Debug("data_statement: Enter");
+            Debug("DataStatement: Enter");
 
             tokenizer.SkipTokens();
 
             Debug("dat_statement: Exit");
         }
 
-        private void goto_statement()
+        /// <summary>
+        /// GOTO
+        /// </summary>
+        private void GotoStatement()
         {
             int lineNumber = 0;
 
-            Debug("goto_statement: Enter");
+            Debug("GotoStatement: Enter");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
             lineNumber = tokenizer.GetInteger();
-            jump_linenum(lineNumber);
-            Debug("goto_statement: Exit");
+            Info("GOTO " + lineNumber);
+            JumpLineNumber(lineNumber);
+            Debug("GotoStatement: Exit");
         }
 
-        private void print_statement()
+        /// <summary>
+        /// PRINT
+        /// </summary>
+        private void PrintStatement()
         {
             // Print
             // PRINT "HELLO"{CR}
@@ -537,11 +554,11 @@ namespace Dartmouth2
             double number = 0;
             string value = "";
 
-            Debug("print_statement: Enter");
+            Debug("PrintStatement: Enter");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PRINT);
             do
             {
-                Debug("print_statement: Print loop");
+                Debug("PrintStatement: Print loop");
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING)
                 {
                     Emit(tokenizer.Getstring());
@@ -580,37 +597,37 @@ namespace Dartmouth2
                 }
                 else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE))
                 {
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
                     value = FormatNumber(number);
                     Emit(value);
                     control = '\n';
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
                 {
-                    evaluation.Expression();
-                    Emit(evaluation.PopString());
+                    evaluator.Expression();
+                    Emit(evaluator.PopString());
                     control = '\n';
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_TAB)
                 {
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TAB);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
-                    evaluation.Expression();
-                    tab = (int)Math.Truncate(evaluation.PopDouble()) - consoleIO.Hpos;
+                    evaluator.Expression();
+                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.Hpos;
                     Emit(new string(' ', tab));
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     control = '\n';
                 }
                 else
                 {
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
                     value = FormatNumber(number);
                     Emit(value);
                     control = '\n';
                 }
-                Debug("print_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+                Debug("PrintStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
 
@@ -619,37 +636,42 @@ namespace Dartmouth2
                 Emit("\n");
             }
 
-            Debug("print_statement: Exit");
+            Debug("PrintStatement: Exit");
         }
 
-        private bool if_statement()
+        /// <summary>
+        /// IF
+        /// </summary>
+        /// <returns></returns>
+        private bool IfStatement()
         {
             // The if statement 
             // IF A=1 THEN B=3{CR}
             // IF A=1 PRINT "a=";a{CR}
             // IF A=1 THEN 20{CR}
-            // IF A=1 THEN B=3:LET C=4
-            // IF A=1 PRINT "a=";a:GOTO 20{CR}
+            // IF A=1 THEN B=3{COLON}LET C=4
+            // IF A=1 PRINT "a=";a{COLON}GOTO 20{CR}
 
             bool jump = true;
             int lineNumber = 0;
 
-            Debug("if_statement: Enter");
+            Debug("IfStatement: Enter");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_IF);
-            evaluation.Relation();
+            Info("IF");
+            evaluator.Relation();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
-            if (evaluation.PopBoolean())
+            if (evaluator.PopBoolean())
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
                 {
                     lineNumber = tokenizer.GetInteger();
-                    jump_linenum(lineNumber);
+                    JumpLineNumber(lineNumber);
                     //accept(Tokenizer.Token.TOKENIZER_NUMBER);
                     jump = false;
                 }
                 else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
                 {
-                    evaluation.Expression();
+                    evaluator.Expression();
                 }
                 else
                 {
@@ -673,11 +695,14 @@ namespace Dartmouth2
                 //    tokenizer.tokenizer_next();
                 //}
             }
-            Debug("if_statement: Exit");
+            Debug("IfStatement: Exit");
             return (jump);
         }
 
-        private void let_statement()
+        /// <summary>
+        /// LET
+        /// </summary>
+        private void LetStatement()
         {
             string varName;
             int integer;
@@ -690,7 +715,7 @@ namespace Dartmouth2
             // LET A=1{COMMA}B=2{CR}
             // LET A=1{COMMA}B=2:
 
-            Debug("let_statement: Enter");
+            Debug("LetStatement: Enter");
 
             do
             {
@@ -699,20 +724,20 @@ namespace Dartmouth2
                     varName = tokenizer.GetNumericVariable();
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
-                    evaluation.SetNumericVariable(varName, number);
-                    Debug("let_statement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
+                    evaluator.SetNumericVariable(varName, number);
+                    Debug("LetStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
                 {
                     varName = tokenizer.GetStringVariable();
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    value = evaluation.PopString();
-                    evaluation.SetStringVariable(varName, value);
-                    Debug("let_statement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
+                    evaluator.Expression();
+                    value = evaluator.PopString();
+                    evaluator.SetStringVariable(varName, value);
+                    Debug("LetStatement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
@@ -727,8 +752,8 @@ namespace Dartmouth2
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
                             dimensions = dimensions + 1;
                             dimension[dimensions] = integer;
                         }
@@ -736,22 +761,25 @@ namespace Dartmouth2
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
-                    evaluation.SetNumericArrayVariable(varName, dimensions, dimension, number);
-                    Debug("let_statement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
+                    evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
+                    Debug("LetStatement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("let_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                Debug("LetStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Debug("let_statement: Exit");
+            Debug("LetStatement: Exit");
         }
 
-        private void dim_statement()
+        /// <summary>
+        /// DIM
+        /// </summary>
+        private void DimStatement()
         {
             string varName = "";
             int numeric;
@@ -761,7 +789,7 @@ namespace Dartmouth2
             // The dim statement can loop through a series of comma separated declarations
             // DIM A(1,1),B(1,2)....{CR}
 
-            Debug("dim_statement: Enter");
+            Debug("DimStatement: Enter");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DIM);
             do
@@ -780,15 +808,15 @@ namespace Dartmouth2
                         }
                         else
                         {
-                            evaluation.Expression();
-                            numeric = (int)Math.Truncate(evaluation.PopDouble());
+                            evaluator.Expression();
+                            numeric = (int)Math.Truncate(evaluator.PopDouble());
                             dimensions = dimensions + 1;
                             dimension[dimensions] = numeric;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
-                    evaluation.DeclareNumericArrayVariable(varName, dimensions, dimension);
+                    evaluator.DeclareNumericArrayVariable(varName, dimensions, dimension);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
@@ -798,15 +826,18 @@ namespace Dartmouth2
                 {
                     // Skip
                 }
-                Debug("dim_statement: declare array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                Debug("DimStatement: declare array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
 
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
 
-            Debug("dim_statement: Exit");
+            Debug("DimStatement: Exit");
         }
 
-        private void def_statement()
+        /// <summary>
+        /// DEF
+        /// </summary>
+        private void DefStatement()
         {
             string varName = "";
             int num = 0;
@@ -816,7 +847,7 @@ namespace Dartmouth2
             // The def statement is followed by they function reference and then an expression
             // DEF FN{function}({parameters})={expresion}
 
-            Debug("def_statement: Enter");
+            Debug("DefStatement: Enter");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DEF);
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_FN)
@@ -848,186 +879,217 @@ namespace Dartmouth2
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
 
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                evaluation.functions[num] = new Evaluator.function_index(tokenizer.GetPosition(), parameters, parameter);
+                evaluator.functions[num] = new Evaluator.function_index(tokenizer.GetPosition(), parameters, parameter);
                 tokenizer.SkipTokens();
             }
-            Debug("def_statement: Exit");
+            Debug("DefStatement: Exit");
         }
 
-        private void gosub_statement()
+        /// <summary>
+        /// GOSUB
+        /// </summary>
+        private void GosubStatement()
         {
             int linenum;
 
-            Debug("gosub_statement: Enter");
+            Debug("GosubStatement: Enter");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
             linenum = tokenizer.GetInteger();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
-            if (gosub_stack_ptr < MAX_GOSUB_STACK_DEPTH)
+            if (gosubStackPtr < MAX_GOSUB_STACK_DEPTH)
             {
-                gosub_stack[gosub_stack_ptr] = tokenizer.GetInteger();
-                gosub_stack_ptr++;
-                jump_linenum(linenum);
+                gosubStack[gosubStackPtr] = tokenizer.GetInteger();
+                gosubStackPtr++;
+                JumpLineNumber(linenum);
             }
             else
             {
-                Abort("gosub_statement: gosub stack exhausted");
+                Abort("GosubStatement: gosub stack exhausted");
             }
-            Debug("gosub_statement: Exit");
+            Debug("GosubStatement: Exit");
         }
 
-        private void return_statement()
+        /// <summary>
+        /// RETURN
+        /// </summary>
+        private void ReturnStatement()
         {
-            Debug("return_statement: Enter");
+            Debug("ReturnStatement: Enter");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RETURN);
-            if (gosub_stack_ptr > 0)
+            if (gosubStackPtr > 0)
             {
-                gosub_stack_ptr--;
-                jump_linenum(gosub_stack[gosub_stack_ptr]);
+                gosubStackPtr--;
+                JumpLineNumber(gosubStack[gosubStackPtr]);
             }
             else
             {
-                Abort("return_statement: non-matching return");
+                Abort("ReturnStatement: non-matching return");
             }
-            Debug("return_statement: Exit");
+            Debug("ReturnStatement: Exit");
         }
 
-        private void rem_statement()
+        /// <summary>
+        /// REM
+        /// </summary>
+        private void RemStatement()
         {
-            Debug("rem_statement: Enter");
+            Debug("RemStatement: Enter");
             tokenizer.SkipTokens();
-            Debug("rem_statement: Exit");
+            Debug("RemStatement: Exit");
         }
 
-        private void next_statement()
+        /// <summary>
+        /// NEXT
+        /// </summary>
+        private void NextStatement()
         {
             double var;
             string varName = "";
             double step = 1;
 
-            Debug("next_statement: Enter");
+            Debug("NextStatement Enter");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NEXT);
             varName = tokenizer.GetNumericVariable();
-            var = evaluation.PopDouble();
+            var = evaluator.PopDouble();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
 
-            Debug("next_statement: variable=" + varName + " value=" + var);
+            Debug("NextStatement variable=" + varName + " value=" + var);
 
-            if (for_stack_ptr > 0 && varName == for_stack[for_stack_ptr - 1].for_variable)
+            if (forStackPointer > 0 && varName == forStack[forStackPointer - 1].ForVariable)
             {
                 // allow for negative steps
-                step = for_stack[for_stack_ptr - 1].step;
-                evaluation.SetNumericVariable(varName, evaluation.GetNumericVariable(varName) + step);
+                step = forStack[forStackPointer - 1].Step;
+                evaluator.SetNumericVariable(varName, evaluator.GetNumericVariable(varName) + step);
                 if (step > 0)
                 {
-                    if (evaluation.GetNumericVariable(varName) <= for_stack[for_stack_ptr - 1].to)
+                    if (evaluator.GetNumericVariable(varName) <= forStack[forStackPointer - 1].To)
                     {
-                        tokenizer.GotoPosition(for_stack[for_stack_ptr - 1].pos_after_for);
+                        tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
                     }
                     else
                     {
-                        for_stack_ptr--;
+                        forStackPointer--;
                     }
                 }
                 else
                 {
-                    if (evaluation.GetNumericVariable(varName) >= for_stack[for_stack_ptr - 1].to)
+                    if (evaluator.GetNumericVariable(varName) >= forStack[forStackPointer - 1].To)
                     {
-                        tokenizer.GotoPosition(for_stack[for_stack_ptr - 1].pos_after_for);
+                        tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
                     }
                     else
                     {
-                        for_stack_ptr--;
+                        forStackPointer--;
                     }
                 }
             }
             else
             {
-                Err("non-matching next (expected " + for_stack[for_stack_ptr - 1].for_variable + ", found " + Convert.ToString(var) + ")\n");
+                Err("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
             }
 
-            Debug("next_statement: Exit");
+            Debug("NextStatement Exit");
         }
 
-        private void for_statement()
+        /// <summary>
+        /// FOR
+        /// </summary>
+        private void ForStatement()
         {
             string varName = "";
             double to = 0;
             double from = 0;
             double step = 1;
 
-            Debug("for_statement: Enter");
+            Debug("ForStatement: Enter");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FOR);
             varName = tokenizer.GetNumericVariable();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-            evaluation.Expression();
-            from = evaluation.PopDouble();
-            evaluation.SetNumericVariable(varName, from);
+            evaluator.Expression();
+            from = evaluator.PopDouble();
+            evaluator.SetNumericVariable(varName, from);
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TO);
-            evaluation.Expression();
-            to = evaluation.PopDouble();
+            evaluator.Expression();
+            to = evaluator.PopDouble();
 
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STEP)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STEP);
-                evaluation.Expression();
-                step = evaluation.PopDouble();
+                evaluator.Expression();
+                step = evaluator.PopDouble();
             }
 
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR)
             {
-                if (for_stack_ptr < MAX_FOR_STACK_DEPTH)
+                if (forStackPointer < MAX_forStack_DEPTH)
                 {
-                    for_stack[for_stack_ptr].pos_after_for = tokenizer.GetPosition();
-                    for_stack[for_stack_ptr].for_variable = varName;
-                    for_stack[for_stack_ptr].to = to;
-                    for_stack[for_stack_ptr].step = step;
-                    Debug("for_statement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
-                    for_stack_ptr++;
+                    forStack[forStackPointer].PositionAfterFor = tokenizer.GetPosition();
+                    forStack[forStackPointer].ForVariable = varName;
+                    forStack[forStackPointer].To = to;
+                    forStack[forStackPointer].Step = step;
+                    Debug("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
+                    forStackPointer++;
                 }
                 else
                 {
-                    Err("for_statement: for stack depth exceeded");
+                    Err("ForStatement: for stack depth exceeded");
                 }
             }
             else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
             {
-                if (for_stack_ptr < MAX_FOR_STACK_DEPTH)
+                if (forStackPointer < MAX_forStack_DEPTH)
                 {
-                    for_stack[for_stack_ptr].pos_after_for = tokenizer.GetPosition();
-                    for_stack[for_stack_ptr].for_variable = varName;
-                    for_stack[for_stack_ptr].to = to;
-                    for_stack[for_stack_ptr].step = step;
-                    Debug("for_statement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
-                    for_stack_ptr++;
+                    forStack[forStackPointer].PositionAfterFor = tokenizer.GetPosition();
+                    forStack[forStackPointer].ForVariable = varName;
+                    forStack[forStackPointer].To = to;
+                    forStack[forStackPointer].Step = step;
+                    Debug("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
+                    Info("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
+                    forStackPointer++;
                 }
                 else
                 {
-                    Err("for_statement: for stack depth exceeded");
+                    Err("ForStatement: for stack depth exceeded");
                 }
             }
-            Debug("for_statement: Exit");
+            Debug("ForStatement: Exit");
         }
 
-        private void end_statement()
+        /// <summary>
+        /// END
+        /// </summary>
+        private void EndStatement()
         {
-            Debug("end_statement: Enter");
+            Debug("EndStatement: Enter");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_END);
+            Debug("EndStatement:");
+            Info("END");
             ended = true;
-            Debug("end_statement: Exit");
+            Debug("EndStatement: Exit");
         }
 
-        private void stop_statement()
+        /// <summary>
+        /// STOP
+        /// </summary>
+        private void StopStatement()
         {
+            Debug("StopStatement: Enter");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STOP);
+            Debug("StopStatement:");
+            Info("STOP");
             ended = true;
+            Debug("StopStatement: Exit");
         }
 
-        private void read_statement()
+        /// <summary>
+        /// READ
+        /// </summary>
+        private void ReadStatement()
         {
             string varName;
             int integer;
@@ -1041,7 +1103,7 @@ namespace Dartmouth2
             // READ A{COMMA}B{CR}
             // READ A{COMMA}B{COLON}
 
-            Debug("read_statement: Enter");
+            Debug("ReadStatement: Enter");
 
             do
             {
@@ -1054,7 +1116,7 @@ namespace Dartmouth2
 
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1063,15 +1125,17 @@ namespace Dartmouth2
                         else
                         {
                             number = Convert.ToDouble(data.Dequeue());
-                            evaluation.SetNumericVariable(varName, number);
-                            Debug("read_statement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                            evaluator.SetNumericVariable(varName, number);
+                            Debug("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                            Info("READ " + Convert.ToString(varName) + "=" + number);
                         }
                     }
                     else
                     {
                         number = Convert.ToDouble(data.Dequeue());
-                        evaluation.SetNumericVariable(varName, number);
-                        Debug("read_statement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                        evaluator.SetNumericVariable(varName, number);
+                        Debug("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                        Info("READ " + Convert.ToString(varName) + "=" + number);
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
@@ -1083,7 +1147,7 @@ namespace Dartmouth2
 
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1092,22 +1156,24 @@ namespace Dartmouth2
                         else
                         {
                             value = Convert.ToString(data.Dequeue());
-                            evaluation.SetStringVariable(varName, value);
-                            Debug("read_statement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                            evaluator.SetStringVariable(varName, value);
+                            Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                            Info("READ " + Convert.ToString(varName) + "$=" + value);
                         }
                     }
                     else
                     {
                         value = Convert.ToString(data.Dequeue());
-                        evaluation.SetStringVariable(varName, value);
-                        Debug("read_statement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                        evaluator.SetStringVariable(varName, value);
+                        Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                        Info("READ " + Convert.ToString(varName) + "$=" + value);
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1126,8 +1192,8 @@ namespace Dartmouth2
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
                             dimensions = dimensions + 1;
                             dimension[dimensions] = integer;
                         }
@@ -1136,18 +1202,19 @@ namespace Dartmouth2
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
 
                     number = Convert.ToDouble(data.Dequeue());
-                    evaluation.SetNumericArrayVariable(varName, dimensions, dimension, number);
-                    Debug("read_statement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
+                    evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
+                    Debug("ReadStatement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
+                    Info("READ " + Convert.ToString(varName) + "()=" + number);
 
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("read_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                Debug("ReadStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Debug("read_statement: Exit");
+            Debug("ReadStatement: Exit");
         }
 
         #endregion Statements
@@ -1167,6 +1234,8 @@ namespace Dartmouth2
             string value = "";
             char sign = ' ';
 
+            Debug("FormatNumber: Enter");
+
             // check if +/- integer
 
             if (Math.Truncate(number) == number)
@@ -1182,7 +1251,6 @@ namespace Dartmouth2
                     value = Math.Abs(number).ToString("0.######E0");
                 }
                 value = sign + value;
-                return (value);
             }
             else
             {
@@ -1206,8 +1274,9 @@ namespace Dartmouth2
                 }
 
                 value = sign + value;
-                return (value);
             }
+            Debug("FormatNumber: Exit");
+            return (value);
         }
 
         //---------------------------------------------------------------------------------------------------------------------
@@ -1217,25 +1286,22 @@ namespace Dartmouth2
         /// </summary>
         public void Run()
         {
+            Debug("Run: Enter");
             if (tokenizer.IsFinished())
             {
-                Debug("ubasic program finished");
+                Debug("Program finished");
                 return;
             }
-            line_statement();
+            LineStatement();
+            Debug("Run: Exit");
         }
 
         public bool Finished()
         {
-            return (ended || tokenizer.IsFinished());
-        }
-
-        //--------------------------------------------------------------
-        // Debug
-
-        private void Debug(string s)
-        {
-            if (log.IsDebugEnabled == true) { log.Debug(s); }
+            Debug("Finished: Enter");
+            bool finished = ended || tokenizer.IsFinished();
+            Debug("Finished: Exit");
+            return (finished);
         }
 
         //--------------------------------------------------------------
@@ -1243,8 +1309,8 @@ namespace Dartmouth2
 
         private void Err(string s)
         {
-            string message = s + " @ " + current_line_number;
-            consoleIO.Error(message);
+            string message = s + " @ " + currentLineNumber;
+            consoleIO.Error(message + "\n");
             if (log.IsErrorEnabled == true) { log.Error(message); }
         }
 
@@ -1253,8 +1319,24 @@ namespace Dartmouth2
 
         public void Abort(string s)
         {
-            string message = s + " @ " + current_line_number;
+            string message = s + " @ " + currentLineNumber;
             throw new Exception(message);
+        }
+
+        //--------------------------------------------------------------
+        // Debug
+
+        private void Debug(string s)
+        {
+            log.Debug(s);
+        }
+
+        //--------------------------------------------------------------
+        // Info
+
+        void Info(string s)
+        {
+            log.Info(s);
         }
 
         private void Emit(string s)

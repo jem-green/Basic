@@ -1,0 +1,77 @@
+﻿using System;
+using System.Web.UI;
+using uBasicLibrary;
+using log4net;
+using System.IO;
+
+namespace uBasicWeb
+{
+    public partial class Generic : System.Web.UI.Page, System.Web.UI.ICallbackEventHandler
+    {
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        static IConsoleIO textAreaIO = new TextAreaIO();
+        protected String returnValue;
+        IInterpreter basic;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+            // this is where i would want to create a new session object which is the ubasic engine.
+
+            string cbReference = Page.ClientScript.GetCallbackEventReference(this, "arg", "ReceiveServerData", "context");
+            string callbackScript;
+            callbackScript = "function CallServer(arg, context)" + "{ " + cbReference + ";}";
+            Page.ClientScript.RegisterClientScriptBlock(this.GetType(), "CallServer", callbackScript, true);
+
+            if (!Page.IsPostBack)
+            {
+
+                // Pass in the Ubasic file to run
+
+                string filename = Request["id"];
+
+                char[] program;
+                try
+                {
+                    string input = Server.MapPath("~/" + filename + ".txt");
+
+                    using (StreamReader sr = new StreamReader(input))
+                    {
+                        program = sr.ReadToEnd().ToCharArray();
+                    }
+
+                    basic = new Altair.Interpreter(program, textAreaIO);
+                    basic.Init(0);
+
+                    System.Threading.Thread thread = new System.Threading.Thread(new System.Threading.ThreadStart(Run));
+                    thread.Start();
+                }
+                catch { }
+            }
+        }
+
+        protected void Run()
+        {
+            do
+            {
+                basic.Run();
+            } while (!basic.Finished());
+        }
+
+        public void RaiseCallbackEvent(String eventArguments)
+        {
+            // Pass the string to the TextAreIO
+            if (eventArguments != "")
+            {
+                textAreaIO.Input = eventArguments;
+            }
+            // Need to echo back the input
+            returnValue = textAreaIO.Output;
+        }
+
+        public string GetCallbackResult()
+        {
+            return (returnValue);
+        }
+    }
+}

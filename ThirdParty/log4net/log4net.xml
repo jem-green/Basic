@@ -6594,7 +6594,7 @@
             file is deleted -- its index determined by the sign of countDirection.
             If <c>countDirection</c> &lt; 0, then files
             {<c>File.1</c>, ..., <c>File.curSizeRollBackups -1</c>}
-            are renamed to {<c>File.2</c>, ...,
+            are renamed To {<c>File.2</c>, ...,
             <c>File.curSizeRollBackups</c>}. Moreover, <c>File</c> is
             renamed <c>File.1</c> and closed.
             </para>
@@ -6623,7 +6623,7 @@
             file is deleted -- its index determined by the sign of countDirection.
             If <c>countDirection</c> &lt; 0, then files
             {<c>File.1</c>, ..., <c>File.curSizeRollBackups -1</c>}
-            are renamed to {<c>File.2</c>, ...,
+            are renamed To {<c>File.2</c>, ...,
             <c>File.curSizeRollBackups</c>}. 
             </para>
             <para>

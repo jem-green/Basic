@@ -31,6 +31,7 @@
 using System;
 using log4net;
 using System.Collections.Generic;
+using uBasicLibrary;
 
 namespace Dartmouth5
 {
@@ -42,7 +43,8 @@ namespace Dartmouth5
 
         public enum Token : int
         {
-            TOKENIZER_NULL = 0,
+            TOKENIZER_NULL = -1,
+            TOKENIZER_NONE = 0,
             TOKENIZER_ERROR = 1,
             TOKENIZER_ENDOFINPUT,
             TOKENIZER_INTEGER,
@@ -86,8 +88,8 @@ namespace Dartmouth5
             TOKENIZER_SEMICOLON,
             TOKENIZER_PLUS,
             TOKENIZER_MINUS,
-            TOKENIZER_AND,
-            TOKENIZER_OR,
+            TOKENIZER_AMPERSAND,
+            TOKENIZER_BAR,
             TOKENIZER_ASTR,
             TOKENIZER_SLASH,
             TOKENIZER_MOD,
@@ -193,8 +195,6 @@ namespace Dartmouth5
                 new  TokenKeyword("restore", Token.TOKENIZER_RESTORE),
                 new  TokenKeyword("on", Token.TOKENIZER_ON),
                 new  TokenKeyword("randomize", Token.TOKENIZER_RANDOMIZE),
-                new  TokenKeyword("and", Token.TOKENIZER_AND),
-                new  TokenKeyword("or", Token.TOKENIZER_OR),
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
@@ -204,7 +204,7 @@ namespace Dartmouth5
 
         #region Methods
 
-        public void AcceptToken(Tokenizer.Token token)
+        public void AcceptToken(Token token)
         {
             Debug("accept: Enter");
             if (token != GetToken())
@@ -250,11 +250,11 @@ namespace Dartmouth5
             }
             else if(source[ptr] == '&')
             {
-                token = Token.TOKENIZER_AND;
+                token = Token.TOKENIZER_AMPERSAND;
             }
             else if(source[ptr] == '|')
             {
-                token = Token.TOKENIZER_OR;
+                token = Token.TOKENIZER_BAR;
             }
             else if(source[ptr] == '*')
             {
@@ -305,7 +305,7 @@ namespace Dartmouth5
 
         public Token GetNextToken()
         {
-            Token token = 0;
+            Token token = Token.TOKENIZER_NONE;
             int i;
             string c = "";
 
@@ -397,7 +397,7 @@ namespace Dartmouth5
 
                 // <varable> ::= <letter> | <letter> "$" |<letter> <digit> | <letter> <digit> "$" | <letter> "(" | <letter> "$" "("
 
-                if (token == 0)
+                if (token == Token.TOKENIZER_NONE)
                 {
                     if ((source[ptr] >= 'a' && source[ptr] <= 'z') || (source[ptr] >= 'A' && source[ptr] <= 'Z'))
                     {
@@ -589,14 +589,14 @@ namespace Dartmouth5
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c< 'z')) || ((c >= 'A') && (c< 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c< '9'))
+            if ((c >= '0') && (c <= '9'))
             {
                 value = value + c;
             }
@@ -611,7 +611,7 @@ namespace Dartmouth5
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
@@ -627,7 +627,7 @@ namespace Dartmouth5
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
@@ -641,14 +641,14 @@ namespace Dartmouth5
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c < '9'))
+            if ((c >= '0') && (c <= '9'))
             {
                 value = value + c;
             }
@@ -684,6 +684,23 @@ namespace Dartmouth5
         private void Debug(string message)
         {
             if (log.IsDebugEnabled == true) { log.Debug(message); }
+        }
+
+        //--------------------------------------------------------------
+        // Info
+
+        private void Info(string message)
+        {
+            if (log.IsInfoEnabled == true) { log.Info(message); }
+        }
+
+        //--------------------------------------------------------------
+        // Report an Error
+
+        private void Err(string s)
+        {
+            //consoleIO.Error("Error: " + s + "@" + current_line_number + "\n");
+            if (log.IsErrorEnabled == true) { log.Error(s); }
         }
 
         //--------------------------------------------------------------

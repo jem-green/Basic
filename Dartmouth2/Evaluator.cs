@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Text;
 using log4net;
-using ubasicLibrary;
+using uBasicLibrary;
 
 namespace Dartmouth2
 {
@@ -25,10 +25,10 @@ namespace Dartmouth2
 
         const int MAX_VARNUM = 26;
         int[] variables = new int[MAX_VARNUM];
-        Hashtable string_variables;
-        Hashtable numeric_variables;
-        Hashtable numeric_array_variables;
-        Hashtable string_array_variables;
+        Hashtable stringVariables;
+        Hashtable numericVariables;
+        Hashtable numericArrayVariables;
+        Hashtable stringArrayVariables;
 
         // functions
 
@@ -44,7 +44,7 @@ namespace Dartmouth2
                 this.@params = parameters;
                 this.param = parameter;
             }
-            public int program_text_position { get { return programTextPosition; } }
+            public int ProgramTextPosition { get { return programTextPosition; } }
             public int parameters { get { return @params; } }
             public string[] parameter { get { return param; } }
 
@@ -55,33 +55,32 @@ namespace Dartmouth2
         int randomize = 0;
 
         #endregion
-
         #region Constructors
 
         public Evaluator(Tokenizer tokenizer)
         {
             stack = new Stack<object>();
             this.tokenizer = tokenizer;
-            string_variables = new Hashtable();
-            numeric_variables = new Hashtable();
-            numeric_array_variables = new Hashtable();
-            string_array_variables = new Hashtable();
+            stringVariables = new Hashtable();
+            numericVariables = new Hashtable();
+            numericArrayVariables = new Hashtable();
+            stringArrayVariables = new Hashtable();
             functions = new function_index[MAX_FUNCTIONS];
         }
 
         #endregion Constructors
-
         #region Properties
 
 
 
         #endregion Properties
-
         #region Methods
 
         public void Randomize()
         {
+            Debug("Randomize: Enter");
             randomize = Environment.TickCount;
+            Debug("Randomize: Enter");
         }
 
         /// <summary>
@@ -291,7 +290,7 @@ namespace Dartmouth2
                         // now jump to the function execute and then restore the position and continue 
 
                         int current_pos = tokenizer.GetPosition();
-                        tokenizer.Init(function.program_text_position);
+                        tokenizer.Init(function.ProgramTextPosition);
                         Expression();
                         tokenizer.Init(current_pos);
                         break;
@@ -1723,10 +1722,10 @@ namespace Dartmouth2
             // Not sure what happens if the variable doesnt exit
             // think this should error but wonder what the specification says
 
-            if (string_variables.ContainsKey(varName))
+            if (stringVariables.ContainsKey(varName))
             {
-                Debug("get string variable:" + (string)string_variables[varName]);
-                return ((string)string_variables[varName]);
+                Debug("get string variable:" + (string)stringVariables[varName]);
+                return ((string)stringVariables[varName]);
             }
             else
             {
@@ -1736,10 +1735,10 @@ namespace Dartmouth2
 
         public double GetNumericVariable(string varName)
         {
-            if (numeric_variables.ContainsKey(varName))
+            if (numericVariables.ContainsKey(varName))
             {
-                Debug("get numeric variable:" + (double)numeric_variables[varName]);
-                return ((double)numeric_variables[varName]);
+                Debug("get numeric variable:" + (double)numericVariables[varName]);
+                return ((double)numericVariables[varName]);
             }
             else
             {
@@ -1749,11 +1748,11 @@ namespace Dartmouth2
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            ubasicLibrary.Array data;
+            uBasicLibrary.Array data;
 
-            if (numeric_array_variables.ContainsKey(varName))
+            if (numericArrayVariables.ContainsKey(varName))
             {
-                data = (ubasicLibrary.Array)numeric_array_variables[varName];
+                data = (uBasicLibrary.Array)numericArrayVariables[varName];
                 return ((double)data.Get(position));
             }
             else
@@ -1764,11 +1763,11 @@ namespace Dartmouth2
 
         public string GetStringArrayVariable(string varName, int positions, int[] position)
         {
-            ubasicLibrary.Array data;
+            uBasicLibrary.Array data;
 
-            if (string_array_variables.ContainsKey(varName))
+            if (stringArrayVariables.ContainsKey(varName))
             {
-                data = (ubasicLibrary.Array)string_array_variables[varName];
+                data = (uBasicLibrary.Array)stringArrayVariables[varName];
                 return ((string)data.Get(position));
             }
             else
@@ -1779,24 +1778,24 @@ namespace Dartmouth2
 
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            ubasicLibrary.Array data;
-            if (numeric_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (numericArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new ubasicLibrary.Array(varName, dimensions, dimension,(double)0);
-            numeric_array_variables.Add(varName, data);
+            data = new uBasicLibrary.Array(varName, dimensions, dimension,(double)0);
+            numericArrayVariables.Add(varName, data);
         }
 
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            ubasicLibrary.Array data;
-            if (string_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (stringArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new ubasicLibrary.Array(varName, dimensions, dimension, (string)"");
-            string_array_variables.Add(varName, data);
+            data = new uBasicLibrary.Array(varName, dimensions, dimension, (string)"");
+            stringArrayVariables.Add(varName, data);
         }
 
         public void SetIntVariable(int varnum, int integer)
@@ -1809,36 +1808,36 @@ namespace Dartmouth2
 
         public void SetStringVariable(string varName, string value)
         {
-            if (string_variables.ContainsKey(varName))
+            if (stringVariables.ContainsKey(varName))
             {
-                string_variables.Remove(varName);
+                stringVariables.Remove(varName);
             }
-            string_variables.Add(varName, value);
+            stringVariables.Add(varName, value);
             Debug("varName=" + varName + " value=" + value);
         }
 
         public void SetNumericVariable(string varName, double number)
         {
-            if (numeric_variables.ContainsKey(varName))
+            if (numericVariables.ContainsKey(varName))
             {
-                numeric_variables.Remove(varName);
+                numericVariables.Remove(varName);
             }
-            numeric_variables.Add(varName, number);
+            numericVariables.Add(varName, number);
             Debug("varName=" + varName + " number=" + number);
         }
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
 
-            ubasicLibrary.Array data;
-            if (!numeric_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (!numericArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
                 int[] dimension = new int[10];
                 dimension[0] = 1;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
-            data = (ubasicLibrary.Array)numeric_array_variables[varName];
+            data = (uBasicLibrary.Array)numericArrayVariables[varName];
             data.Set(position, number);
         
             Debug("varName=" + varName + " number=" + number);
@@ -1847,21 +1846,22 @@ namespace Dartmouth2
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
 
-            ubasicLibrary.Array data;
-            if (!string_array_variables.ContainsKey(varName))
+            uBasicLibrary.Array data;
+            if (!stringArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
                 int[] dimension = new int[10];
                 dimension[0] = 1;
                 DeclareStringArrayVariable(varName, positions, dimension);
             }
-            data = (ubasicLibrary.Array)string_array_variables[varName];
+            data = (uBasicLibrary.Array)stringArrayVariables[varName];
             data.Set(position, value);
 
             Debug("varName=" + varName + " value=" + value);
         }
 
         #endregion
+        #region Private
 
         //--------------------------------------------------------------
         // Debug
@@ -1887,5 +1887,7 @@ namespace Dartmouth2
         {
             throw new System.ArgumentException("Unexpected", s + " expected");
         }
+
+        #endregion
     }
 }

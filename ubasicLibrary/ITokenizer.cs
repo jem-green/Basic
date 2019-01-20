@@ -1,19 +1,15 @@
 //  Copyright (c) 2017, Jeremy Green All rights reserved.
 
-namespace ubasicLibrary
+namespace uBasicLibrary
 {
-    public enum Token : int
-    {
-    }
-
     public interface ITokenizer
     {
-        void AcceptToken(Token token);
-        Token CheckSingleChar();
-        Token GetNextToken();
+        void AcceptToken(Tokenizer.Token token);
+        Tokenizer.Token CheckSingleChar();
+        Tokenizer.Token GetNextToken();
         void GotoPosition(int position);
         void Init(int position);
-        Token GetToken();
+        Tokenizer.Token GetToken();
         void NextToken();
         void SkipTokens();
         int GetInteger();

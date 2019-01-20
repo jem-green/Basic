@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Text;
 using log4net;
-using ubasicLibrary;
+using uBasicLibrary;
 
 namespace Dartmouth4
 {
@@ -25,63 +25,145 @@ namespace Dartmouth4
 
         const int MAX_VARNUM = 26;
         int[] variables = new int[MAX_VARNUM];
-        Hashtable string_variables;
-        Hashtable numeric_variables;
-        Hashtable numeric_array_variables;
-        Hashtable string_array_variables;
+        Hashtable stringVariables;
+        Hashtable numericVariables;
+        Hashtable numericArrayVariables;
+        Hashtable stringArrayVariables;
 
         // functions
 
-        public struct function_index
+        public struct FunctionIndex
         {
             private int programTextPosition;
             private int @params;
             private string[] param;
 
-            public function_index(int pos, int parameters, string[] parameter)
+            public FunctionIndex(int pos, int parameters, string[] parameter)
             {
                 this.programTextPosition = pos;
                 this.@params = parameters;
                 this.param = parameter;
             }
-            public int program_text_position { get { return programTextPosition; } }
-            public int parameters { get { return @params; } }
-            public string[] parameter { get { return param; } }
+            public int ProgramTextPosition { get { return programTextPosition; } }
+            public int Parameters { get { return @params; } }
+            public string[] Parameter { get { return param; } }
 
         }
         const int MAX_FUNCTIONS = 26;
-        public function_index[] functions;
+        public FunctionIndex[] functions;
 
         int randomize = 0;
 
         #endregion
-
         #region Constructors
 
         public Evaluator(Tokenizer tokenizer)
         {
             stack = new Stack<object>();
             this.tokenizer = tokenizer;
-            string_variables = new Hashtable();
-            numeric_variables = new Hashtable();
-            numeric_array_variables = new Hashtable();
-            string_array_variables = new Hashtable();
-            functions = new function_index[MAX_FUNCTIONS];
+            stringVariables = new Hashtable();
+            numericVariables = new Hashtable();
+            numericArrayVariables = new Hashtable();
+            stringArrayVariables = new Hashtable();
+            functions = new FunctionIndex[MAX_FUNCTIONS];
         }
 
         #endregion Constructors
-
         #region Properties
 
 
 
         #endregion Properties
-
         #region Methods
 
         public void Randomize()
         {
+            Debug("Randomize: Enter");
             randomize = Environment.TickCount;
+            Debug("Randomize: Enter");
+        }
+
+
+
+
+        // <relation>      ::= | <expression> [<relop> <expression]
+        // <expression>    ::= <term> [<addop> <term>]*
+        // <term>          ::= <signed factor> [<mulop> factor]*
+        // <signed factor> ::= [<addop>] <factor>
+        // <factor>        ::= <integer> | <variable> | (<expression>)
+        /// <summary>
+        /// Relation
+        /// </summary>
+        /// <returns></returns>
+        public void Relation()
+        {
+            Tokenizer.Token op;
+
+            Debug("Relation: Enter");
+            Expression();
+            op = tokenizer.GetToken();
+
+            Debug("relation: token " + Convert.ToString(op));
+            while (op == Tokenizer.Token.TOKENIZER_LT || op == Tokenizer.Token.TOKENIZER_GT || op == Tokenizer.Token.TOKENIZER_EQ)
+            {
+                tokenizer.NextToken();
+
+                // Check here if the op is a combined <= or <> or >= in this order
+
+                if ((op == Tokenizer.Token.TOKENIZER_LT) && (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_EQ))
+                {
+                    op = Tokenizer.Token.TOKENIZER_LTEQ;
+                    tokenizer.NextToken();
+                }
+                else if ((op == Tokenizer.Token.TOKENIZER_LT) && (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GT))
+                {
+                    op = Tokenizer.Token.TOKENIZER_NOTEQ;
+                    tokenizer.NextToken();
+                }
+                else if ((op == Tokenizer.Token.TOKENIZER_GT) && (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_EQ))
+                {
+                    op = Tokenizer.Token.TOKENIZER_GTEQ;
+                    tokenizer.NextToken();
+                }
+
+                Expression();
+
+                switch (op)
+                {
+                    case Tokenizer.Token.TOKENIZER_LT:
+                        {
+                            Less();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_GT:
+                        {
+                            Greater();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_EQ:
+                        {
+                            Equal();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_LTEQ:
+                        {
+                            LessEqual();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_NOTEQ:
+                        {
+                            NotEqual();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_GTEQ:
+                        {
+                            GreaterEqual();
+                            break;
+                        }
+                }
+                op = tokenizer.GetToken();
+            }
+            Debug("Relation: Exit");
         }
 
         /// <summary>
@@ -108,7 +190,7 @@ namespace Dartmouth4
             }
             op = tokenizer.GetToken();
             Debug("Expression: token " + Convert.ToString(op));
-            while (op == Tokenizer.Token.TOKENIZER_PLUS || op == Tokenizer.Token.TOKENIZER_MINUS || op == Tokenizer.Token.TOKENIZER_AND || op == Tokenizer.Token.TOKENIZER_OR)
+            while (op == Tokenizer.Token.TOKENIZER_PLUS || op == Tokenizer.Token.TOKENIZER_MINUS)
             {
                 tokenizer.NextToken();
                 Term();
@@ -124,16 +206,6 @@ namespace Dartmouth4
                             Subtract();
                             break;
                         }
-                    case Tokenizer.Token.TOKENIZER_AND:
-                        {
-                            //t1 = t1 & t2;
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_OR:
-                        {
-                            //t1 = t1 | t2;
-                            break;
-                        }
                 }
                 op = tokenizer.GetToken();
             }
@@ -147,17 +219,17 @@ namespace Dartmouth4
         private void Term()
         {
             Tokenizer.Token op;
-            Debug("term: Enter");
+            Debug("Term: Enter");
 
-            Debug("term: token " + tokenizer.GetToken());
+            Debug("Term: token " + tokenizer.GetToken());
             Exponent();
             op = tokenizer.GetToken();
-            Debug("term: token " + op);
+            Debug("Term: token " + op);
 
             while (op == Tokenizer.Token.TOKENIZER_ASTR || op == Tokenizer.Token.TOKENIZER_SLASH || op == Tokenizer.Token.TOKENIZER_MOD)
             {
                 tokenizer.NextToken();
-                Debug("term: token " + tokenizer.GetToken());
+                Debug("Term: token " + tokenizer.GetToken());
                 Exponent();
 
                 switch (op)
@@ -175,19 +247,19 @@ namespace Dartmouth4
                 }
                 op = tokenizer.GetToken();
             }
-            Debug("term: Exit");
+            Debug("Term: Exit");
         }
 
         /// <summary>
-        /// Complex
+        /// Exponent
         /// </summary>
         /// <returns></returns>
         private void Exponent()
         {
             Tokenizer.Token op;
-            Debug("exponent: Enter");
+            Debug("Exponent: Enter");
 
-            Debug("exponent: token " + tokenizer.GetToken());
+            Debug("Exponent: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
             {
                 case Tokenizer.Token.TOKENIZER_FUNCTION:
@@ -203,11 +275,11 @@ namespace Dartmouth4
             }
 
             op = tokenizer.GetToken();
-            Debug("exponent: token " + op);
+            Debug("Exponent: token " + op);
             while (op == Tokenizer.Token.TOKENIZER_EXPONENT)
             {
                 tokenizer.NextToken();
-                Debug("exponent: token " + tokenizer.GetToken());
+                Debug("Exponent: token " + tokenizer.GetToken());
                 switch (tokenizer.GetToken())
                 {
                     case Tokenizer.Token.TOKENIZER_FUNCTION:
@@ -231,7 +303,7 @@ namespace Dartmouth4
                 }
                 op = tokenizer.GetToken();
             }
-            Debug("term: Exit");
+            Debug("Exponent: Exit");
         }
 
         /// <summary>
@@ -241,7 +313,7 @@ namespace Dartmouth4
         {
             object f;
             string varName = "";
-            function_index function;
+            FunctionIndex function;
             int num = 0;
 
             Debug("Factor: Enter");
@@ -253,7 +325,7 @@ namespace Dartmouth4
                     {
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FN);
                         varName = tokenizer.GetNumericArrayVariable();
-                        Debug("factor: function " + varName);
+                        Debug("Factor: function " + varName);
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE);
                         num = varName[0] - (int)'a';
                         function = functions[num];
@@ -281,17 +353,17 @@ namespace Dartmouth4
 
                         // assign the expressions to the variables in the correct order
 
-                        for (int i = function.parameters - 1; i >= 0; i--)
+                        for (int i = function.Parameters - 1; i >= 0; i--)
                         {
                             f = PopDouble();
                             Debug("Factor: function numeric " + Convert.ToString(f));
-                            SetNumericVariable(function.parameter[i], (double)f);
+                            SetNumericVariable(function.Parameter[i], (double)f);
                         }
 
                         // now jump to the function execute and then restore the position and continue 
 
                         int current_pos = tokenizer.GetPosition();
-                        tokenizer.Init(function.program_text_position);
+                        tokenizer.Init(function.ProgramTextPosition);
                         Expression();
                         tokenizer.Init(current_pos);
                         break;
@@ -405,7 +477,7 @@ namespace Dartmouth4
                 case Tokenizer.Token.TOKENIZER_STRING:
                     {
                         f = tokenizer.Getstring();
-                        Debug("Factor: string " + Convert.ToString(f));
+                        Debug("Factor: string '" + Convert.ToString(f) + "'");
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING);
                         stack.Push((string)f);
                         break;
@@ -421,7 +493,7 @@ namespace Dartmouth4
                 case Tokenizer.Token.TOKENIZER_STRING_VARIABLE:
                     {
                         f = GetStringVariable(tokenizer.GetStringVariable());
-                        Debug("Factor: string " + Convert.ToString(f));
+                        Debug("Factor: string variable '" + Convert.ToString(f) + "'");
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
                         stack.Push(f);
                         break;
@@ -429,7 +501,7 @@ namespace Dartmouth4
                 case Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE:
                     {
                         f = GetNumericVariable(tokenizer.GetNumericVariable());
-                        Debug("Factor: numeric " + Convert.ToString(f));
+                        Debug("Factor: numeric variable " + Convert.ToString(f));
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
                         stack.Push(f);
                         break;
@@ -465,7 +537,6 @@ namespace Dartmouth4
                         Debug("Factor: numeric array " + Convert.ToString(f));
                         stack.Push(f);
                         break;
-
                     }
 
                 case Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE:
@@ -498,7 +569,6 @@ namespace Dartmouth4
                         Debug("Factor: string array " + Convert.ToString(f));
                         stack.Push(f);
                         break;
-
                     }
 
                 default:
@@ -514,90 +584,17 @@ namespace Dartmouth4
             Debug("Factor: Exit");
         }
 
-        /// <summary>
-        /// Relation
-        /// </summary>
-        /// <returns></returns>
-        public void Relation()
-        {
-            Tokenizer.Token op;
 
-            Debug("Relation: Enter");
-            Expression();
-            op = tokenizer.GetToken();
-
-            Debug("relation: token " + Convert.ToString(op));
-            while (op == Tokenizer.Token.TOKENIZER_LT || op == Tokenizer.Token.TOKENIZER_GT || op == Tokenizer.Token.TOKENIZER_EQ)
-            {
-                tokenizer.NextToken();
-
-                // Check here if the op is a combined <= or <> or >= in this order
-
-                if ((op == Tokenizer.Token.TOKENIZER_LT) && (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_EQ))
-                {
-                    op = Tokenizer.Token.TOKENIZER_LTEQ;
-                    tokenizer.NextToken();
-                }
-                else if ((op == Tokenizer.Token.TOKENIZER_LT) && (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GT))
-                {
-                    op = Tokenizer.Token.TOKENIZER_NOTEQ;
-                    tokenizer.NextToken();
-                }
-                else if ((op == Tokenizer.Token.TOKENIZER_GT) && (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_EQ))
-                {
-                    op = Tokenizer.Token.TOKENIZER_GTEQ;
-                    tokenizer.NextToken();
-                }
-
-                Expression();
-
-                switch (op)
-                {
-                    case Tokenizer.Token.TOKENIZER_LT:
-                        {
-                            Less();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_GT:
-                        {
-                            Greater();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_EQ:
-                        {
-                            Equal();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_LTEQ:
-                        {
-                            LessEqual();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_NOTEQ:
-                        {
-                            NotEqual();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_GTEQ:
-                        {
-                            GreaterEqual();
-                            break;
-                        }
-                }
-                op = tokenizer.GetToken();
-            }
-            Debug("Relation: Exit");
-        }
 
         #region functions
 
         //---------------------------------------------------------------}
         // SQRT Top of Stack with Primary
-
         private void SquareRoot()
         {
             object first;
             double number;
+            Debug("SquareRoot: Enter");
 
             if (stack.Count > 0)
             {
@@ -621,17 +618,18 @@ namespace Dartmouth4
                     }
                 }
             }
+            Debug("SquareRoot: Exit");
         }
 
         //---------------------------------------------------------------}
         // ABS Top of Stack with Primary
-
         private void Abs()
         {
             // This just removes the ecimal part with no rounding acording to the specification
 
             object first;
             double number;
+            Debug("Abs: Enter");
 
             if (stack.Count > 0)
             {
@@ -648,17 +646,18 @@ namespace Dartmouth4
                     stack.Push(number);
                 }
             }
+            Debug("Abs: Exit");
         }
 
         //---------------------------------------------------------------}
         // INT Top of Stack with Primary
-
         private void Int()
         {
             // This just removes the decimal part with no rounding acording to the specification
 
             object first;
             double number;
+            Debug("Int: Enter");
 
             if (stack.Count > 0)
             {
@@ -675,15 +674,16 @@ namespace Dartmouth4
                     stack.Push(number);
                 }
             }
+            Debug("Int: Exit");
         }
 
         //---------------------------------------------------------------}
         // RND Top of Stack with Primary
-
         private void Rnd()
         {
             object first;
             double number;
+            Debug("Rnd: Enter");
 
             if (stack.Count > 0)
             {
@@ -706,14 +706,15 @@ namespace Dartmouth4
                     stack.Push(number);
                 }
             }
+            Debug("Rnd: Exit");
         }
 
         //---------------------------------------------------------------}
         // SIN Top of Stack with Primary
-
         private void Sin()
         {
             object first;
+            Debug("Sin: Enter");
 
             if (stack.Count > 0)
             {
@@ -728,15 +729,15 @@ namespace Dartmouth4
                     stack.Push(Math.Sin((double)first));
                 }
             }
+            Debug("Sin: Exit");
         }
 
         //---------------------------------------------------------------}
         // COS Top of Stack with Primary
-
         private void Cos()
         {
             object first;
-
+            Debug("Cos: Enter");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
@@ -750,15 +751,15 @@ namespace Dartmouth4
                     stack.Push(Math.Cos((double)first));
                 }
             }
-
+            Debug("Cos: Exit");
         }
 
         //---------------------------------------------------------------}
         // TAN Top of Stack with Primary
-
         private void Tan()
         {
             object first;
+            Debug("Tan: Enter");
 
             if (stack.Count > 0)
             {
@@ -773,14 +774,15 @@ namespace Dartmouth4
                     stack.Push(Math.Tan((double)first));
                 }
             }
+            Debug("Tan: Exit");
         }
 
         //---------------------------------------------------------------}
         // ATN Top of Stack with Primary
-
         private void Atn()
         {
             object first;
+            Debug("Atn: Enter");
 
             if (stack.Count > 0)
             {
@@ -795,14 +797,15 @@ namespace Dartmouth4
                     stack.Push(Math.Atan((double)first));
                 }
             }
+            Debug("Atn: Exit");
         }
 
         //---------------------------------------------------------------}
         // ATN Top of Stack with Primary
-
         private void Exp()
         {
             object first;
+            Debug("Exp: Enter");
 
             if (stack.Count > 0)
             {
@@ -817,14 +820,15 @@ namespace Dartmouth4
                     stack.Push(Math.Exp((double)first));
                 }
             }
+            Debug("Exp: Exit");
         }
 
         //---------------------------------------------------------------}
         // ATN Top of Stack with Primary
-
         private void Log()
         {
             object first;
+            Debug("Log: Enter");
 
             if (stack.Count > 0)
             {
@@ -839,28 +843,38 @@ namespace Dartmouth4
                     stack.Push(Math.Log((double)first));
                 }
             }
+            Debug("Log: Exit");
         }
 
         //---------------------------------------------------------------}
         // ASC Top of Stack with Primary
-
         private void Asc()
         {
             object first;
+            double number = 0;
+            string text = "";
+            Debug("Asc: Enter");
 
             if (stack.Count > 0)
             {
                 first = stack.Pop();
                 if (first.GetType() != typeof(string))
                 {
-                    // only expecting an integer or double
+                    // only expecting a string
                     Expected("string");
                 }
                 else
                 {
-                    stack.Push((string)first);
+                    text = Convert.ToString(first);
+                    if (text.Length > 0)
+                    {
+                        byte[] asciiBytes = Encoding.ASCII.GetBytes(text);
+                        number = (double)asciiBytes[0];
+                    }
+                    stack.Push(number);
                 }
             }
+            Debug("Asc: Exit");
         }
 
         //---------------------------------------------------------------}
@@ -869,20 +883,24 @@ namespace Dartmouth4
         private void Len()
         {
             object first;
+            double number=0;
+            Debug("Len: Enter");
 
             if (stack.Count > 0)
             {
                 first = stack.Pop();
                 if (first.GetType() != typeof(string))
                 {
-                    // only expecting an integer or double
+                    // only expecting a string
                     Expected("string");
                 }
                 else
                 {
-                    stack.Push(first.ToString().Length);
+                    number = first.ToString().Length;
+                    stack.Push(number);
                 }
             }
+            Debug("Len: Exit");
         }
 
         //---------------------------------------------------------------}
@@ -897,6 +915,8 @@ namespace Dartmouth4
             string value;
             int length;
 
+            Debug("Left: Enter");
+
             if (stack.Count > 1)
             {
                 first = stack.Pop();
@@ -908,18 +928,24 @@ namespace Dartmouth4
                         if (second.GetType() == typeof(string))
                         {
                             length = (int)Math.Truncate(Convert.ToDouble(first));
-                            value = first.ToString();
+                            value = second.ToString();
                             if (length < 1)
                             {
-                                stack.Push("");
+                                value = "";
+                                Debug("Left: '" + value + "'");
+                                stack.Push(value);
                             }
                             else if (length >= value.Length)
                             {
+                                Debug("Left: '" + value + "'");
                                 stack.Push(value);
                             }
                             else
                             {
-                                stack.Push(value.Substring(0, length));
+                                value = value.Substring(0, length);
+                                Info("LEFT(\"" + value + "\"," + length + ")");
+                                Debug("Left: '" + value + "'");
+                                stack.Push(value);
                             }
                         }
                         else
@@ -933,6 +959,7 @@ namespace Dartmouth4
                     Expected("double");
                 }
             }
+            Debug("Left: Exit");
         }
 
         //---------------------------------------------------------------}
@@ -940,12 +967,13 @@ namespace Dartmouth4
         // 1 - length -> first
         // 0 - string -> second
 
-        private void right()
+        private void Right()
         {
             object first;
             object second;
             string value;
             int length;
+            Debug("Right: Enter");
 
             if (stack.Count > 1)
             {
@@ -958,18 +986,24 @@ namespace Dartmouth4
                         if (second.GetType() == typeof(string))
                         {
                             length = (int)Math.Truncate(Convert.ToDouble(first));
-                            value = first.ToString();
+                            value = second.ToString();
                             if (length < 1)
                             {
-                                stack.Push("");
+                                value = "";
+                                Debug("Right: '" + value + "'");
+                                stack.Push(value);
                             }
                             else if (length >= value.Length)
                             {
+                                Debug("Right: '" + value + "'");
                                 stack.Push(value);
                             }
                             else
                             {
-                                stack.Push(value.Substring(value.Length-length, length));
+                                value = value.Substring(value.Length - length, length);
+                                Info("RIGHT(\"" + value + "\"," + length + ")");
+                                Debug("Right: '" + value + "'");
+                                stack.Push(value);
                             }
                         }
                         else
@@ -983,6 +1017,7 @@ namespace Dartmouth4
                     Expected("double");
                 }
             }
+            Debug("Right: Exit");
         }
 
         #endregion functions
@@ -991,12 +1026,12 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // LESS THAN Top of Stack with Primary
-
         void Less()
         {
             object first;
             object second;
             int compare;
+            Boolean truth = false;
 
             if (stack.Count > 1)
             {
@@ -1015,14 +1050,17 @@ namespace Dartmouth4
                         {
                             // -ve first < second, 0 first=second, +ve first > second
                             compare = string.Compare(first.ToString(), second.ToString());
-                            if (compare > 1)
+                            if (compare > 0)
                             {
-                                stack.Push(true);
+                                truth = true;   // first > second
                             }
                             else
                             {
-                                stack.Push(false);
+                                truth = false;  // first < second or first = second
                             }
+                            Debug("Less: " + truth);
+                            Info("\"" + second + "\"<\"" + first + "\"=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1038,7 +1076,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push((double)first > (double)second);
+                            truth = Convert.ToDouble(first) > Convert.ToDouble(second);
+                            Debug("Less: " + truth);
+                            Info(second + "<" + first + "=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1047,12 +1088,12 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // LESS THAN OR EQUAL Top of Stack with Primary
-
         void LessEqual()
         {
             object first;
             object second;
             int compare;
+            Boolean truth = false;
 
             if (stack.Count > 1)
             {
@@ -1073,12 +1114,15 @@ namespace Dartmouth4
                             compare = string.Compare(first.ToString(), second.ToString());
                             if ((compare > 0) || (compare == 0))
                             {
-                                stack.Push(true);
+                                truth = true;   // first > second and first = second
                             }
                             else
                             {
-                                stack.Push(false);
+                                truth = false;  // first < second
                             }
+                            Debug("LessEqual: " + truth);
+                            Info("\"" + second + "\"<=\"" + first + "\"=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1094,7 +1138,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push((double)first >= (double)second);
+                            truth = Convert.ToDouble(first) >= Convert.ToDouble(second);
+                            Debug("LessEqual: " + truth);
+                            Info(second + "<=" + first + "=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1103,12 +1150,12 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // GREATER THAN Top of Stack with Primary
-
         void Greater()
         {
             object first;
             object second;
             int compare;
+            Boolean truth = false;
 
             if (stack.Count > 1)
             {
@@ -1129,12 +1176,16 @@ namespace Dartmouth4
                             compare = string.Compare(first.ToString(), second.ToString());
                             if (compare < 0)
                             {
-                                stack.Push(true);
+                                truth = true;  // first < second
+
                             }
                             else
                             {
-                                stack.Push(false);
+                                truth = false;  // first > second and first = second
                             }
+                            Debug("Greater: " + truth);
+                            Info("\"" + second + "\">\"" + first + "\"=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1143,14 +1194,17 @@ namespace Dartmouth4
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() == typeof(string))
+                        if (second.GetType() != typeof(double))
                         {
                             // only expecting an integer or double
                             Expected("double");
                         }
                         else
                         {
-                            stack.Push((double)first < (double)second);
+                            truth = Convert.ToDouble(first) < Convert.ToDouble(second);
+                            Debug("Greater: " + truth);
+                            Info(second + ">" + first + "=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1159,12 +1213,12 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // GREATER THAN OR EQUAL Top of Stack with Primary
-
         void GreaterEqual()
         {
             object first;
             object second;
             int compare;
+            Boolean truth = false;
 
             if (stack.Count > 1)
             {
@@ -1185,12 +1239,15 @@ namespace Dartmouth4
                             compare = string.Compare(first.ToString(), second.ToString());
                             if ((compare < 0) || (compare == 0))
                             {
-                                stack.Push(true);
+                                truth = true;   // first < second and first = second
                             }
                             else
                             {
-                                stack.Push(false);
+                                truth = false;  // first > second
                             }
+                            Debug("GreaterEqual: " + truth);
+                            Info("\"" + second + "\">=\"" + first + "\"=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1206,7 +1263,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push((double)first <= (double)second);
+                            truth = Convert.ToDouble(first) <= Convert.ToDouble(second);
+                            Debug("GreaterEqual: " + truth);
+                            Info(second + ">=" + first + "=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1215,11 +1275,11 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // EQUAL Top of Stack with Primary
-
         void Equal()
         {
             object first;
             object second;
+            Boolean truth = false;
 
             if (stack.Count > 1)
             {
@@ -1236,7 +1296,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push(string.Equals(first.ToString(), second.ToString()));
+                            truth = string.Equals(first.ToString(), second.ToString());
+                            Debug("Equal: " + truth);
+                            Info("\"" + second + "\"=\"" + first + "\"=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1252,7 +1315,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push((double)first == (double)second);
+                            truth = Convert.ToDouble(first) == Convert.ToDouble(second);
+                            Debug("Equal: " + truth);
+                            Info(second + "=" + first + "=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1261,11 +1327,11 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // NOT EQUAL Top of Stack with Primary
-
         void NotEqual()
         {
             object first;
             object second;
+            Boolean truth = false;
 
             if (stack.Count > 1)
             {
@@ -1282,7 +1348,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push(string.Equals(first.ToString(), second.ToString()));
+                            truth = !string.Equals(first.ToString(), second.ToString());
+                            Debug("NotEqual: " + truth);
+                            Info("\"" + first + "\"<>\"" + second + "\"=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1298,7 +1367,10 @@ namespace Dartmouth4
                         }
                         else
                         {
-                            stack.Push((double)first != (double)second);
+                            truth = Convert.ToDouble(first) != Convert.ToDouble(second);
+                            Debug("NotEqual: " + truth);
+                            Info(first + "<>" + second + "=" + truth);
+                            stack.Push(truth);
                         }
                     }
                 }
@@ -1310,8 +1382,7 @@ namespace Dartmouth4
         #region types
 
         //---------------------------------------------------------------}
-        // BOOLEAN Top of Stack with Primary
-
+        // pop BOOLEAN Top of Stack
         public Boolean PopBoolean()
         {
             object first;
@@ -1335,8 +1406,7 @@ namespace Dartmouth4
         }
 
         //---------------------------------------------------------------}
-        // DOUBLE Top of Stack with Primary
-
+        // pop DOUBLE Top of Stack
         public Double PopDouble()
         {
             object first;
@@ -1352,7 +1422,7 @@ namespace Dartmouth4
                 }
                 else
                 {
-                    number = (Double)first;
+                    number = Convert.ToDouble(first);
                 }
             }
             Debug("PopDouble: " + number);
@@ -1360,8 +1430,7 @@ namespace Dartmouth4
         }
 
         //---------------------------------------------------------------}
-        // INTEGER Top of Stack with Primary
-
+        // pop INTEGER Top of Stack
         public int PopInteger()
         {
             object first;
@@ -1385,8 +1454,7 @@ namespace Dartmouth4
         }
 
         //---------------------------------------------------------------}
-        // STRING Top of Stack with Primary
-
+        // pop STRING Top of Stack
         public String PopString()
         {
             object first;
@@ -1415,24 +1483,26 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // ADD Top of Stack with Primary
-
         void Add()
         {
             object first;
             object second;
             double number;
+            string value;
 
             if (stack.Count > 1)
             {
                 first = stack.Pop();
                 if (first.GetType() == typeof(string))
                 {
-                    if (stack.Count > 1)
+                    if (stack.Count > 0)
                     {
                         second = stack.Pop();
                         if (second.GetType() == typeof(string))
                         {
-                            stack.Push((string)second + (string)first);
+                            value = second.ToString() + first.ToString();
+                            Debug("PopAdd: '" + second + "' + '" + first + "' =" + value);
+                            stack.Push(value);
                         }
                         else
                         {
@@ -1464,7 +1534,6 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // SUBTRACT Top of Stack with Primary
-
         void Subtract()
         {
             object first;
@@ -1477,7 +1546,7 @@ namespace Dartmouth4
                 if (first.GetType() == typeof(string))
                 {
                     // only expecting an int or double
-                    Expected("Int");
+                    Expected("double");
                 }
                 else
                 {
@@ -1502,7 +1571,6 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // MULTIPLY Top of Stack with Primary
-
         void Multiply()
         {
             object first;
@@ -1540,7 +1608,6 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // DIVIDE Top of Stack with Primary
-
         void Divide()
         {
             object first;
@@ -1578,7 +1645,6 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------} 
         // AND Top of Stack with Primary
-
         void And()
         {
             object first;
@@ -1589,7 +1655,7 @@ namespace Dartmouth4
                 first = stack.Pop();
                 if (first.GetType() != typeof(Boolean))
                 {
-                    // only expecting an integer or double
+                    // only expecting a boolean
                     Expected("boolean");
                 }
                 else
@@ -1599,7 +1665,7 @@ namespace Dartmouth4
                         second = stack.Pop();
                         if (second.GetType() != typeof(Boolean))
                         {
-                            // only expecting an integer or double
+                            // only expecting a boolean
                             Expected("boolean");
                         }
                         else
@@ -1612,8 +1678,7 @@ namespace Dartmouth4
         }
 
         //---------------------------------------------------------------} 
-        // AND Top of Stack with Primary
-
+        // OR Top of Stack with Primary
         void Or()
         {
             object first;
@@ -1624,7 +1689,7 @@ namespace Dartmouth4
                 first = stack.Pop();
                 if (first.GetType() != typeof(Boolean))
                 {
-                    // only expecting an integer or double
+                    // only expecting a boolean
                     Expected("boolean");
                 }
                 else
@@ -1634,7 +1699,7 @@ namespace Dartmouth4
                         second = stack.Pop();
                         if (second.GetType() != typeof(Boolean))
                         {
-                            // only expecting an integer or double
+                            // only expecting a boolean
                             Expected("boolean");
                         }
                         else
@@ -1648,7 +1713,6 @@ namespace Dartmouth4
 
         //---------------------------------------------------------------}
         // POWER Top of Stack with Primary
-
         private void Power()
         {
             object first;
@@ -1688,14 +1752,19 @@ namespace Dartmouth4
 
         public int GetIntVariable(int varnum)
         {
+            int integer = 0;
+            Debug("GetIntVariable: Enter");
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
-                return variables[varnum];
+                integer = variables[varnum];
             }
             else
             {
-                return 0;
+                integer = 0;
             }
+            Debug("varNum" + varnum + " integer=" + integer);
+            Debug("GetIntVariable: Exit");
+            return (integer);
         }
 
         public string GetStringVariable(string varName)
@@ -1703,142 +1772,174 @@ namespace Dartmouth4
             // Not sure what happens if the variable doesnt exit
             // think this should error but wonder what the specification says
 
-            if (string_variables.ContainsKey(varName))
+            string value = "";
+            Debug("GetStringVariable: Enter");
+
+            if (stringVariables.ContainsKey(varName))
             {
-                Debug("get string variable:" + (string)string_variables[varName]);
-                return ((string)string_variables[varName]);
+                value = (string)stringVariables[varName];
             }
             else
             {
-                return ("");
+                value = "";
             }
+            Debug("varName=" + varName + " value=" + value);
+            Debug("GetStringVariable: Exist");
+            return (value);
         }
 
         public double GetNumericVariable(string varName)
         {
-            if (numeric_variables.ContainsKey(varName))
+            double number = 0;
+            Debug("GetNumericVariable: Enter");
+            if (numericVariables.ContainsKey(varName))
             {
-                Debug("get numeric variable:" + (double)numeric_variables[varName]);
-                return ((double)numeric_variables[varName]);
+                number = (double)numericVariables[varName];
             }
             else
             {
-                return (0);
+                number = 0;
             }
+            Debug("varName=" + varName + " number=" + number);
+            Debug("GetNumericVariable: Exit");
+            return (number);
         }
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            ubasicLibrary.Array data;
+            uBasicLibrary.Array data;
+            double number = 0;
+            Debug("GetNumericArrayVariable: Enter");
 
-            if (numeric_array_variables.ContainsKey(varName))
+            if (numericArrayVariables.ContainsKey(varName))
             {
-                data = (ubasicLibrary.Array)numeric_array_variables[varName];
-                return ((double)data.Get(position));
+                data = (uBasicLibrary.Array)numericArrayVariables[varName];
+                number = (double)data.Get(position);
             }
             else
             {
-                return (0);
+                number = 0;
             }
+            Debug("varName=" + varName + " number=" + number);
+            Debug("GetNumericArrayVariable: Exit");
+            return (number);
         }
 
         public string GetStringArrayVariable(string varName, int positions, int[] position)
         {
-            ubasicLibrary.Array data;
+            uBasicLibrary.Array data;
+            string value = "";
+            Debug("GetNumericStringVariable: Enter");
 
-            if (string_array_variables.ContainsKey(varName))
+            if (stringArrayVariables.ContainsKey(varName))
             {
-                data = (ubasicLibrary.Array)string_array_variables[varName];
-                return ((string)data.Get(position));
+                data = (uBasicLibrary.Array)stringArrayVariables[varName];
+                value = (string)data.Get(position);
             }
             else
             {
-                return ("");
+                value = "";
             }
+            Debug("varName=" + varName + " value=" + value);
+            Debug("GetNumericStringVariable: Exit");
+            return (value);
         }
 
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            ubasicLibrary.Array data;
-            if (numeric_array_variables.ContainsKey(varName))
+            Debug("DeclareNumericArrayVariable: Enter");
+            uBasicLibrary.Array data;
+            if (numericArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new ubasicLibrary.Array(varName, dimensions, dimension,(double)0);
-            numeric_array_variables.Add(varName, data);
+            data = new uBasicLibrary.Array(varName, dimensions, dimension,(double)0);
+            numericArrayVariables.Add(varName, data);
+            Debug("DeclareNumericArrayVariable: Exit");
         }
 
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            ubasicLibrary.Array data;
-            if (string_array_variables.ContainsKey(varName))
+            Debug("DeclareStringArrayVariable: Enter");
+            uBasicLibrary.Array data;
+            if (stringArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new ubasicLibrary.Array(varName, dimensions, dimension, (string)"");
-            string_array_variables.Add(varName, data);
+            data = new uBasicLibrary.Array(varName, dimensions, dimension, (string)"");
+            stringArrayVariables.Add(varName, data);
+            Debug("DeclareStringArrayVariable: Exit");
         }
 
         public void SetIntVariable(int varnum, int integer)
         {
+            Debug("SetIntVariable: Enter");
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
                 variables[varnum] = integer;
             }
+            Debug("varNum=" + varnum + " integer=" + integer);
+            Debug("SetIntVariable: Enter");
         }
 
         public void SetStringVariable(string varName, string value)
         {
-            if (string_variables.ContainsKey(varName))
+            Debug("SetStringVariable: Enter");
+            if (stringVariables.ContainsKey(varName))
             {
-                string_variables.Remove(varName);
+                stringVariables.Remove(varName);
             }
-            string_variables.Add(varName, value);
+            stringVariables.Add(varName, value);
             Debug("varName=" + varName + " value=" + value);
+            Debug("SetStringVariable: Exit");
         }
 
         public void SetNumericVariable(string varName, double number)
         {
-            if (numeric_variables.ContainsKey(varName))
+            Debug("SetNumericVariable: Enter");
+            if (numericVariables.ContainsKey(varName))
             {
-                numeric_variables.Remove(varName);
+                numericVariables.Remove(varName);
             }
-            numeric_variables.Add(varName, number);
+            numericVariables.Add(varName, number);
             Debug("varName=" + varName + " number=" + number);
+            Debug("SetNumericVariable: Exit");
         }
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
-
-            ubasicLibrary.Array data;
-            if (!numeric_array_variables.ContainsKey(varName))
+            Debug("SetNumericArrayVariable: Enter");
+            uBasicLibrary.Array data;
+            if (!numericArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
                 int[] dimension = new int[10];
                 dimension[0] = 1;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
-            data = (ubasicLibrary.Array)numeric_array_variables[varName];
+            data = (uBasicLibrary.Array)numericArrayVariables[varName];
             data.Set(position, number);
         
             Debug("varName=" + varName + " number=" + number);
+            Debug("SetNumericArrayVariable: Exit");
         }
 
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
-
-            ubasicLibrary.Array data;
-            if (!string_array_variables.ContainsKey(varName))
+            Debug("SetStringArrayVariable: Enter");
+            uBasicLibrary.Array data;
+            if (!stringArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
                 int[] dimension = new int[10];
                 dimension[0] = 1;
                 DeclareStringArrayVariable(varName, positions, dimension);
             }
-            data = (ubasicLibrary.Array)string_array_variables[varName];
+            data = (uBasicLibrary.Array)stringArrayVariables[varName];
             data.Set(position, value);
 
             Debug("varName=" + varName + " value=" + value);
+            Debug("SetStringArrayVariable: Enter");
         }
 
         #endregion
@@ -1848,7 +1949,15 @@ namespace Dartmouth4
 
         void Debug(string s)
         {
-            if (log.IsDebugEnabled == true) { log.Debug(s); }
+            log.Debug(s);
+        }
+
+        //--------------------------------------------------------------
+        // Info
+
+        void Info(string s)
+        {
+            log.Info(s);
         }
 
         //--------------------------------------------------------------
@@ -1856,7 +1965,7 @@ namespace Dartmouth4
 
         public void Expected(string s)
         {
-            throw new System.ArgumentException("Unexpected", s + " expected");
+            throw new System.ArgumentException("Unexpected", s + " expected @");
         }
     }
 }

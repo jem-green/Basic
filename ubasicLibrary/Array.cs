@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ubasicLibrary
+namespace uBasicLibrary
 {
     public class Array
     {
@@ -16,7 +16,6 @@ namespace ubasicLibrary
         private object[] _values;
 
         #endregion
-
         #region Constructors
 
         public Array(string dim_variable, int dimensions, int[] dimension, object initial)
@@ -42,7 +41,6 @@ namespace ubasicLibrary
         }
 
         #endregion
-
         #region Properties
 
         public int Dimension
@@ -70,7 +68,6 @@ namespace ubasicLibrary
         }
 
         #endregion
-
         #region Methods
 
         public object Get(int[] position)
@@ -102,11 +99,10 @@ namespace ubasicLibrary
             }
             catch (Exception e)
             {
-                //
+                throw new Exception("Array error " + e);
             }
         }
 
         #endregion
-
     }
 }

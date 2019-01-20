@@ -42,7 +42,8 @@ namespace Dartmouth2
 
         public enum Token : int
         {
-            TOKENIZER_NULL = 0,
+            TOKENIZER_NULL = -1,
+            TOKENIZER_NONE = 0,
             TOKENIZER_ERROR = 1,
             TOKENIZER_ENDOFINPUT,
             TOKENIZER_INTEGER,
@@ -118,8 +119,7 @@ namespace Dartmouth2
             TOKENIZER_EXP,
             TOKENIZER_LOG,
             TOKENIZER_RANDOMIZE,
-            TOKENIZER_AND,
-            TOKENIZER_OR
+
         };
 
         int ptr;
@@ -195,8 +195,7 @@ namespace Dartmouth2
                 new  TokenKeyword("restore", Token.TOKENIZER_RESTORE),
                 new  TokenKeyword("on", Token.TOKENIZER_ON),
                 new  TokenKeyword("randomize", Token.TOKENIZER_RANDOMIZE),
-                new  TokenKeyword("and", Token.TOKENIZER_AMPERSAND),
-                new  TokenKeyword("or", Token.TOKENIZER_BAR),
+
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
@@ -206,7 +205,7 @@ namespace Dartmouth2
 
         #region Methods
 
-        public void AcceptToken(Tokenizer.Token token)
+        public void AcceptToken(Token token)
         {
             Debug("accept: Enter");
             if (token != GetToken())
@@ -307,7 +306,7 @@ namespace Dartmouth2
 
         public Token GetNextToken()
         {
-            Token token = 0;
+            Token token = Token.TOKENIZER_NONE;
             int i;
             string c = "";
 
@@ -399,7 +398,7 @@ namespace Dartmouth2
 
                 // <varable> ::= <letter> | <letter> "$" |<letter> <digit> | <letter> <digit> "$" | <letter> "(" | <letter> "$" "("
 
-                if (token == 0)
+                if (token == Token.TOKENIZER_NONE)
                 {
                     if ((source[ptr] >= 'a' && source[ptr] <= 'z') || (source[ptr] >= 'A' && source[ptr] <= 'Z'))
                     {
@@ -591,14 +590,14 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c< 'z')) || ((c >= 'A') && (c< 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c< '9'))
+            if ((c >= '0') && (c <= '9'))
             {
                 value = value + c;
             }
@@ -613,7 +612,7 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
@@ -629,7 +628,7 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
@@ -643,14 +642,14 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value = value + c.ToString().ToLower(); // Make variables case insentitive
                 ptr = ptr + 1;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c < '9'))
+            if ((c >= '0') && (c <= '9'))
             {
                 value = value + c;
             }
@@ -686,6 +685,23 @@ namespace Dartmouth2
         private void Debug(string message)
         {
             if (log.IsDebugEnabled == true) { log.Debug(message); }
+        }
+
+        //--------------------------------------------------------------
+        // Info
+
+        private void Info(string message)
+        {
+            if (log.IsInfoEnabled == true) { log.Info(message); }
+        }
+
+        //--------------------------------------------------------------
+        // Report an Error
+
+        private void Err(string s)
+        {
+            //consoleIO.Error("Error: " + s + "@" + current_line_number + "\n");
+            if (log.IsErrorEnabled == true) { log.Error(s); }
         }
 
         //--------------------------------------------------------------
