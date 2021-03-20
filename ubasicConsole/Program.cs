@@ -1,159 +1,203 @@
-﻿// Copyright (C) 1988 Jack W. Crenshaw. All rights reserved. 
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using log4net;
-using ubasicLibrary;
+using uBasicLibrary;
 using Altair;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
-namespace ubasicConsole
+namespace uBasicConsole
 {
     class Program
     {
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        static IConsoleIO consoleIO = new ConsoleIO();
+        protected static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        static readonly IConsoleIO consoleIO = new ConsoleIO();
+        public static bool isclosing = false;
+        static private HandlerRoutine ctrlCHandler;
+        #region unmanaged
+        // Declare the SetConsoleCtrlHandler function
+        // as external and receiving a delegate.
 
-        [STAThread]
+        [DllImport("Kernel32")]
+        public static extern bool SetConsoleCtrlHandler(HandlerRoutine Handler, bool Add);
+
+        // A delegate type to be used as the handler routine
+        // for SetConsoleCtrlHandler.
+        public delegate bool HandlerRoutine(CtrlTypes CtrlType);
+
+        // An enumerated type for the control messages
+        // sent to the handler routine.
+        public enum CtrlTypes
+        {
+            CTRL_C_EVENT = 0,
+            CTRL_BREAK_EVENT,
+            CTRL_CLOSE_EVENT,
+            CTRL_LOGOFF_EVENT = 5,
+            CTRL_SHUTDOWN_EVENT
+        }
+
+        #endregion
+
         static void Main(string[] args)
         {
-            string input = "";
+            Trace.TraceInformation("Enter Main()");
 
-            // need to think about case sensitivity
-            // need to think about CR/LF in input files
-            //
-            //input = @"program.bas";
-            //input = @"logic.bas";
-            //input = @"case.bas";
-            //input = @"variables.bas";
-            //input = @"dim.bas";
-            //input = @"dim_0.bas";
-            //input = @"dim_1.bas";
-            //input = @"dim_2.bas";
-            //input = @"dim_3.bas";
-            //input = @"dim_4.bas";
-            //input = @"dim_5.bas";
-            //input = @"dim_6.bas";
-            //input = @"string.bas";
-            //input = @"goto.bas";
-            //input = @"goto_single.bas";
-            //input = @"gosub.bas";
-            //input = @"if.bas";
-            //input = @"if_single.bas";
-            //input = @"print.bas";
-            //input = @"fornext.bas";
-            //input = @"fornext_single.bas";
-            //input = @"read.bas";
-            //input = @"let.bas";
-            //input = @"input.bas";
-            //input = @"numbers.bas";
-            //input = @"def.bas";
-            //input = @"restore.bas";
-            //input = @"on_goto.bas";
-            //input = @"randomize.bas";
-            //input = @"gosub_inline.bas";
-            //
-            // OCT64 - version 2
-            //
-            //input = @"OCT64_PAGE3.bas";
-            //input = @"OCT64_PAGE8.bas";
-            //input = @"OCT64_PAGE12.bas";
-            //input = @"OCT64_PAGE13.bas";
-            //input = @"OCT64_PAGE19.bas";
-            //input = @"OCT64_PAGE32.bas";
-            //input = @"OCT64_PAGE33.bas";
-            //input = @"OCT64_PAGE35.bas";
-            //input = @"OCT64_PAGE37.bas";
-            //input = @"OCT64_PAGE40a.bas";
-            //input = @"OCT64_PAGE42b.bas";
-            //input = @"OCT64_PAGE44.bas";
-            //input = @"OCT64_PAGE46.bas";
-            //input = @"OCT64_PAGE47a.bas";
-            //input = @"OCT64_PAGE47b.bas";
-            //
-            // SEP66 - version 3
-            //
-            //input = @"SEP66_PAGE14.bas";
-            //input = @"SEP66_PAGE18.bas";
-            //input = @"SEP66_PAGE23a.bas";
-            //input = @"SEP66_PAGE23b.bas";
-            //input = @"SEP66_PAGE23c.bas";
-            //input = @"SEP66_PAGE25.bas";
-            //input = @"SEP66_PAGE26a.bas";
-            //input = @"SEP66_PAGE26b.bas";
-            //input = @"SEP66_PAGE26c.bas";
-            //input = @"SEP66_PAGE29.bas";
-            //input = @"SEP66_PAGE30.bas";
-            //input = @"SEP66_PAGE31.bas";
-            //
-            // JAN68 - version 4
-            //
-            //input = @"JAN68_PAGE64.bas";
-            //input = @"JAN68_PAGE65.bas";
-            //input = @"JAN68_PAGE66a.bas";
-            // 
-            // MAY72 - version 5
-            //
-            //input = @"MAY72_PAGE??.bas";
-            //
-            // OCT75 - altair
-            //
-            //input = @"OCT75_PAGE11.bas";
-            //input = @"OCT75_PAGE15.bas";
-            //input = @"OCT75_PAGE15A.bas";
-            //input = @"OCT75_PAGE18a.bas";
-            //input = @"OCT75_PAGE18b.bas";
-            //input = @"OCT75_PAGE18c.bas";
-            //input = @"OCT75_PAGE18d.bas";
-            //input = @"OCT75_PAGE19a.bas";
-            //input = @"OCT75_PAGE21.bas"; 
-            //input = @"OCT75_PAGE20a.bas";
-            //input = @"OCT75_PAGE28.bas";
-            //
-            // Creative Computing
-            //
-            //input = @"creative_computing\amazing.bas";
-            //input = @"creative_computing\aceyducey.bas";
-            //input = @"creative_computing\mugwump.bas";
-            //input = @"creative_computing\stockmarket.bas";
-            //input = @"creative_computing\hurkle.bas";
-            //input = @"creative_computing\target.bas";
-            //input = @"creative_computing\ticktacktoe1.bas";
-            //input = @"creative_computing\ticktacktoe2.bas";
-            input = @"creative_computing\superstartrek.txt";
-            //input = @"creative_computing\superstartrek.bas";
-            //input = @"creative_computing\superstartrekins.bas";
+            ctrlCHandler = new HandlerRoutine(ConsoleCtrlCheck);
+            SetConsoleCtrlHandler(ctrlCHandler, true);
+            int pos = 0;
+            Parameter filePath = new Parameter();
+            Parameter filename = new Parameter();
 
-            char[] program;
-            try
+            // Get the default path directory
+
+            filePath.Value = Environment.CurrentDirectory;
+            filePath.Source = Parameter.SourceType.App;
+
+            // Check if the config file has been paased in and overwrite the registry
+
+            string filenamePath = "";
+            string extension = "";
+            int items = args.Length;
+            if (items == 1)
             {
-                using (StreamReader sr = new StreamReader(input))
+                filenamePath = args[0].Trim('"');
+                pos = filenamePath.LastIndexOf('.');
+                if (pos > 0)
                 {
-                    program = sr.ReadToEnd().ToCharArray();
+                    extension = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    filenamePath = filenamePath.Substring(0, pos);
                 }
+                pos = filenamePath.LastIndexOf('\\');
+                if (pos > 0)
+                {
+                    filePath.Value = filenamePath.Substring(0, pos);
+                    filePath.Source = Parameter.SourceType.Command;
+                    filename.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    filename.Source = Parameter.SourceType.Command;
+                }
+                else
+                {
+                    filename.Value = filenamePath;
+                    filename.Source = Parameter.SourceType.Command;
+                }
+                Info("Use filename=" + filename.Value);
+                Info("use filePath=" + filePath.Value);
+            }
+            else
+            {
+                for (int item = 0; item < items; item++)
+                {
+                    switch (args[item])
+                    {
+                        case "/N":
+                        case "--name":
+                            filename.Value = args[item + 1];
+                            filename.Value = filename.Value.TrimStart('"');
+                            filename.Value = filename.Value.TrimEnd('"');
+                            filename.Source = Parameter.SourceType.Command;
+                            Debug("Use command value Name=" + filename);
+                            break;
+                        case "/P":
+                        case "--path":
+                            filePath.Value = args[item + 1];
+                            filePath.Value = filePath.Value.TrimStart('"');
+                            filePath.Value = filePath.Value.TrimEnd('"');
+                            filePath.Source = Parameter.SourceType.Command;
+                            Debug("Use command value Path=" + filePath);
+                            break;
+                    }
+                }
+            }
+            Info("Use Filename=" + filename.Value);
+            Info("Use Filepath=" + filePath.Value);
 
-                IInterpreter basic = new Altair.Interpreter(program, consoleIO);
-                basic.Init(0);
-
+            if ((filename.Value != "") && (filePath.Value != ""))
+            {
+                filenamePath = filePath.Value + Path.DirectorySeparatorChar + filename.Value;
+                char[] program;
                 try
                 {
-                    do
+                    using (StreamReader sr = new StreamReader(filenamePath))
                     {
-                        basic.Run();
-                    } while (!basic.Finished());
+                        program = sr.ReadToEnd().ToCharArray();
+                    }
+
+                    // 
+
+                    IInterpreter basic = new Altair.Interpreter(program, consoleIO);
+                    basic.Init(0);
+
+                    try
+                    {
+                        do
+                        {
+                            basic.Run();
+                        } while (!basic.Finished());
+                    }
+                    catch (Exception e)
+                    {
+                        Debug(e.ToString());
+                        //Err("Program " + e.Message);
+                    }
                 }
-                catch (Exception e)
+                catch (Exception e1)
                 {
-                    Debug(e.ToString());
-                    Err("Program " + e.Message);
+                    Debug(e1.ToString());
+                    Err("Input " + e1.Message);
                 }
             }
-            catch (Exception e1)
+            else
             {
-                Debug(e1.ToString());
-                Err("Input " + e1.Message);
+                Err("Program name not supplied");
             }
+
+            Trace.TraceInformation("Exit Main()");
+        }
+		
+		private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+        {
+            Debug("Enter ConsoleCtrlCheck()");
+
+            switch (ctrlType)
+            {
+                case CtrlTypes.CTRL_C_EVENT:
+                    isclosing = true;
+                    Info("CTRL+C received:");
+                    break;
+
+                case CtrlTypes.CTRL_BREAK_EVENT:
+                    isclosing = true;
+                    Info("CTRL+BREAK received:");
+                    break;
+
+                case CtrlTypes.CTRL_CLOSE_EVENT:
+                    isclosing = true;
+                    Info("Program being closed:");
+                    break;
+
+                case CtrlTypes.CTRL_LOGOFF_EVENT:
+                case CtrlTypes.CTRL_SHUTDOWN_EVENT:
+                    isclosing = true;
+                    Info("User is logging off:");
+                    break;
+
+            }
+            Debug("Exit ConsoleCtrlCheck()");
+
+            Environment.Exit(0);
+
+            return (true);
+
+        }
+
+        //--------------------------------------------------------------
+        // Info
+
+        static void Info(string s)
+        {
+            log.Info(s);
         }
 
         //--------------------------------------------------------------
@@ -161,7 +205,7 @@ namespace ubasicConsole
 
         static void Debug(string s)
         {
-            if (log.IsDebugEnabled == true) { log.Debug(s); }
+            log.Debug(s);
         }
 
         //--------------------------------------------------------------
@@ -169,8 +213,7 @@ namespace ubasicConsole
 
         static void Err(string s)
         {
-            consoleIO.Error("Error: " + s + "\n");
-            if (log.IsErrorEnabled == true) { log.Error(s); }
+            log.Error(s);
         }
 
     }

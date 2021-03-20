@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ubasicLibrary
+namespace uBasicLibrary
 {
     public interface IInterpreter
     {

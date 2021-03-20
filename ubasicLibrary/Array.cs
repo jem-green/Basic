@@ -4,25 +4,24 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ubasicLibrary
+namespace uBasicLibrary
 {
     public class Array
     {
         #region Variables
 
-        private string dimVariable;
+        private readonly string _dimVariable;
         private int _dimensions;
         private int[] _dimension;
-        private object[] _values;
+        private readonly object[] _values;
 
         #endregion
-
         #region Constructors
 
-        public Array(string dim_variable, int dimensions, int[] dimension, object initial)
+        public Array(string variable, int dimensions, int[] dimension, object initial)
         {
             int size = 1;
-            this.dimVariable = dim_variable;
+            this._dimVariable = variable;
             this._dimension = dimension;
             this._dimensions = dimensions;
 
@@ -32,7 +31,7 @@ namespace ubasicLibrary
                 {
                     _dimension[d] = 10;
                 }
-                size = size * (_dimension[d] + 1);
+                size *= (_dimension[d] + 1);
             }
             _values = new object[size];
             for (int i = 0; i < size; ++i)
@@ -42,7 +41,6 @@ namespace ubasicLibrary
         }
 
         #endregion
-
         #region Properties
 
         public int Dimension
@@ -70,7 +68,6 @@ namespace ubasicLibrary
         }
 
         #endregion
-
         #region Methods
 
         public object Get(int[] position)
@@ -102,11 +99,10 @@ namespace ubasicLibrary
             }
             catch (Exception e)
             {
-                //
+                throw new Exception("Array error " + e);
             }
         }
 
         #endregion
-
     }
 }

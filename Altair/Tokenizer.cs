@@ -31,10 +31,12 @@
 using System;
 using log4net;
 using System.Collections.Generic;
+using uBasicLibrary;
+using System.Diagnostics;
 
 namespace Altair
 {
-    public class Tokenizer
+    public class Tokenizer // : ITokenizer
     {
         #region Variables
 
@@ -42,7 +44,8 @@ namespace Altair
 
         public enum Token : int
         {
-            TOKENIZER_NULL = 0,
+            TOKENIZER_NULL = -1,
+            TOKENIZER_NONE = 0,
             TOKENIZER_ERROR = 1,
             TOKENIZER_ENDOFINPUT,
             TOKENIZER_INTEGER,
@@ -86,9 +89,8 @@ namespace Altair
             TOKENIZER_SEMICOLON,
             TOKENIZER_PLUS,
             TOKENIZER_MINUS,
-            TOKENIZER_AND,
-            TOKENIZER_OR,
-            TOKENIZER_XOR,
+            TOKENIZER_AMPERSAND,
+            TOKENIZER_BAR,
             TOKENIZER_ASTR,
             TOKENIZER_SLASH,
             TOKENIZER_MOD,
@@ -130,19 +132,22 @@ namespace Altair
             TOKENIZER_ASC,
             TOKENIZER_LEN,
             TOKENIZER_SGN,
-            TOKENIZER_STR
+            TOKENIZER_STR,
+			TOKENIZER_AND,
+            TOKENIZER_OR,
+            TOKENIZER_XOR,
         };
 
         int ptr;
         int nextptr;
-        char[] source;
+        readonly char[] source;
         const int MaximumNumberLength = 15;
         Token currentToken = Token.TOKENIZER_ERROR;
 
         public struct TokenKeyword
         {
-            private string keyword;
-            private Token token;
+            private readonly string keyword;
+            private readonly Token token;
 
             public TokenKeyword(string keyword, Token token)
             {
@@ -157,11 +162,12 @@ namespace Altair
         public readonly List<TokenKeyword> keywords;
 
         #endregion
-
         #region Constructors
 
         public Tokenizer(char[] program)
         {
+            Trace.TraceInformation("In Tokenizer()");
+
             //by default, read from/write to standard streams
 
             keywords = new List<TokenKeyword>(
@@ -216,35 +222,37 @@ namespace Altair
                 new  TokenKeyword("right$", Token.TOKENIZER_RIGHT),
                 new  TokenKeyword("str$", Token.TOKENIZER_STR),
                 new  TokenKeyword("sgn", Token.TOKENIZER_SGN),
-                new  TokenKeyword("sgn", Token.TOKENIZER_ASC),
+                new  TokenKeyword("asc", Token.TOKENIZER_ASC),
                 new  TokenKeyword("len", Token.TOKENIZER_LEN),
                 //new  TokenKeyword("pos", Token.TOKENIZER_POS),
+				//new  TokenKeyword("spc", Token.TOKENIZER_SPC),
                 new  TokenKeyword("val", Token.TOKENIZER_VAL),
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
+            Trace.TraceInformation("Out Tokenizer()");
         }
 
         #endregion
-
         #region Methods
 
-        public void AcceptToken(Tokenizer.Token token)
+        public void AcceptToken(Token token)
         {
-            Debug("accept: Enter");
+            Trace.TraceInformation("In AcceptToken()");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
             }
             Debug("accept: Expected " + token + ", got it");
             NextToken();
-            Debug("accept: Enter");
+            Trace.TraceInformation("Out AcceptToken()");
         }
         
         public Token CheckSingleChar()
         {
-            Token token = 0;
+            Trace.TraceInformation("In CheckSingleChar()");
 
+            Token token = 0;
             if(source[ptr] == '\n')
             {
                 token =  Token.TOKENIZER_CR;
@@ -275,11 +283,11 @@ namespace Altair
             }
             else if(source[ptr] == '&')
             {
-                token = Token.TOKENIZER_AND;
+                token = Token.TOKENIZER_AMPERSAND;
             }
             else if(source[ptr] == '|')
             {
-                token = Token.TOKENIZER_OR;
+                token = Token.TOKENIZER_BAR;
             }
             else if(source[ptr] == '*')
             {
@@ -325,16 +333,17 @@ namespace Altair
             {
                 token = Token.TOKENIZER_EQ;
             }
+            Trace.TraceInformation("Out CheckSingleChar()");
             return (token);
         }
 
         public Token GetNextToken()
         {
-            Token token = 0;
-            int i;
-            string c = "";
+            Trace.TraceInformation("In GetNextToken()");
 
-            Debug("get_next_token():" + Convert.ToString(ptr));
+            Token token = Token.TOKENIZER_NONE;
+            int i;
+            Debug("GetNextToken():" + Convert.ToString(ptr));
 
             if ((ptr == source.Length) || (source[ptr] == (char)0))
             {
@@ -398,6 +407,7 @@ namespace Altair
                 {
                     foreach (TokenKeyword keyword in keywords)
                     {
+                        string c;
                         if (ptr + keyword.Keyword.Length > source.Length)
                         {
                             c = "";
@@ -422,7 +432,7 @@ namespace Altair
 
                 // <varable> ::= <letter> | <letter> "$" |<letter> <digit> | <letter> <digit> "$" | <letter> "(" | <letter> "$" "("
 
-                if (token == 0)
+                if (token == Token.TOKENIZER_NONE)
                 {
                     if ((source[ptr] >= 'a' && source[ptr] <= 'z') || (source[ptr] >= 'A' && source[ptr] <= 'Z'))
                     {
@@ -432,13 +442,13 @@ namespace Altair
                         if (IsDigit(source[nextptr]))
                         {
                             // Two digit variable
-                            nextptr = nextptr + 1;
+                            nextptr++;
                             token = Token.TOKENIZER_NUMERIC_VARIABLE;
 
                             if (source[nextptr] == '$')
                             {
                                 // String viarable
-                                nextptr = nextptr + 1;
+                                nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
                             }
                         }
@@ -447,54 +457,58 @@ namespace Altair
                             if (source[nextptr] == '$')
                             {
                                 // String viarable
-                                nextptr = nextptr + 1;
+                                nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
 
                                 if (source[nextptr] == '(')
                                 {
                                     // String array variable
-                                    nextptr = nextptr + 1;
+                                    nextptr++;
                                     token = Token.TOKENIZER_STRING_ARRAY_VARIABLE;
                                 }
                             }
                             else if (source[nextptr] == '(')
                             {
                                 // Array variable
-                                nextptr = nextptr + 1;
+                                nextptr++;
                                 token = Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE;
                             }
                         }
                     }
                 }
             }
-
+            Trace.TraceInformation("Out GetNextToken()");
             return (token);
         }
 
         public void GotoPosition(int position)
         {
+            Trace.TraceInformation("In GotoPosition()");
             ptr = position;
             currentToken = GetNextToken();
+            Trace.TraceInformation("Out GotoPosition()");
         }
     
         public void Init(int position)
         {
+            Trace.TraceInformation("In Init()");
             GotoPosition(position);
             currentToken = GetNextToken();
+            Trace.TraceInformation("Out Init()");
         }
 
         public Token GetToken()
         {
+            Trace.TraceInformation("In GetToken()");
             return (currentToken);
         }
 
         public void NextToken()
         {
-            Debug("tokenizer_next: Enter");
-
+            Trace.TraceInformation("in NextToken()");
             if (!IsFinished())
             {
-                Debug("tokenizer_next: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                Debug("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
                 ptr = nextptr;
 
                 while (source[ptr] == ' ')
@@ -503,17 +517,18 @@ namespace Altair
                 }
                 currentToken = GetNextToken();
 
-                Debug("tokenizer_next: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                Debug("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
             }
             else
             {
                 currentToken = Token.TOKENIZER_ENDOFINPUT;
             }
-            Debug("tokenizer_next: Exit");
+            Trace.TraceInformation("Out NextToken()");
         }
 
         public void SkipTokens()
         {
+            Trace.TraceInformation("Out SkipTokens()");
             if (!IsFinished())
             {
                 while (!(IsFinished() || source[nextptr] == '\n'))
@@ -526,11 +541,14 @@ namespace Altair
                 }
             }
 
-            Debug("tokenizer_skip: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
+            Debug("SkipTokens: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
+            
+            Trace.TraceInformation("Out SkipTokens()");
         }
 
         public int GetInteger()
         {
+            Trace.TraceInformation("In GetInteger()");
             int integer= 0;
             int i = ptr;
             while (IsDigit(source[i]))
@@ -538,11 +556,13 @@ namespace Altair
                 integer = 10 * integer + Convert.ToInt16(source[i]) - Convert.ToInt16('0');
                 i++;
             }
+            Trace.TraceInformation("Out GetInteger()");
             return (integer);
         }
 
         public double GetNumber()
         {
+            Trace.TraceInformation("In GetNumber()");
             double number = 0;
             int i = ptr;
             int j = ptr;
@@ -561,15 +581,17 @@ namespace Altair
                 }
                 else
                 {
-                    number = number + (double)(Convert.ToInt32(source[i]) - Convert.ToInt32('0')) / Math.Pow(10,i-j);
+                    number += (double)(Convert.ToInt32(source[i]) - Convert.ToInt32('0')) / Math.Pow(10,i-j);
                 }
                 i++;
             }
+            Trace.TraceInformation("Out GetNumber()");
             return (number);
         }
 
         public string Getstring()
         {
+            Trace.TraceInformation("In Getstring()");
             string _string = "";
             int i = ptr;
 
@@ -579,24 +601,27 @@ namespace Altair
             }
             else
             {
-                i = i + 1;
+                i++;
                 while(source[i] != '\"')
                 {
-                    _string = _string + source[i];
-                    i = i + 1;
+                    _string += source[i];
+                    i++;
                 }
             }
+            Trace.TraceInformation("Out Getstring()");
             return (_string);
         }
 
-        public Boolean IsFinished()
+        public bool IsFinished()
         {
-            return((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
+            Trace.TraceInformation("In IsFinished()");
+            return ((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
         }
 
         public int GetIntegerVariable()
         {
-            int integer = 0;
+            Trace.TraceInformation("Int GetIntegerVariable()");
+            int integer;
             if ((source[ptr] >= 'a') && (source[ptr] < 'z'))
             {
                 integer = (int)source[ptr] - (int)'a'; 
@@ -605,31 +630,35 @@ namespace Altair
             {
                 integer = (int)source[ptr] - (int)'A';
             }
-            return(integer);
+            Trace.TraceInformation("Out GetIntegerVariable()");
+            return (integer);
         }
 
         public string GetNumericVariable()
         {
+            Trace.TraceInformation("Int GetNumericVariable()");
             string value = "";
             char c;
-
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
 
             c = source[ptr];
             if ((c >= '0') && (c <= '9'))
             {
-                value = value + c;
+                value += c;
             }
+            Trace.TraceInformation("Out GetNumericVariable()");
             return (value);
         }
 
         public string GetNumericArrayVariable()
         {
+            Trace.TraceInformation("In GetNumericArrayVariable()");
+
             // Numeric array variables are single digit
 
             string value = "";
@@ -638,14 +667,17 @@ namespace Altair
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
+            Trace.TraceInformation("Out GetNumericArrayVariable()");
             return (value);
         }
 
         public string GetStringArrayVariable()
         {
+            Trace.TraceInformation("In GetStringArrayVariable()");
+
             // String array variables are single digit
 
             string value = "";
@@ -654,36 +686,47 @@ namespace Altair
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
+            Trace.TraceInformation("Out GetStringArrayVariable()");
+
             return (value);
         }
 
         public string GetStringVariable()
         {
+            Trace.TraceInformation("In GetStringVariable()");
+
             string value = "";
             char c;
 
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
 
             c = source[ptr];
             if ((c >= '0') && (c <= '9'))
             {
-                value = value + c;
+                value += c;
             }
+
+            Trace.TraceInformation("Out GetStringVariable()");
+
             return (value);
         }
 
         public int GetPosition()
         {
+            Trace.TraceInformation("In GetPosition()");
             return ptr;
         }
+
+        #endregion
+        #region Private
 
         //--------------------------------------------------------------
         // Recognize a Numeric Digit 
@@ -701,14 +744,12 @@ namespace Altair
             return (Char.IsDigit(check) || (check == '.'));
         }
 
-        #endregion
-
         //--------------------------------------------------------------
         // Debug
 
         private void Debug(string message)
         {
-            if (log.IsDebugEnabled == true) { log.Debug(message); }
+            log.Debug(message);
         }
 
         //--------------------------------------------------------------
@@ -716,7 +757,7 @@ namespace Altair
 
         private void Info(string message)
         {
-            if (log.IsInfoEnabled == true) { log.Info(message); }
+           log.Info(message);
         }
 
         //--------------------------------------------------------------
@@ -724,16 +765,16 @@ namespace Altair
 
         private void Err(string s)
         {
-            //consoleIO.Error("Error: " + s + "@" + current_line_number + "\n");
-            if (log.IsErrorEnabled == true) { log.Error(s); }
+            log.Error(s);
         }
 
         //--------------------------------------------------------------
         // Report What Was Accepted
 
-        public void Expected(string message)
+        private void Expected(string message)
         {
             throw new System.ArgumentException("Unacceptable", message);
         }
+        #endregion
     }
 }

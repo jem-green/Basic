@@ -6,7 +6,7 @@ using System.Collections;
 using System.Text;
 using log4net;
 
-namespace ubasicLibrary
+namespace uBasicLibrary
 {
     public interface IEvaluator
     {

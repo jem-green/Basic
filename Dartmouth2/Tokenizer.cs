@@ -42,7 +42,8 @@ namespace Dartmouth2
 
         public enum Token : int
         {
-            TOKENIZER_NULL = 0,
+            TOKENIZER_NULL = -1,
+            TOKENIZER_NONE = 0,
             TOKENIZER_ERROR = 1,
             TOKENIZER_ENDOFINPUT,
             TOKENIZER_INTEGER,
@@ -118,20 +119,19 @@ namespace Dartmouth2
             TOKENIZER_EXP,
             TOKENIZER_LOG,
             TOKENIZER_RANDOMIZE,
-            TOKENIZER_AND,
-            TOKENIZER_OR
+
         };
 
         int ptr;
         int nextptr;
-        char[] source;
+        readonly char[] source;
         const int MaximumNumberLength = 15;
         Token currentToken = Token.TOKENIZER_ERROR;
 
         public struct TokenKeyword
         {
-            private string keyword;
-            private Token token;
+            private readonly string keyword;
+            private readonly Token token;
 
             public TokenKeyword(string keyword, Token token)
             {
@@ -195,8 +195,7 @@ namespace Dartmouth2
                 new  TokenKeyword("restore", Token.TOKENIZER_RESTORE),
                 new  TokenKeyword("on", Token.TOKENIZER_ON),
                 new  TokenKeyword("randomize", Token.TOKENIZER_RANDOMIZE),
-                new  TokenKeyword("and", Token.TOKENIZER_AMPERSAND),
-                new  TokenKeyword("or", Token.TOKENIZER_BAR),
+
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
@@ -206,16 +205,16 @@ namespace Dartmouth2
 
         #region Methods
 
-        public void AcceptToken(Tokenizer.Token token)
+        public void AcceptToken(Token token)
         {
-            Debug("accept: Enter");
+            Debug("accept");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
             }
             Debug("accept: Expected " + token + ", got it");
             NextToken();
-            Debug("accept: Enter");
+            Debug("accept");
         }
         
         public Token CheckSingleChar()
@@ -307,10 +306,8 @@ namespace Dartmouth2
 
         public Token GetNextToken()
         {
-            Token token = 0;
+            Token token = Token.TOKENIZER_NONE;
             int i;
-            string c = "";
-
             Debug("get_next_token():" + Convert.ToString(ptr));
 
             if ((ptr == source.Length) || (source[ptr] == (char)0))
@@ -375,6 +372,7 @@ namespace Dartmouth2
                 {
                     foreach (TokenKeyword keyword in keywords)
                     {
+                        string c;
                         if (ptr + keyword.Keyword.Length > source.Length)
                         {
                             c = "";
@@ -399,7 +397,7 @@ namespace Dartmouth2
 
                 // <varable> ::= <letter> | <letter> "$" |<letter> <digit> | <letter> <digit> "$" | <letter> "(" | <letter> "$" "("
 
-                if (token == 0)
+                if (token == Token.TOKENIZER_NONE)
                 {
                     if ((source[ptr] >= 'a' && source[ptr] <= 'z') || (source[ptr] >= 'A' && source[ptr] <= 'Z'))
                     {
@@ -409,13 +407,13 @@ namespace Dartmouth2
                         if (IsDigit(source[nextptr]))
                         {
                             // Two digit variable
-                            nextptr = nextptr + 1;
+                            nextptr++;
                             token = Token.TOKENIZER_NUMERIC_VARIABLE;
 
                             if (source[nextptr] == '$')
                             {
                                 // String viarable
-                                nextptr = nextptr + 1;
+                                nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
                             }
                         }
@@ -424,20 +422,20 @@ namespace Dartmouth2
                             if (source[nextptr] == '$')
                             {
                                 // String viarable
-                                nextptr = nextptr + 1;
+                                nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
 
                                 if (source[nextptr] == '(')
                                 {
                                     // String array variable
-                                    nextptr = nextptr + 1;
+                                    nextptr++;
                                     token = Token.TOKENIZER_STRING_ARRAY_VARIABLE;
                                 }
                             }
                             else if (source[nextptr] == '(')
                             {
                                 // Array variable
-                                nextptr = nextptr + 1;
+                                nextptr++;
                                 token = Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE;
                             }
                         }
@@ -467,7 +465,7 @@ namespace Dartmouth2
 
         public void NextToken()
         {
-            Debug("tokenizer_next: Enter");
+            Debug("tokenizer_next");
 
             if (!IsFinished())
             {
@@ -486,7 +484,7 @@ namespace Dartmouth2
             {
                 currentToken = Token.TOKENIZER_ENDOFINPUT;
             }
-            Debug("tokenizer_next: Exit");
+            Debug("tokenizer_next");
         }
 
         public void SkipTokens()
@@ -538,7 +536,7 @@ namespace Dartmouth2
                 }
                 else
                 {
-                    number = number + (double)(Convert.ToInt32(source[i]) - Convert.ToInt32('0')) / Math.Pow(10,i-j);
+                    number += (double)(Convert.ToInt32(source[i]) - Convert.ToInt32('0')) / Math.Pow(10,i-j);
                 }
                 i++;
             }
@@ -556,11 +554,11 @@ namespace Dartmouth2
             }
             else
             {
-                i = i + 1;
+                i++;
                 while(source[i] != '\"')
                 {
-                    _string = _string + source[i];
-                    i = i + 1;
+                    _string += source[i];
+                    i++;
                 }
             }
             return (_string);
@@ -573,7 +571,7 @@ namespace Dartmouth2
 
         public int GetIntegerVariable()
         {
-            int integer = 0;
+            int integer;
             if ((source[ptr] >= 'a') && (source[ptr] < 'z'))
             {
                 integer = (int)source[ptr] - (int)'a'; 
@@ -591,16 +589,16 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c< 'z')) || ((c >= 'A') && (c< 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c< '9'))
+            if ((c >= '0') && (c <= '9'))
             {
-                value = value + c;
+                value += c;
             }
             return (value);
         }
@@ -613,10 +611,10 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
             return (value);
         }
@@ -629,10 +627,10 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
             return (value);
         }
@@ -643,16 +641,16 @@ namespace Dartmouth2
             char c;
 
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value = value + c.ToString().ToLower(); // Make variables case insentitive
-                ptr = ptr + 1;
+                value += c.ToString().ToLower(); // Make variables case insentitive
+                ptr++;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c < '9'))
+            if ((c >= '0') && (c <= '9'))
             {
-                value = value + c;
+                value += c;
             }
             return (value);
         }
@@ -686,6 +684,23 @@ namespace Dartmouth2
         private void Debug(string message)
         {
             if (log.IsDebugEnabled == true) { log.Debug(message); }
+        }
+
+        //--------------------------------------------------------------
+        // Info
+
+        private void Info(string message)
+        {
+            if (log.IsInfoEnabled == true) { log.Info(message); }
+        }
+
+        //--------------------------------------------------------------
+        // Report an Error
+
+        private void Err(string s)
+        {
+            //consoleIO.Error("Error: " + s + "@" + current_line_number + "\n");
+            if (log.IsErrorEnabled == true) { log.Error(s); }
         }
 
         //--------------------------------------------------------------
