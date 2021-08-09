@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uBasicTest", "uBasicTest\uB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uBasicForm", "uBasicForm\uBasicForm.csproj", "{BA9E6998-C44F-44DF-940D-F605BFC3D749}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic", "Basic\Basic.csproj", "{90522D17-49A9-410B-9671-5066E5EA28B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,11 +79,18 @@ Global
 		{BA9E6998-C44F-44DF-940D-F605BFC3D749}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA9E6998-C44F-44DF-940D-F605BFC3D749}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA9E6998-C44F-44DF-940D-F605BFC3D749}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90522D17-49A9-410B-9671-5066E5EA28B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90522D17-49A9-410B-9671-5066E5EA28B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90522D17-49A9-410B-9671-5066E5EA28B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90522D17-49A9-410B-9671-5066E5EA28B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B1214313-AA97-4F53-AD43-0C0B7E174D9E} = {DB2F84D6-7991-42A4-AC8B-656E30F48A0F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0B2E2069-4D29-46D2-A417-4E4ADF178086}
 	EndGlobalSection
 EndGlobal

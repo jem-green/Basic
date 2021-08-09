@@ -27,177 +27,191 @@
  * SUCH DAMAGE.
  *
  */
-// Copyright (C) 1988 Jack W. Crenshaw. 
 
-using System;
 using log4net;
+using System;
 using System.Collections.Generic;
 using System.Collections;
-using ubasicLibrary;
+using uBasicLibrary;
+using System.Diagnostics;
 
-namespace Basic
+namespace Altair
 {
     /// <summary>
-    /// Basic 
+    /// Altair basic 1975
     /// </summary>
     public class Interpreter : IInterpreter
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        IConsoleIO consoleIO;
+        readonly IConsoleIO consoleIO;
 
         int program_ptr;
         const int MAX_STRINGLEN = 40;
 
-        // Printing
-
-        const int ZONE_WIDTH = 15;
-        const int COMPACT_WIDTH = 3;
-
         // Gosub
 
+        public struct Gosub
+        {
+
+            private int lineNumber;
+            private int posAfterGosub;
+
+            public Gosub(int lineNumber, int positionAfterGosub)
+            {
+                this.lineNumber = lineNumber;
+                this.posAfterGosub = positionAfterGosub;
+            }
+
+            public int Line_number {get { return lineNumber; } set { lineNumber = value; } }
+            public int Pos_after_gosub { get { return posAfterGosub; } set { posAfterGosub = value; } }
+
+        }
+
         const int MAX_GOSUB_STACK_DEPTH = 10;
-        int[] gosub_stack = new int[MAX_GOSUB_STACK_DEPTH];
-        int gosub_stack_ptr;
+        readonly Gosub[] gosubStack = new Gosub[MAX_GOSUB_STACK_DEPTH];
+        int gosubStackPointer;
 
         // for-next
 
-        public struct for_state
+        public struct ForState
         {
-            private int posAfterFor;
+            private int positionAfterFor;
             private string forVariable;
-            private double _to;
-            private double _step;
+            private double from;
+            private double to;
+            private double step;
 
-            public for_state(int pos_after_for, string for_variable, double to, double step)
+            public ForState(int positionAfterFor, string forVariable, double from, double to, double step)
             {
-                this.posAfterFor = pos_after_for;
-                this.forVariable = for_variable;
-                this._to = to;
-                this._step = step;
+                this.positionAfterFor = positionAfterFor;
+                this.forVariable = forVariable;
+                this.from = from;
+                this.to = to;
+                this.step = step;
             }
 
-            public int pos_after_for { get { return posAfterFor; } set { posAfterFor = value; } }
-            public string for_variable { get { return forVariable; } set { forVariable = value; } }
-            public double to { get { return _to; } set { _to = value; } }
-            public double step { get { return _step; } set { _step = value; } }
+            public int PositionAfterFor { get { return positionAfterFor; } set { positionAfterFor = value; } }
+            public string ForVariable { get { return forVariable; } set { forVariable = value; } }
+            public double From { get { return from; } set { from = value; } }
+            public double To { get { return to; } set { to = value; } }
+            public double Step { get { return step; } set { step = value; } }
         }
 
         const int MAX_FOR_STACK_DEPTH = 4;
-        for_state[] for_stack = new for_state[MAX_FOR_STACK_DEPTH];
-        static int for_stack_ptr;
+        readonly ForState[] forStack = new ForState[MAX_FOR_STACK_DEPTH];
+        static int forStackPointer;
 
         // lines
 
-        private struct line_index
+        private struct LineIndex
         {
-            private int lineNumber;
-            private int programTextPosition;
+            private readonly int lineNumber;
+            private readonly int programTextPosition;
 
-            public line_index(int line_number, int program_text_position)
+            public LineIndex(int lineNumber, int programTextPosition)
             {
-                this.lineNumber = line_number;
-                this.programTextPosition = program_text_position;
+                this.lineNumber = lineNumber;
+                this.programTextPosition = programTextPosition;
             }
 
-            public int line_number { get { return lineNumber; } }
-            public int program_text_position { get { return programTextPosition; } }
+            public int LineNumber { get { return lineNumber; } }
+            public int ProgramTextPosition { get { return programTextPosition; } }
         }
 
-        List<line_index> lidx;
+        readonly List<LineIndex> lineIndex;
 
         // Data
 
         const int MAX_DATA = 10;
-        Queue data = new Queue(MAX_DATA);
+        readonly Queue data = new Queue(MAX_DATA);
         int dataPos = 0;
 
         bool ended;
 
-        private char[] program;
+        private readonly char[] program;
 
-        private Tokenizer tokenizer;
-        private Evaluator evaluation;
+        private readonly Tokenizer tokenizer;
+        private readonly Evaluator evaluator;
 
         int nested = 0;
-        int current_line_number = 0;
+        int currentLineNumber = 0;
 
         #endregion
-
         #region Constructors
 
         public Interpreter(char[] program, IConsoleIO consoleIO)
         {
             this.consoleIO = consoleIO;        
-            lidx = new List<line_index>();
+            lineIndex = new List<LineIndex>();
             tokenizer = new Tokenizer(program);
-            evaluation = new Evaluator(tokenizer);
+            evaluator = new Evaluator(tokenizer);
             this.program = program;
         }
 
         #endregion Contructors
-
         #region Methods
 
-        public void Init(int pos)
+        public void Init(int position)
         {
-            Debug("Init: Enter");
-            program_ptr = pos;
-            for_stack_ptr = 0;
-            gosub_stack_ptr = 0;
-            index_free();
-            tokenizer.Init(pos);
+            Trace.TraceInformation("In Init()");
+            program_ptr = position;
+            forStackPointer = 0;
+            gosubStackPointer = 0;
+            IndexFree();
+            tokenizer.Init(position);
             ended = false;
-            Debug("Init: Exit");
+            Trace.TraceInformation("Out Init()");
         }
 
-        private void index_free()
+        private void IndexFree()
         {
-            lidx.Clear();
+            Trace.TraceInformation("In IndexFree()");
+            lineIndex.Clear();
+            Trace.TraceInformation("Out IndexFree()");
         }
 
-        private int index_find(int linenum)
+        private int IndexFind(int lineNumber)
         {
+            Trace.TraceInformation("In IndexFind()");
             int line = 0;
-            Debug("index_find: Enter");
-            line_index idx = lidx.Find(x => x.line_number == linenum);
-            if (idx.line_number == 0)
+            LineIndex idx = lineIndex.Find(x => x.LineNumber == lineNumber);
+            if (idx.LineNumber == 0)
             {
-                Debug("index_find: Returning zero for " + linenum);
+                Debug("IndexFind: Returning zero for " + lineNumber);
                 line = 0;
             }
             else
             {
-                Debug("index_find: Returning index for line " + Convert.ToString(linenum));
-                line = idx.program_text_position;
+                Debug("IndexFind: Returning index for line " + Convert.ToString(lineNumber));
+                line = idx.ProgramTextPosition;
             }
-            Debug("index_find: Exit");
+            Trace.TraceInformation("Out IndexFind()");
             return (line);
         }
 
-        private void index_add(int linenum, int sourcepos)
+        private void IndexAdd(int lineNumber, int sourcePosition)
         {
-            Debug("index_add: Enter");
-            line_index idx = new line_index(linenum, sourcepos);
-            lidx.Add(idx);
-            Debug("index_add: Adding index for line " + Convert.ToString(linenum) + " @ " + Convert.ToString(sourcepos));
-            Debug("index_add: Exit");
+            Trace.TraceInformation("In IndexAdd()");
+            LineIndex idx = new LineIndex(lineNumber, sourcePosition);
+            lineIndex.Add(idx);
+            Debug("IndexAdd: Adding index for line " + Convert.ToString(lineNumber) + " @ " + Convert.ToString(sourcePosition));
+            Trace.TraceInformation("Out IndexAdd()");
         }
 
-        private void jump_linenum_slow(int linenum)
+        private void JumpLineNumberSlow(int lineNumber)
         {
-            Debug("jump_linenumber_slow: Enter");
+            Trace.TraceInformation("In JumpLineNumberSlow()");
             tokenizer.Init(program_ptr);
 
-            while (tokenizer.GetInteger() != linenum)
+            while (tokenizer.GetInteger() != lineNumber)
             {
                 do
                 {
                     do
                     {
-                        //tokenizer.tokenizer_next();
+                        //Tokenizer_next();
                         tokenizer.SkipTokens();
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR && tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT);
@@ -209,58 +223,66 @@ namespace Basic
 
                 }
                 while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_INTEGER);
-                Debug("jump_linenum_slow: Found line " + tokenizer.GetInteger());
+                Debug("JumpLineNumber_slow: Found line " + tokenizer.GetInteger());
             }
-            Debug("jump_linenumber_slow: Exit");
+            Trace.TraceInformation("Out JumpLineNumberSlow()");
         }
 
-        private void jump_linenum(int linenum)
+        /// <summary>
+        /// Jump to a specific line number
+        /// </summary>
+        /// <param name="lineNumber"></param>
+        private void JumpLineNumber(int lineNumber)
         {
-            Debug("jump_linenum: Enter");
-            int pos = index_find(linenum);
+            Trace.TraceInformation("In JumpLineNumber()");
+            int pos = IndexFind(lineNumber);
             if (pos > 0)
             {
-                Debug("jump_linenum: Going to line " + linenum);
+                Debug("JumpLineNumber: Going to line " + lineNumber);
                 tokenizer.GotoPosition(pos);
             }
             else
             {
                 // We'll try to find a yet-unindexed line to jump to.
-                Debug("jump_linenum: Calling jump_linenum_slow " + linenum);
-                jump_linenum_slow(linenum);
+                Debug("JumpLineNumber: Calling JumpLineNumber_slow " + lineNumber);
+                JumpLineNumberSlow(lineNumber);
             }
-            current_line_number = linenum;
-            Debug("jump_linenumber: Exit");
+            currentLineNumber = lineNumber;
+            Trace.TraceInformation("Out JumpLineNumber()");
         }
 
-        private string read_input()
+        private string ReadInput()
         {
-            
-
-            Debug("read_input: Enter");
-            string value = "";
-            value = consoleIO.In();
+            Trace.TraceInformation("In ReadInput()");
+            string value = consoleIO.In();
             value = value.TrimEnd('\r');
-            Debug("read_input: Exit");
+            value = value.TrimEnd('\n');
+            Trace.TraceInformation("In ReadInput()");
             return (value);
         }
 
-        private bool read_data(int pos)
+        private bool ReadData(int position)
         {
+            Trace.TraceInformation("In ReadData()");
             bool read = false;
             int current_pos = tokenizer.GetPosition();
-            Double number = 0;
             bool negative = false;
 
-            Debug("read_data: Enter");
-            tokenizer.Init(pos);
+            tokenizer.Init(position);
             do
             {
                 do
                 {
                     tokenizer.NextToken();
+                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_REM)
+                    {
+                        RemStatement();
+                    }
                 }
-                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_DATA) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
+                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_DATA) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.IsFinished() == false));
+
+                Debug("ReadData: Read");
+				Info("READ");
 
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_DATA)
                 {
@@ -269,6 +291,7 @@ namespace Basic
 
                     do
                     {
+                        double number;
                         if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                         {
                             negative = false;
@@ -279,14 +302,14 @@ namespace Basic
                             number = tokenizer.GetNumber();
                             if (negative == true)
                             {
-                                Debug("read_data: add number " + -number);
+                                Debug("ReadData: add number " + -number);
                                 data.Enqueue(-number);
                                 negative = false;
                                 read = true;
                             }
                             else
                             {
-                                Debug("read_data: add number " + number);
+                                Debug("ReadData: add number " + number);
                                 data.Enqueue(number);
                                 read = true;
                             }
@@ -297,14 +320,14 @@ namespace Basic
                             number = tokenizer.GetNumber();
                             if (negative == true)
                             {
-                                Debug("read_data: add integer " + -number);
+                                Debug("ReadData: add integer " + -number);
                                 data.Enqueue(-number);
                                 negative = false;
                                 read = true;
                             }
                             else
                             {
-                                Debug("read_data: add integer " + number);
+                                Debug("ReadData: add integer " + number);
                                 data.Enqueue(number);
                                 read = true;
                             }
@@ -312,7 +335,7 @@ namespace Basic
                         }
                         else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING)
                         {
-                            Debug("read_data: add string " + tokenizer.Getstring());
+                            Debug("ReadData: add string " + tokenizer.Getstring());
                             data.Enqueue(tokenizer.Getstring());
                             read = true;
                             tokenizer.NextToken();
@@ -328,67 +351,65 @@ namespace Basic
                             tokenizer.NextToken();
                         }
                     }
-                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.IsFinished() == false));
 
                     dataPos = tokenizer.GetPosition();
-                    Debug("read_data: Found data");
+                    Debug("ReadData: Found data");
                 }
             }
             while ((read == false) && (tokenizer.IsFinished() == false));
             tokenizer.Init(current_pos);
-            Debug("read_data: Exit");
+            Trace.TraceInformation("Out ReadData()");
             return (read);
         }
 
         #region Statements
 
-        // <program> ::= <line> [ <line> ]*
-        // <line> ::= <line_number> <statement> [ <statement_separator> <statement> ]* <eol>
-        // <line_number> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0"
+        // <program> ::= <line> [ <line> ]*;
+        // <line> ::= <line_number> <statement> [ <statement_separator> <statement> ]* <eol>;
+        // <line_number> ::= <number> [ <zero> | <number> ]*;
+        // <number> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+        // <zero> ::= "0";
         // <statement_separator> ::= ":"
-        // <eol> ::= <cr> <lf> | <cr>
+        // <eol> ::= <cr> <lf> | <cr>;
+        // <statement> ::= <OnStatement> | <IfStatement> | <DimStatement> | <LetStatement> 
+        // <OnStatement> ::= "ON" <expression> "THEN" , <line> [ "," <line> ]* | "ON" <expression> "GOTO" <line> [ "," <line> ]*
+        // <IfStatement> ::= "IF" <expression> <relation> <expression> "THEN" <line> | "IF" <expression><relation><expression> "GOTO" <line>
+        // <DimStatement> ::= "DIM" <variable> "(" <expression> ")"
+        // <LetStatement> ::= "LET" <variable> "=" <expression>
+        // <RandomizeStatement> :== "RANDOMIZE"
+        // <DataStatement> := "DATA" <data> ["," <data>]*
+        // <RestoreStatement> ::= "RESTORE" 
+        // <GotoStatement> ::= "GOTO" <line_number>
+        // <PrintStatement> ::=
+        // <LetStatement> ::= "LET" <variable> "=" <expression> ["," <variable> "=" <expression>]*
+        // <variable> ::= <StringVariable> | <NumericVariable> | <IntegerVariable> | 
 
-        // <statement> ::= <on_statement> | <if_statement>
-        //
-        // <on_statement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
-        // <on_statement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
-        //
-        // <if_statement> ::= "IF" <expression><relation><expression> "THEN" <line> | "IF" <expression><relation><expression> "GOTO" <line>
-        //
-        // <function> ::= <name> "(" <expression> [ <separator> <expression> ]* ")"
-        // <name> ::= "TAB"
-
-        // <expression> ::= <term> [ <addop> <term> ]*
-        // <addop> ::= "+" | "-"
-        // <term> ::= <factor> [ <mulop> <factor> ]*
-        // <mulop> := "*" | "/"
-        // <factor> ::= <number> | <string> | <variable> | <function> | "(" <expression> ")"
-        // <function> ::= <name> "(" <expression> [ <separator> <expression> ]* ")"
-        // <separator> ::= ","
-        // <string> ::= <quote> <alpha> [ <alpha> ]* <quote>
-        // <quote> ::= """ | "'"
 
         /// <summary>
-        /// Line_Statement
+        /// LineStatement
         /// </summary>
-        private void line_statement()
+        private void LineStatement()
         {
-            Debug("line_statement: Enter");
-            current_line_number = tokenizer.GetInteger();
-            Debug("----------- Line number " + current_line_number + " ---------");
-            index_add(current_line_number, tokenizer.GetPosition());
+            Trace.TraceInformation("In LineStatement()");
+            currentLineNumber = tokenizer.GetInteger();
+            Info("----------- Line number " + currentLineNumber + " ---------");
+            IndexAdd(currentLineNumber, tokenizer.GetPosition());
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
             Statement();
-            Debug("line_statement: Exit");
+            Trace.TraceInformation("Out LineStatement()");
         }
 
-        private void Statement()
+        /// <summary>
+        /// Statement
+        /// </summary>
+        private bool Statement()
         {
             bool inline = false;
-            nested = nested + 1;
+            nested++;
             Tokenizer.Token token;
 
-            Debug("Statement: Enter");
+            Trace.TraceInformation("In Statement()");
 
             // Might need to consider a loop here for multilne statements
             // otherwise it will error saying the line number is missing.
@@ -401,101 +422,98 @@ namespace Basic
                 {
                     case Tokenizer.Token.TOKENIZER_INPUT:
                         {
-                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
-                            input_statement();
+                            InputStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DATA:
                         {
-                            data_statement();
+                            DataStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_RESTORE:
                         {
-                            restore_statement();
+                            RestoreStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_PRINT:
                         {
-                            print_statement();
+                            PrintStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_IF:
                         {
-                            inline = if_statement();
+                            inline = IfStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_GOTO:
                         {
-                            goto_statement();
-                            inline = false;
+                            inline = GotoStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_GOSUB:
                         {
-                            gosub_statement();
+                            inline = GosubStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_RETURN:
                         {
-                            return_statement();
+                            inline = ReturnStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_FOR:
                         {
-                            for_statement();
+                            ForStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_NEXT:
                         {
-                            next_statement();
+                            NextStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_END:
                         {
-                            end_statement();
+                            EndStatement();
                             break;
                         }
 					case Tokenizer.Token.TOKENIZER_STOP:
                         {
-                            stop_statement();
+                            StopStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_LET:
                         {
-                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
-                            let_statement();
+                            LetStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_REM:
                         {
-                            rem_statement();
+                            RemStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DIM:
                         {
-                            dim_statement();
+                            DimStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_READ:
                         {
                             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_READ);
-                            read_statement();
+                            ReadStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DEF:
                         {
-                            def_statement();
+                            DefStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_ON:
                         {
-                            on_statement();
+                            inline = OnStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_RANDOMIZE:
                         {
-                            randomize_statement();
+                            RandomizeStatement();
                             break;
                         }
                     default:
@@ -522,53 +540,68 @@ namespace Basic
                     inline = false;
                 }
             }
-            while (inline == true);
-            nested = nested - 1;
+            while ((inline == true) && (tokenizer.IsFinished() == false));
+            nested--;
 
-            Debug("statement: Exit");
-
+            Trace.TraceInformation("Out Statement()");
+            return (inline);
         }
 
-        private void randomize_statement()
+        /// <summary>
+        /// RANDOMIZE
+        /// </summary>
+        private void RandomizeStatement()
         {
-            Debug("randomize_statement: Enter");
-
+            Trace.TraceInformation("In RandomizeStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RANDOMIZE);
-            evaluation.Randomize();
-
-            Debug("randomize_statement: Exit");
+            evaluator.Randomize();
+            Trace.TraceInformation("Out RandomizeStatement()");
         }
 
-        private void data_statement()
+        /// <summary>
+        /// DATA
+        /// </summary>
+        private void DataStatement()
         {
-            Debug("data_statement: Enter");
-
+           Trace.TraceInformation("In In DataStatement()");
             tokenizer.SkipTokens();
-
-            Debug("dat_statement: Exit");
+           Trace.TraceInformation("Out DataStatement()");
         }
 
-        private void restore_statement()
+        /// <summary>
+        /// RESTORE
+        /// </summary>
+        private void RestoreStatement()
         {
-            Debug("restore_statement: Enter");
-            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RESTORE);
-            dataPos = 0;
-            Debug("restore_statement: Exit");
+           Trace.TraceInformation("In RestoreStatement()");
+           tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RESTORE);
+           dataPos = 0;
+           Trace.TraceInformation("Out RestoreStatement()");
         }
 
-        private void goto_statement()
+        /// <summary>
+        /// GOTO
+        /// </summary>
+        private bool GotoStatement()
         {
-            int lineNumber = 0;
-
-            Debug("goto_statement: Enter");
+            Trace.TraceInformation("In GotoStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
-            lineNumber = tokenizer.GetInteger();
-            jump_linenum(lineNumber);
-            Debug("goto_statement: Exit");
+            int lineNumber = tokenizer.GetInteger();
+            Info("GOTO " + lineNumber);
+            JumpLineNumber(lineNumber);
+            Trace.TraceInformation("Out GotoStatement()");
+            return (false);
         }
 
-        private void print_statement()
+        /// <summary>
+        /// PRINT
+        /// </summary>
+        private void PrintStatement()
         {
+            Tokenizer.Token previous = Tokenizer.Token.TOKENIZER_NULL;
+
+            Trace.TraceInformation("In PrintStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PRINT);
             // Print
             // PRINT "HELLO"{CR}
             // PRINT "A=";A{CR}
@@ -576,21 +609,21 @@ namespace Basic
             // PRINT "A=";A:LET A=5{CR}
             // PRINT TAB(10);"A=";A{CR}
 
-            char control = '\n';
-            int tab = 0;
-            double number = 0;
-            string value = "";
-            Tokenizer.Token previous = Tokenizer.Token.TOKENIZER_NULL;
+            log.Info("PRINT");
 
-            Debug("print_statement: Enter");
-            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PRINT);
+            char control;
             do
             {
-                Debug("print_statement: Print loop");
+                Debug("PrintStatement: Print loop");
+                int tab;
+                double number;
+                string value;
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING)
                 {
                     previous = tokenizer.GetToken();
-                    Emit(tokenizer.Getstring());
+                    value = tokenizer.Getstring();
+                    log.Info("PRINT " + value);
+                    Emit(value);
                     tokenizer.NextToken();
                     control = '\n';
                 }
@@ -600,8 +633,10 @@ namespace Basic
                     // spec defines 5 zones then new line
 
                     previous = tokenizer.GetToken();
-                    tab = -consoleIO.Hpos + ZONE_WIDTH * (1 + (consoleIO.Hpos / ZONE_WIDTH));
-                    Emit(new string(' ', tab));
+                    tab = -consoleIO.Hpos + consoleIO.Zone * (1 + (consoleIO.Hpos / consoleIO.Zone));
+                    value = new string(' ', tab);
+                    log.Info("PRINT ,");
+                    Emit(value);
                     control = ',';
                     tokenizer.NextToken();
 
@@ -618,12 +653,15 @@ namespace Basic
                         // assume a tab spacing of 3 characters
                         // spec defines a minimum of 6 characters
 
-                        tab = -consoleIO.Hpos + COMPACT_WIDTH * (1 + (consoleIO.Hpos / COMPACT_WIDTH));
+                        tab = -consoleIO.Hpos + consoleIO.Compact * (1 + (consoleIO.Hpos / consoleIO.Compact));
                         if (tab < 2)
                         {
-                            tab = tab + 3;
+                            tab += 3;
                         }
-                        Emit(new string(' ', tab));
+                        tab = 1;
+                        value = new string(' ', tab);
+                        log.Info("PRINT ;");
+                        Emit(value);
                     }
                     previous = tokenizer.GetToken();
                     control = ';';
@@ -639,26 +677,30 @@ namespace Basic
                 }
                 else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMBER) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER))
                 {
-					previous = tokenizer.GetToken();
+                    previous = tokenizer.GetToken();
                     number = tokenizer.GetNumber();
                     value = FormatNumber(number);
+                    log.Info("PRINT " + value);
                     Emit(value);
                     control = '\n';
                 }
-                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)) 
+                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE))
                 {
                     previous = tokenizer.GetToken();
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
                     value = FormatNumber(number);
+                    log.Info("PRINT " + value);
                     Emit(value);
                     control = '\n';
                 }
                 else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
                 {
                     previous = tokenizer.GetToken();
-                    evaluation.Expression();
-                    Emit(evaluation.PopString());
+                    evaluator.Expression();
+                    value = evaluator.PopString();
+                    log.Info("PRINT " + value);
+                    Emit(value);
                     control = '\n';
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_TAB)
@@ -666,110 +708,182 @@ namespace Basic
                     previous = tokenizer.GetToken();
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TAB);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
-                    evaluation.Expression();
-                    tab = (int)Math.Truncate(evaluation.PopDouble()) - consoleIO.Hpos;
-                    Emit(new string(' ', tab));
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);                   
+                    evaluator.Expression();
+                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.Hpos;
+                    if (tab > 0)
+                    {
+                        value = new string(' ', tab);
+                        log.Info("PRINT TAB(" + tab + ")");
+                        Emit(value);
+                    }
+                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     control = '\n';
                 }
                 else
                 {
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
-                    value = FormatNumber(number);
-                    Emit(value);
+                    evaluator.Expression();
+
+                    // How do we know what to pop off the stack.
+
+                    object data = evaluator.PopObject();
+                    if (data.GetType() == typeof(int))
+                    {
+                        int integer = Convert.ToInt32(data);
+                        value = FormatNumber(integer);
+                        log.Info("PRINT " + value);
+                        Emit(value);
+                    }
+                    else if (data.GetType() == typeof(string))
+                    {
+                        value = data.ToString();
+                        log.Info("PRINT " + value);
+                        Emit(value);
+                    }
+                    else if (data.GetType() == typeof(double))
+                    {
+                        number = Convert.ToDouble(data);
+                        value = FormatNumber(number);
+                        log.Info("PRINT " + value);
+                        Emit(value);
+                    }
                     previous = tokenizer.GetToken();
                     control = '\n';
                 }
-                
-                Debug("print_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+
+                Debug("PrintStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
             }
-            while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+            while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.IsFinished() == false));
 
             if (control == '\n')
             {
                 Emit("\n");
             }
 
-            Debug("print_statement: Exit");
+            Trace.TraceInformation("Out PrintStatement()");
         }
 
-        private bool if_statement()
+        /// <summary>
+        /// IF
+        /// </summary>
+        /// <returns></returns>
+        private bool IfStatement()
         {
             // The if statement 
             // IF A=1 THEN B=3{CR}
             // IF A=1 PRINT "a=";a{CR}
             // IF A=1 THEN 20{CR}
-            // IF A=1 THEN B=3:LET C=4
-            // IF A=1 PRINT "a=";a:GOTO 20{CR}
+            // IF A=1 THEN B=3{COLON}LET C=4
+            // IF A=1 PRINT "a=";a{COLON}GOTO 20{CR}
 
             bool jump = true;
-            int lineNumber = 0;
-
-            Debug("if_statement: Enter");
+            Trace.TraceInformation("In IfStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_IF);
-            evaluation.Relation();
-            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
-            if (evaluation.PopBoolean())
+            Info("IF");
+            evaluator.BinaryExpression();
+
+            Tokenizer.Token token = tokenizer.GetToken();
+
+            int lineNumber;
+            if (token == Tokenizer.Token.TOKENIZER_GOTO)
             {
-                if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
+                if (evaluator.PopBoolean() == true)
                 {
-                    lineNumber = tokenizer.GetInteger();
-                    jump_linenum(lineNumber);
-                    //accept(Tokenizer.Token.TOKENIZER_NUMBER);
-                    jump = false;
-                }
-                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
-                {
-                    evaluation.Expression();
+                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
+                    {
+                        lineNumber = tokenizer.GetInteger();
+                        Info("GOTO " + lineNumber);
+                        JumpLineNumber(lineNumber);
+                        jump = false;
+                    }
                 }
                 else
                 {
-                    Statement();
+                    do
+                    {
+                        tokenizer.NextToken();
+                    }
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.IsFinished() == false));
+                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
+                    {
+                        tokenizer.NextToken();
+                        jump = Statement();
+                    }
+                }
+            }
+            else if (token == Tokenizer.Token.TOKENIZER_THEN)
+            {
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
+                if (evaluator.PopBoolean() == true)
+                {
+                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
+                    {
+                        lineNumber = tokenizer.GetInteger();
+                        Info("THEN " + lineNumber);
+                        JumpLineNumber(lineNumber);
+                        jump = false;
+                    }
+                    else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
+                    {
+                        evaluator.Expression();
+                    }
+                    else
+                    {
+                        jump = Statement();
+                    }
+                }
+                else
+                {
+                    do
+                    {
+                        tokenizer.NextToken();
+                    }
+                    // Wonder if this should include Separator
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.IsFinished() == false));
+                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
+                    {
+                        tokenizer.NextToken();
+                        jump = Statement();
+                    }
+                    //else if(Tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
+                    //{
+                    //    Tokenizer_next();
+                    //}
                 }
             }
             else
             {
-                do
-                {
-                    tokenizer.NextToken();
-                }
-                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
-                if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
-                {
-                    tokenizer.NextToken();
-                    Statement();
-                }
-                //else if(tokenizer.tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
-                //{
-                //    tokenizer.tokenizer_next();
-                //}
+                Abort("statement not implemented " + token);
             }
-            Debug("if_statement: Exit");
+            Trace.TraceInformation("Out IfStatement()");
             return (jump);
         }
 
-        private void on_statement()
+        /// <summary>
+        /// ON
+        /// </summary>
+        private bool OnStatement()
         {
             // The on statement
             //
-            // <statement> ::= <on_statement> | <if_statement>
+            // <statement> ::= <OnStatement> | <IfStatement>
             //
-            // <on_statement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
-            // <on_statement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
+            // <OnStatement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
+            // <OnStatement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
             //
             // 
 
+            bool jump = true;
+
             double number;
             int integer;
-            int lineNumber = 0;
             int parameter = 0;
             bool check = true;
 
-            Debug("on_statement: Enter");
+            Trace.TraceInformation("In OnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ON);
-            evaluation.Expression();
-            number = evaluation.PopDouble();
+            evaluator.Expression();
+            number = evaluator.PopDouble();
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_THEN)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
@@ -790,11 +904,13 @@ namespace Basic
                 {
                     if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
                     {
-                        lineNumber = tokenizer.GetInteger();
-                        parameter = parameter + 1;
+                        int lineNumber = tokenizer.GetInteger();
+                        parameter++;
                         if (integer == parameter)
                         {
-                            jump_linenum(lineNumber);
+                            Info("ON " + integer + " GOTO " + lineNumber);
+                            JumpLineNumber(lineNumber);
+                            jump = false;
                             check = false;
                         }
                         else
@@ -817,24 +933,27 @@ namespace Basic
             {
                 Abort("Expected: < " + parameter);
             }
-            Debug("on_statement: Exit");
+            Trace.TraceInformation("Out OnStatement()");
+            return (jump);
         }
 
-        private void let_statement()
+        /// <summary>
+        /// LET
+        /// </summary>
+        private void LetStatement()
         {
             string varName;
             int integer;
             double number;
             string value;
             int dimensions = 0;
-            int[] dimension = new int[10]; // 10 dimensional array limit !!!
 
             // The let statement can loop through a series of comma separated values and finish at a terminator
             // LET A=1{COMMA}B=2{CR}
             // LET A=1{COMMA}B=2:
 
-            Debug("let_statement: Enter");
-
+            Trace.TraceInformation("In LetStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
             do
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE)
@@ -842,24 +961,27 @@ namespace Basic
                     varName = tokenizer.GetNumericVariable();
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
-                    evaluation.SetNumericVariable(varName, number);
-                    Debug("let_statement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
+                    evaluator.SetNumericVariable(varName, number);
+                    Debug("LetStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                    Info("LET " + Convert.ToString(varName) + "=" + number);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
                 {
                     varName = tokenizer.GetStringVariable();
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    value = evaluation.PopString();
-                    evaluation.SetStringVariable(varName, value);
-                    Debug("let_statement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
+                    evaluator.Expression();
+                    value = evaluator.PopString();
+                    evaluator.SetStringVariable(varName, value);
+                    Debug("LetStatement: assign '" + value + "' to string variable " + Convert.ToString(varName) + "$");
+                    Info("LET " + Convert.ToString(varName) + "$=\"" + value + "\"");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
                     varName = tokenizer.GetNumericArrayVariable();
+                    int[] dimension = new int[10]; // 10 dimensional array limit !!!
                     dimension[0] = 0;
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE);
                     do
@@ -870,23 +992,32 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
-                            dimensions = dimensions + 1;
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
+                            dimensions++;
                             dimension[dimensions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    number = evaluation.PopDouble();
-                    evaluation.SetNumericArrayVariable(varName,dimensions, dimension,number);
-                    Debug("let_statement: assign " + number + " to numeric array variable " + Convert.ToString(varName) + "(");
+                    evaluator.Expression();
+                    number = evaluator.PopDouble();
+                    try
+                    {
+                        evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
+                    }
+                    catch(Exception e)
+                    {
+                        Debug(e.ToString());
+                    }
+                    Debug("LetStatement: assign " + number + " to numeric array variable " + Convert.ToString(varName) + "(");
+                    Info("LET " + Convert.ToString(varName) + "()" + "=" + number);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
                     varName = tokenizer.GetNumericArrayVariable();
+                    int[] dimension = new int[10]; // 10 dimensional array limit !!!
                     dimension[0] = 0;
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);
                     do
@@ -897,31 +1028,35 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
-                            dimensions = dimensions + 1;
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
+                            dimensions++;
                             dimension[dimensions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluation.Expression();
-                    value = evaluation.PopString();
-                    evaluation.SetStringArrayVariable(varName, dimensions, dimension, value);
-                    Debug("let_statement: assign " + value + " to string array variable " + Convert.ToString(varName) + "(");
+                    evaluator.Expression();
+                    value = evaluator.PopString();
+                    evaluator.SetStringArrayVariable(varName, dimensions, dimension, value);
+                    Debug("LetStatement: assign '" + value + "' to string array variable " + Convert.ToString(varName) + "(");
+                    Info("LET " + Convert.ToString(varName) + "$()" + "=\"" + value + "\"");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("let_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                Debug("LetStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Debug("let_statement: Exit");
+            Trace.TraceInformation("Out LetStatement()");
         }
 
-        private void input_statement()
+        /// <summary>
+        /// INPUT
+        /// </summary>
+        private void InputStatement()
         {
             string varName;
             int integer;
@@ -938,8 +1073,18 @@ namespace Basic
             // the input looks like it can also take a number of comma separated values and split out in 1 entry
             // ? 10,10 will read in the two values and assign to A and B.
             // this means I need an input buffer that can be parsed.
+            // INPUT "QUESTION";A{COMMA}B{CR}
+            // INPUT "QUESTION";A{COMMA}B:
 
-            Debug("input_statement: Enter");
+            Trace.TraceInformation("In InputStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
+
+            if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING)
+            {
+                Emit(tokenizer.Getstring());
+                tokenizer.NextToken();
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_SEMICOLON);
+            }
 
             do
             {
@@ -951,7 +1096,7 @@ namespace Basic
                     {
                         Emit("?");
                         buf_pointer = 0;
-                        buffer = read_input();
+                        buffer = ReadInput();
                         Emit("\n");
                     }
                     value = "";
@@ -960,13 +1105,13 @@ namespace Basic
                     {
                         if (buffer[buf_pointer] == ',')
                         {
-                            buf_pointer = buf_pointer + 1;
+                            buf_pointer++;
                             break;
                         }
                         else
                         {
-                            value = value + buffer[buf_pointer];
-                            buf_pointer = buf_pointer + 1;
+                            value += buffer[buf_pointer];
+                            buf_pointer++;
                         }
                     }
                     while (buf_pointer < buffer.Length);
@@ -978,9 +1123,10 @@ namespace Basic
                     }
                     else
                     {
-                        evaluation.SetNumericVariable(varName, numeric);
+                        evaluator.SetNumericVariable(varName, numeric);
                     }
-                    Debug("input_statement: assign " + numeric + " to numeric variable " + Convert.ToString(varName));
+                    Debug("InputStatement: assign " + numeric + " to numeric variable " + Convert.ToString(varName));
+                    Info("INPUT " + Convert.ToString(varName) + "=" + numeric);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
                 {
@@ -990,7 +1136,7 @@ namespace Basic
                     {
                         Emit("?");
                         buf_pointer = 0;
-                        buffer = read_input();
+                        buffer = ReadInput();
                         Emit("\n");
                     }
                     value = "";
@@ -999,19 +1145,20 @@ namespace Basic
                     {
                         if (buffer[buf_pointer] == ',')
                         {
-                            buf_pointer = buf_pointer + 1;
+                            buf_pointer++;
                             break;
                         }
                         else
                         {
-                            value = value + buffer[buf_pointer];
-                            buf_pointer = buf_pointer + 1;
+                            value += buffer[buf_pointer];
+                            buf_pointer++;
                         }
                     }
                     while (buf_pointer < buffer.Length);
 
-                    evaluation.SetStringVariable(varName, value);
-                    Debug("input_statement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
+                    evaluator.SetStringVariable(varName, value);
+                    Debug("InputStatement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
+                    Info("INPUT " + Convert.ToString(varName) + "$=" + value);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
@@ -1026,9 +1173,9 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
-                            dimension = dimension + 1;
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
+                            dimension++;
                             dimensions[dimension] = integer;
                         }
                     }
@@ -1042,7 +1189,7 @@ namespace Basic
                     {
                         Emit("?");
                         buf_pointer = 0;
-                        buffer = read_input();
+                        buffer = ReadInput();
                         Emit("\n");
                     }
                     value = "";
@@ -1051,13 +1198,13 @@ namespace Basic
                     {
                         if (buffer[buf_pointer] == ',')
                         {
-                            buf_pointer = buf_pointer + 1;
+                            buf_pointer++;
                             break;
                         }
                         else
                         {
-                            value = value + buffer[buf_pointer];
-                            buf_pointer = buf_pointer + 1;
+                            value += buffer[buf_pointer];
+                            buf_pointer++;
                         }
                     }
                     while (buf_pointer < buffer.Length);
@@ -1067,8 +1214,9 @@ namespace Basic
                     {
                         Err("Expected: Double");
                     }
-                    evaluation.SetNumericArrayVariable(varName, dimension, dimensions, numeric);
-                    Debug("input_statement: assign " + numeric + " to array variable " + Convert.ToString(varName) + "(");
+                    evaluator.SetNumericArrayVariable(varName, dimension, dimensions, numeric);
+                    Debug("InputStatement: assign " + numeric + " to array variable " + Convert.ToString(varName) + "(");
+                    Info("INPUT " + Convert.ToString(varName) + "()=" + numeric);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
@@ -1083,9 +1231,9 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
-                            dimension = dimension + 1;
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
+                            dimension++;
                             dimensions[dimension] = integer;
                         }
                     }
@@ -1099,7 +1247,7 @@ namespace Basic
                     {
                         Emit("?");
                         buf_pointer = 0;
-                        buffer = read_input();
+                        buffer = ReadInput();
                         Emit("\n");
                     }
                     value = "";
@@ -1108,49 +1256,53 @@ namespace Basic
                     {
                         if (buffer[buf_pointer] == ',')
                         {
-                            buf_pointer = buf_pointer + 1;
+                            buf_pointer++;
                             break;
                         }
                         else
                         {
-                            value = value + buffer[buf_pointer];
-                            buf_pointer = buf_pointer + 1;
+                            value += buffer[buf_pointer];
+                            buf_pointer++;
                         }
                     }
                     while (buf_pointer < buffer.Length);
 
-                    evaluation.SetStringArrayVariable(varName, dimension, dimensions, value);
-                    Debug("input_statement: assign " + value + " to string array variable " + Convert.ToString(varName) + "(");
+                    evaluator.SetStringArrayVariable(varName, dimension, dimensions, value);
+                    Debug("InputStatement: assign " + value + " to string array variable " + Convert.ToString(varName) + "(");
+                    Info("INPUT " + Convert.ToString(varName) + "()=" + value);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("input_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                Debug("InputStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Debug("input_statement: Exit");
+            Trace.TraceInformation("Out InputStatement()");
         }
 
-        private void dim_statement()
+        /// <summary>
+        /// DIM
+        /// </summary>
+        private void DimStatement()
         {
-            string varName = "";
             int numeric;
-            int dimensions = 0;
-            int[] dimension = new int[10]; // 10 dimensional array limit !!!
 
             // The dim statement can loop through a series of comma separated declarations
             // DIM A(1,1),B(1,2)....{CR}
 
-            Debug("dim_statement: Enter");
+            Trace.TraceInformation("In DimStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DIM);
             do
             {
+                string varName;
+                int dimensions;
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
                     varName = tokenizer.GetNumericVariable();
                     dimensions = 0;
+                    int[] dimension = new int[10]; // 10 dimensional array limit !!!
                     dimension[0] = 0;
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE);
                     do
@@ -1161,21 +1313,23 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            numeric = (int)Math.Truncate(evaluation.PopDouble());
-                            dimensions = dimensions + 1;
+                            evaluator.Expression();
+                            numeric = (int)Math.Truncate(evaluator.PopDouble());
+                            dimensions++;
                             dimension[dimensions] = numeric;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
-                    evaluation.DeclareNumericArrayVariable(varName, dimensions, dimension);
-                    Debug("dim_statement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    evaluator.DeclareNumericArrayVariable(varName, dimensions, dimension);
+                    Debug("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    Info("DIM " + Convert.ToString(varName) + "$(" + Convert.ToString(dimensions) + ")");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
                     varName = tokenizer.GetNumericVariable();
                     dimensions = 0;
+                    int[] dimension = new int[10]; // 10 dimensional array limit !!!
                     dimension[0] = 0;
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);
                     do
@@ -1186,16 +1340,17 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            numeric = (int)Math.Truncate(evaluation.PopDouble());
-                            dimensions = dimensions + 1;
+                            evaluator.Expression();
+                            numeric = (int)Math.Truncate(evaluator.PopDouble());
+                            dimensions++;
                             dimension[dimensions] = numeric;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
-                    evaluation.DeclareStringArrayVariable(varName, dimensions, dimension);
-                    Debug("dim_statement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    evaluator.DeclareStringArrayVariable(varName, dimensions, dimension);
+                    Debug("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    Info("DIM " + Convert.ToString(varName) + "(" + Convert.ToString(dimensions) + ")");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
@@ -1204,31 +1359,32 @@ namespace Basic
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR)
                 {
                     // Skip
-                }    
+                }
             }
-            while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+            while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON)) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
 
-            Debug("dim_statement: Exit");
+            Trace.TraceInformation("Out DimStatement()");
         }
 
-        private void def_statement()
+        /// <summary>
+        /// DEF
+        /// </summary>
+        private void DefStatement()
         {
-            string varName = "";
-            int num = 0;
             int parameters = 0;
             string[] parameter = new string[10]; // 10 parameter array limit !!!
 
-            // The def statement is followed by they function reference and then an expression
+            // The def statement is followed by the function reference and then an expression
             // DEF FN{function}({parameters})={expresion}
 
-            Debug("def_statement: Enter");
+            Trace.TraceInformation("In DefStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DEF);
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_FN)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FN);
-                varName = tokenizer.GetNumericArrayVariable();
-                num = varName[0] - (int)'a';
+                string varName = tokenizer.GetNumericArrayVariable();
+                int num = varName[0] - (int)'a';
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE);
                 do
                 {
@@ -1241,7 +1397,7 @@ namespace Basic
                         // this is the variable name
                         varName = tokenizer.GetNumericVariable();
                         parameter[parameters] = varName;
-                        parameters = parameters + 1;
+                        parameters++;
                         tokenizer.NextToken();
                     }
                     else
@@ -1253,192 +1409,289 @@ namespace Basic
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
 
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                evaluation.functions[num] = new Evaluator.function_index(tokenizer.GetPosition(), parameters, parameter);
+                evaluator.functions[num] = new Evaluator.FunctionIndex(tokenizer.GetPosition(), parameters, parameter);
                 tokenizer.SkipTokens();
             }
-            Debug("def_statement: Exit");
+            Trace.TraceInformation("Out DefStatement()");
         }
 
-        private void gosub_statement()
+        /// <summary>
+        /// GOSUB
+        /// </summary>
+        private bool GosubStatement()
         {
+            bool jump = false;
             int linenum;
 
-            Debug("gosub_statement: Enter");
+            Trace.TraceInformation("In GosubStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
             linenum = tokenizer.GetInteger();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
-            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
-            if (gosub_stack_ptr < MAX_GOSUB_STACK_DEPTH)
+
+            if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_CR)
             {
-                gosub_stack[gosub_stack_ptr] = tokenizer.GetInteger();
-                gosub_stack_ptr++;
-                jump_linenum(linenum);
+
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
+
+                if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                {
+                    gosubStack[gosubStackPointer].Line_number = tokenizer.GetInteger();
+                    gosubStack[gosubStackPointer].Pos_after_gosub = 0;
+                    gosubStackPointer++;
+                    Debug("GosubStatement: " + linenum);
+                    Info("GOSUB " + linenum);
+                    JumpLineNumber(linenum);
+                    jump = false;
+                }
+                else
+                {
+                    Abort("GosubStatement: gosub stack exhausted");
+                }
             }
-            else
+            else if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_COLON)
             {
-                Abort("gosub_statement: gosub stack exhausted");
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
+
+                if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                {
+                    gosubStack[gosubStackPointer].Line_number = currentLineNumber;
+                    gosubStack[gosubStackPointer].Pos_after_gosub = tokenizer.GetPosition();
+                    gosubStackPointer++;
+                    Debug("GosubStatement: " + linenum + "," + tokenizer.GetPosition());
+                    Info("GOSUB " + linenum + "," + tokenizer.GetPosition());
+                    JumpLineNumber(linenum);
+                    jump = false;
+                }
+                else
+                {
+                    Abort("GosubStatement: gosub stack exhausted");
+                }
             }
-            Debug("gosub_statement: Exit");
+            Trace.TraceInformation("Out GosubStatement()");
+            return (jump);
         }
 
-        private void return_statement()
+        /// <summary>
+        /// RETURN
+        /// </summary>
+        private bool ReturnStatement()
         {
-            Debug("return_statement: Enter");
+            bool jump = true;
+
+            Trace.TraceInformation("In ReturnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RETURN);
-            if (gosub_stack_ptr > 0)
+            if (gosubStackPointer > 0)
             {
-                gosub_stack_ptr--;
-                jump_linenum(gosub_stack[gosub_stack_ptr]);
+                gosubStackPointer--;
+                if (gosubStack[gosubStackPointer].Pos_after_gosub > 0)
+                {
+                    // use the position to determine the muti-statement return point
+
+                    Debug("ReturnStatement: " + gosubStack[gosubStackPointer].Line_number + "," + gosubStack[gosubStackPointer].Pos_after_gosub);
+                    Info("RETURN " + gosubStack[gosubStackPointer].Line_number + "," + gosubStack[gosubStackPointer].Pos_after_gosub);
+                    tokenizer.GotoPosition(gosubStack[gosubStackPointer].Pos_after_gosub);
+                    jump = true;
+                }
+                else
+                {
+                    Debug("ReturnStatement: " + gosubStack[gosubStackPointer].Line_number);
+                    Info("RETURN " + gosubStack[gosubStackPointer].Line_number);
+                    JumpLineNumber(gosubStack[gosubStackPointer].Line_number);
+                    jump = false;
+                }
             }
             else
             {
-                Abort("return_statement: non-matching return");
+                Abort("ReturnStatement: non-matching return");
             }
-            Debug("return_statement: Exit");
+            Trace.TraceInformation("Out ReturnStatement()");
+            return (jump);
         }
 
-        private void rem_statement()
+        /// <summary>
+        /// REM
+        /// </summary>
+        private void RemStatement()
         {
-            Debug("rem_statement: Enter");
+            Trace.TraceInformation("In RemStatement");
             tokenizer.SkipTokens();
-            Debug("rem_statement: Exit");
+            Trace.TraceInformation("Out RemStatement");
         }
 
-        private void next_statement()
+        /// <summary>
+        /// NEXT
+        /// </summary>
+        private void NextStatement()
         {
             double var;
-            string varName = "";
-            double step = 1;
-
-            Debug("next_statement: Enter");
+            Trace.TraceInformation("In NextStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NEXT);
-            varName = tokenizer.GetNumericVariable();
-            var = evaluation.PopDouble();
+            string varName = tokenizer.GetNumericVariable();
+            var = evaluator.PopDouble();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
 
-            Debug("next_statement: variable=" + varName + " value=" + var);
+            Debug("NextStatement: variable=" + varName + " value=" + var);
+            Info("NEXT " + Convert.ToString(varName));
 
-            if (for_stack_ptr > 0 && varName == for_stack[for_stack_ptr - 1].for_variable)
+            if (forStackPointer > 0 && varName == forStack[forStackPointer - 1].ForVariable)
             {
                 // allow for negative steps
-                step = for_stack[for_stack_ptr - 1].step;
-                evaluation.SetNumericVariable(varName, evaluation.GetNumericVariable(varName) + step);
+                double step = forStack[forStackPointer - 1].Step;
+                evaluator.SetNumericVariable(varName, evaluator.GetNumericVariable(varName) + step);
                 if (step > 0)
                 {
-                    if (evaluation.GetNumericVariable(varName) <= for_stack[for_stack_ptr - 1].to)
+                    if (evaluator.GetNumericVariable(varName) <= forStack[forStackPointer - 1].To)
                     {
-                        tokenizer.GotoPosition(for_stack[for_stack_ptr - 1].pos_after_for);
+                        tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
                     }
                     else
                     {
-                        for_stack_ptr--;
+                        forStackPointer--;
                     }
                 }
                 else
                 {
-                    if (evaluation.GetNumericVariable(varName) >= for_stack[for_stack_ptr - 1].to)
+                    if (evaluator.GetNumericVariable(varName) >= forStack[forStackPointer - 1].To)
                     {
-                        tokenizer.GotoPosition(for_stack[for_stack_ptr - 1].pos_after_for);
+                        tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
                     }
                     else
                     {
-                        for_stack_ptr--;
+                        forStackPointer--;
                     }
                 }
             }
             else
             {
-                Err("non-matching next (expected " + for_stack[for_stack_ptr - 1].for_variable + ", found " + Convert.ToString(var) + ")\n");
+                Err("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
             }
 
-            Debug("next_statement: Exit");
+            Trace.TraceInformation("Out NextStatement()");
         }
 
-        private void for_statement()
+        /// <summary>
+        /// FOR
+        /// </summary>
+        private void ForStatement()
         {
-            string varName = "";
-            double to = 0;
-            double from = 0;
             double step = 1;
 
-            Debug("for_statement: Enter");
+            Trace.TraceInformation("In ForStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FOR);
-            varName = tokenizer.GetNumericVariable();
+            string varName = tokenizer.GetNumericVariable();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-            evaluation.Expression();
-            from = evaluation.PopDouble();
-            evaluation.SetNumericVariable(varName, from);
+            evaluator.Expression();
+            double from = evaluator.PopDouble();
+            evaluator.SetNumericVariable(varName, from);
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TO);
-            evaluation.Expression();
-            to = evaluation.PopDouble();
+            evaluator.Expression();
+            double to = evaluator.PopDouble();
 
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STEP)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STEP);
-                evaluation.Expression();
-                step = evaluation.PopDouble();
+                evaluator.Expression();
+                step = evaluator.PopDouble();
             }
 
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR)
             {
-                if (for_stack_ptr < MAX_FOR_STACK_DEPTH)
+                if (forStackPointer < MAX_FOR_STACK_DEPTH)
                 {
-                    for_stack[for_stack_ptr].pos_after_for = tokenizer.GetPosition();
-                    for_stack[for_stack_ptr].for_variable = varName;
-                    for_stack[for_stack_ptr].to = to;
-                    for_stack[for_stack_ptr].step = step;
-                    Debug("for_statement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
-                    for_stack_ptr++;
+                    // nasty effect where a goto bypasses the next.
+                    // option is to check if the variable already exists and re-sue
+
+                    for (int i=0; i < MAX_FOR_STACK_DEPTH; i++)
+                    {
+                        if (forStack[i].ForVariable == varName)
+                        {
+                            forStackPointer = i;
+                            break;
+                        }
+                    }
+
+                    forStack[forStackPointer].PositionAfterFor = tokenizer.GetPosition();
+                    forStack[forStackPointer].ForVariable = varName;
+                    forStack[forStackPointer].From = from;
+                    forStack[forStackPointer].To = to;
+                    forStack[forStackPointer].Step = step;
+                    Debug("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
+                    Info("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
+                    forStackPointer++;
                 }
                 else
                 {
-                    Err("for_statement: for stack depth exceeded");
+                    Err("ForStatement: for stack depth exceeded");
                 }
             }
             else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
             {
-                if (for_stack_ptr < MAX_FOR_STACK_DEPTH)
+                if (forStackPointer < MAX_FOR_STACK_DEPTH)
                 {
-                    for_stack[for_stack_ptr].pos_after_for = tokenizer.GetPosition();
-                    for_stack[for_stack_ptr].for_variable = varName;
-                    for_stack[for_stack_ptr].to = to;
-                    for_stack[for_stack_ptr].step = step;
-                    Debug("for_statement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
-                    for_stack_ptr++;
+
+                    for (int i = 0; i < MAX_FOR_STACK_DEPTH; i++)
+                    {
+                        if (forStack[i].ForVariable == varName)
+                        {
+                            forStackPointer = i;
+                            break;
+                        }
+                    }
+
+                    forStack[forStackPointer].PositionAfterFor = tokenizer.GetPosition();
+                    forStack[forStackPointer].ForVariable = varName;
+                    forStack[forStackPointer].From = from;
+                    forStack[forStackPointer].To = to;
+                    forStack[forStackPointer].Step = step;
+                    Debug("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
+                    Info("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
+                    forStackPointer++;
                 }
                 else
                 {
-                    Err("for_statement: for stack depth exceeded");
+                    Err("ForStatement: for stack depth exceeded");
                 }
             }
-            Debug("for_statement: Exit");
+            Trace.TraceInformation("Out ForStatement()");
         }
 
-        private void end_statement()
+        /// <summary>
+        /// END
+        /// </summary>
+        private void EndStatement()
         {
-            Debug("end_statement: Enter");
+            Trace.TraceInformation("In EndStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_END);
+            Info("END");
             ended = true;
-            Debug("end_statement: Exit");
+            Trace.TraceInformation("Out EndStatement()");
         }
 
-        private void stop_statement()
+        /// <summary>
+        /// STOP
+        /// </summary>
+        private void StopStatement()
         {
+            Trace.TraceInformation("In StopStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STOP);
+            Info("STOP");
             ended = true;
+            Trace.TraceInformation("Out StopStatement()");
         }
 
-        private void read_statement()
+        /// <summary>
+        /// READ
+        /// </summary>
+        private void ReadStatement()
         {
             string varName;
             int integer;
             double number;
             string value;
-            bool read = false;
             int dimensions = 0;
             int[] dimension = new int[10]; // 10 dimensional array limit !!!
 
@@ -1446,10 +1699,11 @@ namespace Basic
             // READ A{COMMA}B{CR}
             // READ A{COMMA}B{COLON}
 
-            Debug("read_statement: Enter");
+            Trace.TraceInformation("In ReadStatement()");
 
             do
             {
+                bool read;
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE)
                 {
                     varName = tokenizer.GetNumericVariable();
@@ -1459,7 +1713,7 @@ namespace Basic
 
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1468,15 +1722,17 @@ namespace Basic
                         else
                         {
                             number = Convert.ToDouble(data.Dequeue());
-                            evaluation.SetNumericVariable(varName, number);
-                            Debug("read_statement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                            evaluator.SetNumericVariable(varName, number);
+                            Debug("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                            Info("READ " + Convert.ToString(varName) + "=" + number);
                         }
                     }
                     else
                     {
                         number = Convert.ToDouble(data.Dequeue());
-                        evaluation.SetNumericVariable(varName, number);
-                        Debug("read_statement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                        evaluator.SetNumericVariable(varName, number);
+                        Debug("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                        Info("READ " + Convert.ToString(varName) + "=" + number);
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
@@ -1488,7 +1744,7 @@ namespace Basic
 
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1497,22 +1753,24 @@ namespace Basic
                         else
                         {
                             value = Convert.ToString(data.Dequeue());
-                            evaluation.SetStringVariable(varName, value);
-                            Debug("read_statement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                            evaluator.SetStringVariable(varName, value);
+                            Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                            Info("READ " + Convert.ToString(varName) + "$=" + value);
                         }
                     }
                     else
                     {
                         value = Convert.ToString(data.Dequeue());
-                        evaluation.SetStringVariable(varName, value);
-                        Debug("read_statement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                        evaluator.SetStringVariable(varName, value);
+                        Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                        Info("READ " + Convert.ToString(varName) + "$=" + value);
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1531,25 +1789,26 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
-                            dimensions = dimensions + 1;
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
+                            dimensions++;
                             dimension[dimensions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
-                    
+
                     number = Convert.ToDouble(data.Dequeue());
-                    evaluation.SetNumericArrayVariable(varName, dimensions, dimension, number);
-                    Debug("read_statement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
+                    evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
+                    Debug("ReadStatement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
+                    Info("READ " + Convert.ToString(varName) + "()=" + number);
 
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
                     if (data.Count == 0)
                     {
-                        read = read_data(dataPos);
+                        read = ReadData(dataPos);
                         if (read == false)
                         {
                             ended = true;
@@ -1568,9 +1827,9 @@ namespace Basic
                         }
                         else
                         {
-                            evaluation.Expression();
-                            integer = (int)Math.Truncate(evaluation.PopDouble());
-                            dimensions = dimensions + 1;
+                            evaluator.Expression();
+                            integer = (int)Math.Truncate(evaluator.PopDouble());
+                            dimensions++;
                             dimension[dimensions] = integer;
                         }
                     }
@@ -1578,24 +1837,29 @@ namespace Basic
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
 
                     value = Convert.ToString(data.Dequeue());
-                    evaluation.SetStringArrayVariable(varName, dimensions, dimension, value);
-                    Debug("read_statement: assign " + value + " to array variable " + Convert.ToString(varName) + "(");
+                    evaluator.SetStringArrayVariable(varName, dimensions, dimension, value);
+                    Debug("ReadStatement: assign " + value + " to array variable " + Convert.ToString(varName) + "(");
+                    Info("READ " + Convert.ToString(varName) + "()=" + value);
 
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("read_statement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                Debug("ReadStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Debug("read_statement: Exit");
+           Trace.TraceInformation("Out ReadStatement()");
         }
 
         #endregion Statements
 
         private string FormatNumber(Double number)
         {
+            Trace.TraceInformation("In FormatNumber()");
+            char sign = ' ';
+
+
             // a number may contain upto 9 digits excuding the decimal point, and 1 digit for sign (+ve is space)
             // , so 11 total
             // it appears that the leading zero of a number is removed 
@@ -1606,9 +1870,7 @@ namespace Basic
             // {sign}{integer}{.}{decimal}{E}{sign}{exponent}
             //
 
-            string value = "";
-            char sign = ' ';
-
+            string value;
             // check if +/- integer
 
             if (Math.Truncate(number) == number)
@@ -1624,16 +1886,15 @@ namespace Basic
                     value = Math.Abs(number).ToString("0.##### E+0");
                 }
                 value = sign + value;
-                return (value);
             }
             else
             {
                 value = Convert.ToString(number);
-                if (value.Substring(0,1) == "-")
+                if (value.Substring(0, 1) == "-")
                 {
                     sign = '-';
                 }
-                if ((Math.Abs(number) < 0.1) && (value.Length > 6)) 
+                if ((Math.Abs(number) < 0.1) && (value.Length > 6))
                 {
                     value = Math.Abs(number).ToString("0.##### E+0");
                 }
@@ -1648,64 +1909,90 @@ namespace Basic
                         value = Math.Abs(number).ToString("0.#####");
                     }
                 }
-
                 value = sign + value;
-                return (value);
             }
+            Trace.TraceInformation("Out FormatNumber()");
+            return (value);
         }
 
-        //---------------------------------------------------------------------------------------------------------------------
-
         /// <summary>
-        /// UbasicRun()
+        /// Run()
         /// </summary>
         public void Run()
         {
+            Trace.TraceInformation("In Run()");
             if (tokenizer.IsFinished())
             {
-                Debug("ubasic program finished");
+                Debug("Program finished");
                 return;
             }
-            line_statement();
+            LineStatement();
+            Trace.TraceInformation("Out Run()");
         }
 
+        /// <summary>
+        /// Finished()
+        /// </summary>
+        /// <returns></returns>
         public bool Finished()
         {
-            return (ended || tokenizer.IsFinished());
+            Trace.TraceInformation("In Finished()");
+            bool finished = ended || tokenizer.IsFinished();
+            Trace.TraceInformation("Out Finished()");
+            return (finished);
         }
 
-        //--------------------------------------------------------------
-        // Report an Error
+        #endregion Methods
+        #region Private
 
-        private void Err(string s)
+        /// <summary>
+        /// Error level log to console
+        /// </summary>
+        /// <param name="text"></param>
+        private void Err(string text)
         {
-            consoleIO.Error("Error: " + s);
-            if (log.IsErrorEnabled == true) { log.Error(s); }
+            string message = text + " @ " + currentLineNumber;
+            consoleIO.Error(message + "\n");
+            if (log.IsErrorEnabled == true) { log.Error(message); }
         }
 
-        //--------------------------------------------------------------
-        // Report Error and Halt
-
-        public void Abort(string s)
+        /// <summary>
+        /// Raise exception
+        /// </summary>
+        /// <param name="text"></param>
+        public void Abort(string text)
         {
-            Err(s);
-            throw new Exception(s);
+            string message = text + " @ " + currentLineNumber;
+            throw new Exception(message);
         }
 
-        //--------------------------------------------------------------
-        // Debug
-
-        private void Debug(string s)
+        /// <summary>
+        /// Debug level log
+        /// </summary>
+        /// <param name="text"></param>
+        private void Debug(string text)
         {
-            if (log.IsDebugEnabled == true) { log.Debug(s); }
+            log.Debug(text);
         }
 
+        /// <summary>
+        /// Info level log
+        /// </summary>
+        /// <param name="text"></param>
+        void Info(string text)
+        {
+            log.Info(text);
+        }
+
+        /// <summary>
+        /// Output data
+        /// </summary>
+        /// <param name="s"></param>
         private void Emit(string s)
         {
             consoleIO.Out(s);
         }
 
-        #endregion Methods
-
+        #endregion
     }
 }

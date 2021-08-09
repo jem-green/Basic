@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head runat="server">
-        <title>uBasic - Orbit</title>
+        <title>uBasic - WUmpus</title>
         <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet"/>
         <link href="uBasic.css" rel="stylesheet" />
 

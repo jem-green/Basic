@@ -31,14 +31,13 @@
 using System;
 using log4net;
 using System.Collections.Generic;
-using uBasicLibrary;
 using System.Diagnostics;
 
 namespace Altair
 {
-    public class Tokenizer // : ITokenizer
+    public class Tokenizer
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -68,20 +67,15 @@ namespace Altair
             TOKENIZER_ON,
             TOKENIZER_OPTION,
             TOKENIZER_PRINT,
-            //TOKENIZER_RANDOMISE,
             TOKENIZER_RESTORE,
             TOKENIZER_READ,
             TOKENIZER_REM,
             TOKENIZER_TAB,
-            TOKENIZER_ELSE,
             TOKENIZER_FOR,
             TOKENIZER_TO,
             TOKENIZER_NEXT,
             TOKENIZER_THEN,
             TOKENIZER_RETURN,
-            TOKENIZER_CALL,
-            TOKENIZER_PEEK,
-            TOKENIZER_POKE,
             TOKENIZER_END,
             TOKENIZER_STOP,
             TOKENIZER_COMMA,
@@ -178,7 +172,6 @@ namespace Altair
                 new  TokenKeyword("print", Token.TOKENIZER_PRINT),
                 new  TokenKeyword("if", Token.TOKENIZER_IF),
                 new  TokenKeyword("then", Token.TOKENIZER_THEN),
-                new  TokenKeyword("else", Token.TOKENIZER_ELSE),
                 new  TokenKeyword("for", Token.TOKENIZER_FOR),
                 new  TokenKeyword("to", Token.TOKENIZER_TO),
                 new  TokenKeyword("step", Token.TOKENIZER_STEP),
@@ -187,10 +180,7 @@ namespace Altair
                 new  TokenKeyword("go to", Token.TOKENIZER_GOTO),
                 new  TokenKeyword("gosub", Token.TOKENIZER_GOSUB),
                 new  TokenKeyword("return", Token.TOKENIZER_RETURN),
-                new  TokenKeyword("call", Token.TOKENIZER_CALL),
                 new  TokenKeyword("rem", Token.TOKENIZER_REM),
-                new  TokenKeyword("peek", Token.TOKENIZER_PEEK),
-                new  TokenKeyword("poke", Token.TOKENIZER_POKE),
                 new  TokenKeyword("end", Token.TOKENIZER_END),
                 new  TokenKeyword("tab", Token.TOKENIZER_TAB),
                 new  TokenKeyword("sqr", Token.TOKENIZER_SQR),

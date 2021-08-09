@@ -11,7 +11,7 @@ namespace uBasicForm
     /// </remarks>
     public class MruStripMenuInline : MruStripMenu
     {
-        #region Variables
+        #region Fields
 
         protected ToolStripMenuItem owningMenu;
         protected ToolStripMenuItem firstMenuItem;

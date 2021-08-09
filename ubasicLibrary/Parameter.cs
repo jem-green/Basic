@@ -8,7 +8,7 @@ namespace uBasicLibrary
 {
     public class Parameter
     {
-        #region Variables
+        #region Fields
 
         string value = "";
         SourceType source = SourceType.None;

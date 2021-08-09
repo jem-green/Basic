@@ -31,14 +31,13 @@
 using System;
 using log4net;
 using System.Collections.Generic;
-using uBasicLibrary;
 using System.Diagnostics;
 
 namespace Dartmouth4
 {
     public class Tokenizer
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -68,20 +67,14 @@ namespace Dartmouth4
             TOKENIZER_ON,
             TOKENIZER_OPTION,
             TOKENIZER_PRINT,
-            //TOKENIZER_RANDOMISE,
-            TOKENIZER_RESTORE,
             TOKENIZER_READ,
             TOKENIZER_REM,
             TOKENIZER_TAB,
-            TOKENIZER_ELSE,
             TOKENIZER_FOR,
             TOKENIZER_TO,
             TOKENIZER_NEXT,
             TOKENIZER_THEN,
             TOKENIZER_RETURN,
-            TOKENIZER_CALL,
-            TOKENIZER_PEEK,
-            TOKENIZER_POKE,
             TOKENIZER_END,
             TOKENIZER_STOP,
             TOKENIZER_COMMA,
@@ -118,6 +111,7 @@ namespace Dartmouth4
             TOKENIZER_RND,
             TOKENIZER_ABS,
             TOKENIZER_ATN,
+			TOKENIZER_COT,
             TOKENIZER_EXP,
             TOKENIZER_LOG,
             TOKENIZER_RANDOMIZE
@@ -139,6 +133,7 @@ namespace Dartmouth4
                 this.keyword = keyword;
                 this.token = token;
             }
+
             public string Keyword { get { return keyword; } }
             public Token Token { get { return token; } }
         }
@@ -161,7 +156,6 @@ namespace Dartmouth4
                 new  TokenKeyword("print", Token.TOKENIZER_PRINT),
                 new  TokenKeyword("if", Token.TOKENIZER_IF),
                 new  TokenKeyword("then", Token.TOKENIZER_THEN),
-                new  TokenKeyword("else", Token.TOKENIZER_ELSE),
                 new  TokenKeyword("for", Token.TOKENIZER_FOR),
                 new  TokenKeyword("to", Token.TOKENIZER_TO),
                 new  TokenKeyword("step", Token.TOKENIZER_STEP),
@@ -170,10 +164,7 @@ namespace Dartmouth4
                 new  TokenKeyword("go to", Token.TOKENIZER_GOTO),
                 new  TokenKeyword("gosub", Token.TOKENIZER_GOSUB),
                 new  TokenKeyword("return", Token.TOKENIZER_RETURN),
-                new  TokenKeyword("call", Token.TOKENIZER_CALL),
                 new  TokenKeyword("rem", Token.TOKENIZER_REM),
-                new  TokenKeyword("peek", Token.TOKENIZER_PEEK),
-                new  TokenKeyword("poke", Token.TOKENIZER_POKE),
                 new  TokenKeyword("end", Token.TOKENIZER_END),
                 new  TokenKeyword("tab", Token.TOKENIZER_TAB),
                 new  TokenKeyword("sqr", Token.TOKENIZER_SQR),
@@ -192,7 +183,7 @@ namespace Dartmouth4
                 new  TokenKeyword("atn", Token.TOKENIZER_ATN),
                 new  TokenKeyword("exp", Token.TOKENIZER_EXP),
                 new  TokenKeyword("log", Token.TOKENIZER_LOG),
-                new  TokenKeyword("restore", Token.TOKENIZER_RESTORE),
+                new  TokenKeyword("cot", Token.TOKENIZER_COT),
                 new  TokenKeyword("on", Token.TOKENIZER_ON),
                 new  TokenKeyword("randomize", Token.TOKENIZER_RANDOMIZE),
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
@@ -202,7 +193,6 @@ namespace Dartmouth4
         }
 
         #endregion
-
         #region Methods
 
         public void AcceptToken(Token token)
@@ -621,11 +611,14 @@ namespace Dartmouth4
             {
                 value += c;
             }
+            Trace.TraceInformation("Out GetNumericVariable()");
             return (value);
         }
 
         public string GetNumericArrayVariable()
         {
+            Trace.TraceInformation("In GetNumericArrayVariable()");
+
             // Numeric array variables are single digit
 
             string value = "";
@@ -637,11 +630,14 @@ namespace Dartmouth4
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
+            Trace.TraceInformation("Out GetNumericArrayVariable()");
             return (value);
         }
 
         public string GetStringArrayVariable()
         {
+            Trace.TraceInformation("In GetStringArrayVariable()");
+
             // String array variables are single digit
 
             string value = "";
@@ -653,11 +649,15 @@ namespace Dartmouth4
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
+            Trace.TraceInformation("Out GetStringArrayVariable()");
+
             return (value);
         }
 
         public string GetStringVariable()
         {
+            Trace.TraceInformation("In GetStringVariable()");
+
             string value = "";
             char c;
 
@@ -673,6 +673,9 @@ namespace Dartmouth4
             {
                 value += c;
             }
+
+            Trace.TraceInformation("Out GetStringVariable()");
+
             return (value);
         }
 
@@ -681,6 +684,9 @@ namespace Dartmouth4
             Trace.TraceInformation("In GetPosition()");
             return ptr;
         }
+
+        #endregion
+        #region Private
 
         //--------------------------------------------------------------
         // Recognize a Numeric Digit 
@@ -697,9 +703,6 @@ namespace Dartmouth4
         {
             return (Char.IsDigit(check) || (check == '.'));
         }
-
-        #endregion
-        #region Private
 
         //--------------------------------------------------------------
         // Debug

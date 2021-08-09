@@ -12,7 +12,7 @@ namespace Dartmouth3
 {
     public class Evaluator
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -26,10 +26,8 @@ namespace Dartmouth3
 
         const int MAX_VARNUM = 26;
         readonly int[] variables = new int[MAX_VARNUM];
-        readonly Hashtable stringVariables;
         readonly Hashtable numericVariables;
         readonly Hashtable numericArrayVariables;
-        readonly Hashtable stringArrayVariables;
 
         // functions
 
@@ -62,10 +60,8 @@ namespace Dartmouth3
         {
             stack = new Stack<object>();
             this.tokenizer = tokenizer;
-            stringVariables = new Hashtable();
             numericVariables = new Hashtable();
             numericArrayVariables = new Hashtable();
-            stringArrayVariables = new Hashtable();
             functions = new FunctionIndex[MAX_FUNCTIONS];
         }
 
@@ -489,14 +485,6 @@ namespace Dartmouth3
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                         break;
                     }
-                case Tokenizer.Token.TOKENIZER_STRING_VARIABLE:
-                    {
-                        f = GetStringVariable(tokenizer.GetStringVariable());
-                        Debug("Factor: string variable '" + Convert.ToString(f) + "'");
-                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
-                        stack.Push(f);
-                        break;
-                    }
                 case Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE:
                     {
                         f = GetNumericVariable(tokenizer.GetNumericVariable());
@@ -536,42 +524,7 @@ namespace Dartmouth3
                         Debug("Factor: numeric array " + Convert.ToString(f));
                         stack.Push(f);
                         break;
-
                     }
-
-                case Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE:
-                    {
-                        int numeric;
-                        int dimension = 0;
-                        int[] dimensions = new int[10];
-                        varName = tokenizer.GetNumericArrayVariable();
-
-                        dimensions[0] = 0;
-                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);
-                        do
-                        {
-                            if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
-                            {
-                                tokenizer.NextToken();
-                            }
-                            else
-                            {
-                                Expression();
-                                numeric = (int)Math.Truncate(PopDouble());
-                                dimension++;
-                                dimensions[dimension] = numeric;
-                            }
-                        }
-                        while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
-                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
-
-                        f = GetStringArrayVariable(varName, dimension, dimensions);
-                        Debug("Factor: string array " + Convert.ToString(f));
-                        stack.Push(f);
-                        break;
-
-                    }
-
                 default:
                     {
                         num = tokenizer.GetIntegerVariable();
@@ -845,178 +798,6 @@ namespace Dartmouth3
             Trace.TraceInformation("Out Log()");
         }
 
-        //---------------------------------------------------------------}
-        // ASC Top of Stack with Primary
-        private void Asc()
-        {
-            object first;
-            double number = 0;
-            Trace.TraceInformation("In Asc()");
-
-            if (stack.Count > 0)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    // only expecting a string
-                    Expected("Double");
-                }
-                else
-                {
-                    string text = Convert.ToString(first);
-                    if (text.Length > 0)
-                    {
-                        byte[] asciiBytes = Encoding.ASCII.GetBytes(text);
-                        number = (double)asciiBytes[0];
-                    }
-                    stack.Push(number);
-                }
-            }
-            Trace.TraceInformation("Out Asc()");
-        }
-
-        //---------------------------------------------------------------}
-        // LEN Top of Stack 
-
-        private void Len()
-        {
-            object first;
-            Trace.TraceInformation("In Len()");
-
-            if (stack.Count > 0)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    // only expecting a string
-                    Expected("string");
-                }
-                else
-                {
-                    double number = first.ToString().Length;
-                    stack.Push(number);
-                }
-            }
-            Trace.TraceInformation("Out Len()");
-        }
-
-        //---------------------------------------------------------------}
-        // LEFT$ Top of Stack
-        // 1 - length -> first
-        // 0 - string -> second
-
-        private void Left()
-        {
-            object first;
-            object second;
-            string value;
-            int length;
-
-            Trace.TraceInformation("In Left()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() == typeof(string))
-                        {
-                            length = (int)Math.Truncate(Convert.ToDouble(first));
-                            value = second.ToString();
-                            if (length < 1)
-                            {
-                                value = "";
-                                Debug("Left: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else if (length >= value.Length)
-                            {
-                                Debug("Left: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else
-                            {
-                                value = value.Substring(0, length);
-                                Info("LEFT(\"" + value + "\"," + length + ")");
-                                Debug("Left: '" + value + "'");
-                                stack.Push(value);
-                            }
-                        }
-                        else
-                        {
-                            Expected("string");
-                        }
-                    }
-                }
-                else
-                {
-                    Expected("double");
-                }
-            }
-            Trace.TraceInformation("Out Left()");
-        }
-
-        //---------------------------------------------------------------}
-        // RIGHT$ Top of Stack with Primary
-        // 1 - length -> first
-        // 0 - string -> second
-
-        private void Right()
-        {
-            object first;
-            object second;
-            string value;
-            int length;
-            Trace.TraceInformation("In Right()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() == typeof(string))
-                        {
-                            length = (int)Math.Truncate(Convert.ToDouble(first));
-                            value = second.ToString();
-                            if (length < 1)
-                            {
-                                value = "";
-                                Debug("Right: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else if (length >= value.Length)
-                            {
-                                Debug("Right: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else
-                            {
-                                value = value.Substring(value.Length - length, length);
-                                Info("RIGHT(\"" + value + "\"," + length + ")");
-                                Debug("Right: '" + value + "'");
-                                stack.Push(value);
-                            }
-                        }
-                        else
-                        {
-                            Expected("string");
-                        }
-                    }
-                }
-                else
-                {
-                    Expected("double");
-                }
-            }
-            Trace.TraceInformation("Out Right()");
-        }
-
         #endregion functions
         #region Relation        
 
@@ -1192,7 +973,10 @@ namespace Dartmouth3
                             stack.Push(truth);
                         }
                     }
-
+                }
+                else if (first.GetType() == typeof(bool))
+                {
+                    Expected("boolean");
                 }
                 else
                 {
@@ -1478,34 +1262,7 @@ namespace Dartmouth3
 			Trace.TraceInformation("Out PopInteger()");
             return (integer);
         }
-
-        //---------------------------------------------------------------}
-        // STRING Top of Stack with Primary
-
-        public String PopString()
-        {
-            object first;
-            string value = "";
-			
-			Trace.TraceInformation("In PopString()");
-
-            if (stack.Count > 0)
-            {
-                first = stack.Pop();
-                if ((first.GetType() == typeof(Boolean)) || (first.GetType() == typeof(double)) || (first.GetType() == typeof(int)))
-                {
-                    // only expecting an integer or double
-                    Expected("string");
-                }
-                else
-                {
-                    value = (string)first;
-                }
-				Debug("PopString: " + value);
-            }
-            Trace.TraceInformation("Out PopString()");
-            return (value);
-        }
+      
 
         //---------------------------------------------------------------}
         // pop OBJECT Top of Stack
@@ -1527,7 +1284,6 @@ namespace Dartmouth3
 
         //---------------------------------------------------------------}
         // ADD Top of Stack with Primary
-
         void Add()
         {
             object first;
@@ -1596,7 +1352,7 @@ namespace Dartmouth3
                 if (first.GetType() == typeof(string))
                 {
                     // only expecting an int or double
-                    Expected("Int");
+                    Expected("double");
                 }
                 else
                 {
@@ -1699,84 +1455,9 @@ namespace Dartmouth3
             }
             Trace.TraceInformation("Out Divide()");
         }
-
-        //---------------------------------------------------------------} 
-        // AND Top of Stack with Primary
-        void And()
-        {
-            object first;
-            object second;
-
-            Trace.TraceInformation("In And()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
-                {
-                    // only expecting a boolean
-                    Expected("boolean");
-                }
-                else
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
-                        {
-                            // only expecting a boolean
-                            Expected("boolean");
-                        }
-                        else
-                        {
-                            stack.Push((Boolean)first && (Boolean)second);
-                        }
-                    }
-                }
-            }
-            Trace.TraceInformation("Out And()");
-        }
-
-        //---------------------------------------------------------------} 
-        // OR Top of Stack with Primary
-        void Or()
-        {
-            object first;
-            object second;
-
-            Trace.TraceInformation("In Or()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
-                {
-                    // only expecting a boolean
-                    Expected("boolean");
-                }
-                else
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
-                        {
-                            // only expecting a boolean
-                            Expected("boolean");
-                        }
-                        else
-                        {
-                            stack.Push((Boolean)first || (Boolean)second);
-                        }
-                    }
-                }
-            }
-            Trace.TraceInformation("Out Or()");
-        }
-
+      
         //---------------------------------------------------------------}
         // POWER Top of Stack with Primary
-
         private void Power()
         {
             object first;
@@ -1834,27 +1515,7 @@ namespace Dartmouth3
             return (integer);
         }
 
-        public string GetStringVariable(string varName)
-        {
-            Trace.TraceInformation("In GetStringVariable()");
-
-            // Not sure what happens if the variable doesnt exit
-            // think this should error but wonder what the specification says
-
-            string value;
-            if (stringVariables.ContainsKey(varName))
-            {
-                value = (string)stringVariables[varName];
-            }
-            else
-            {
-                value = "";
-            }
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("Out GetStringVariable()");
-            return (value);
-        }
-
+      
         public double GetNumericVariable(string varName)
         {
             double number;
@@ -1892,26 +1553,7 @@ namespace Dartmouth3
             return (number);
         }
 
-        public string GetStringArrayVariable(string varName, int positions, int[] position)
-        {
-            Trace.TraceInformation("In GetStringArrayVariable()");
-
-            uBasicLibrary.Array data;
-            string value;
-            if (stringArrayVariables.ContainsKey(varName))
-            {
-                data = (uBasicLibrary.Array)stringArrayVariables[varName];
-                value = (string)data.Get(position);
-            }
-            else
-            {
-                value = "";
-            }
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("In GetStringArrayVariable()");
-            return (value);
-        }
-
+        
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
             Trace.TraceInformation("In DeclareNumericArrayVariable()");
@@ -1925,18 +1567,7 @@ namespace Dartmouth3
             Trace.TraceInformation("In DeclareNumericArrayVariable()");
         }
 
-        public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
-        {
-            Trace.TraceInformation("In DeclareStringArrayVariable()");
-            uBasicLibrary.Array data;
-            if (stringArrayVariables.ContainsKey(varName))
-            {
-                Expected("Array already defined " + varName + "(");
-            }
-            data = new uBasicLibrary.Array(varName, dimensions, dimension, (string)"");
-            stringArrayVariables.Add(varName, data);
-            Trace.TraceInformation("Out DeclareStringArrayVariable()");
-        }
+        
 
         public void SetIntVariable(int varnum, int integer)
         {
@@ -1948,18 +1579,7 @@ namespace Dartmouth3
             Debug("varNum=" + varnum + " integer=" + integer);
             Trace.TraceInformation("Out SetIntVariable()");
         }
-
-        public void SetStringVariable(string varName, string value)
-        {
-            Trace.TraceInformation("In SetStringVariable()");
-            if (stringVariables.ContainsKey(varName))
-            {
-                stringVariables.Remove(varName);
-            }
-            stringVariables.Add(varName, value);
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("Out SetStringVariable()");
-        }
+     
 
         public void SetNumericVariable(string varName, double number)
         {
@@ -1990,25 +1610,7 @@ namespace Dartmouth3
             Debug("varName=" + varName + " number=" + number);
             Trace.TraceInformation("Out SetNumericArrayVariable()");
         }
-
-        public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
-        {
-            Trace.TraceInformation("In SetStringArrayVariable()");
-            uBasicLibrary.Array data;
-            if (!stringArrayVariables.ContainsKey(varName))
-            {
-                // it apperas that if no DIM then defaults to 10 items
-                int[] dimension = new int[10];
-                dimension[0] = 1;
-                DeclareStringArrayVariable(varName, positions, dimension);
-            }
-            data = (uBasicLibrary.Array)stringArrayVariables[varName];
-            data.Set(position, value);
-
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("Out SetStringArrayVariable()");
-        }
-
+        
         #endregion
         #region Private
 

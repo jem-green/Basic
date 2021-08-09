@@ -7,7 +7,7 @@ namespace uBasicLibrary
 {
     public class TextEventArgs : EventArgs
     {
-        #region Variables
+        #region Fields
         private string text = "";
         #endregion
         #region Constructor

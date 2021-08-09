@@ -12,7 +12,7 @@ namespace Dartmouth5
 {
     public class Evaluator
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -1192,7 +1192,10 @@ namespace Dartmouth5
                             stack.Push(truth);
                         }
                     }
-
+                }
+                else if (first.GetType() == typeof(bool))
+                {
+                    Expected("boolean");
                 }
                 else
                 {
@@ -1698,84 +1701,9 @@ namespace Dartmouth5
             }
             Trace.TraceInformation("Out Divide()");
         }
-
-        //---------------------------------------------------------------} 
-        // AND Top of Stack with Primary
-        void And()
-        {
-            object first;
-            object second;
-
-            Trace.TraceInformation("In And()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
-                {
-                    // only expecting a boolean
-                    Expected("boolean");
-                }
-                else
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
-                        {
-                            // only expecting a boolean
-                            Expected("boolean");
-                        }
-                        else
-                        {
-                            stack.Push((Boolean)first && (Boolean)second);
-                        }
-                    }
-                }
-            }
-            Trace.TraceInformation("Out And()");
-        }
-
-        //---------------------------------------------------------------} 
-        // OR Top of Stack with Primary
-        void Or()
-        {
-            object first;
-            object second;
-
-            Trace.TraceInformation("In Or()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
-                {
-                    // only expecting a boolean
-                    Expected("boolean");
-                }
-                else
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
-                        {
-                            // only expecting a boolean
-                            Expected("boolean");
-                        }
-                        else
-                        {
-                            stack.Push((Boolean)first || (Boolean)second);
-                        }
-                    }
-                }
-            }
-            Trace.TraceInformation("Out Or()");
-        }
-
+      
         //---------------------------------------------------------------}
         // POWER Top of Stack with Primary
-
         private void Power()
         {
             object first;

@@ -42,7 +42,7 @@ namespace Altair
     /// </summary>
     public class Interpreter : IInterpreter
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         readonly IConsoleIO consoleIO;
@@ -582,7 +582,7 @@ namespace Altair
         /// <summary>
         /// GOTO
         /// </summary>
-        private Boolean GotoStatement()
+        private bool GotoStatement()
         {
             Trace.TraceInformation("In GotoStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
@@ -797,19 +797,10 @@ namespace Altair
                         jump = false;
                     }
                 }
-                else
-                {
-                    do
-                    {
-                        tokenizer.NextToken();
-                    }
-                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.IsFinished() == false));
-                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
-                    {
-                        tokenizer.NextToken();
-                        jump = Statement();
-                    }
-                }
+                //else if(Tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
+                //{
+                //    Tokenizer_next();
+                //}
             }
             else if (token == Tokenizer.Token.TOKENIZER_THEN)
             {
@@ -834,20 +825,13 @@ namespace Altair
                 }
                 else
                 {
-                    do
-                    {
-                        tokenizer.NextToken();
-                    }
-                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.IsFinished() == false));
-                    if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
-                    {
-                        tokenizer.NextToken();
-                        jump = Statement();
-                    }
-                    //else if(Tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
-                    //{
-                    //    Tokenizer_next();
-                    //}
+                do
+                {
+                    tokenizer.NextToken();
+                }
+				// Wonder if this should inlcude separator
+                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
+
                 }
             }
             else
@@ -1922,7 +1906,7 @@ namespace Altair
             Trace.TraceInformation("In Run()");
             if (tokenizer.IsFinished())
             {
-                Trace.TraceInformation("In Program finished");
+                Debug("Program finished");
                 return;
             }
             LineStatement();

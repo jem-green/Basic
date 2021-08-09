@@ -24,7 +24,7 @@ namespace uBasicWeb
         }
 
         #endregion
-        #region Variables
+        #region Fields
 
         // Formatting constraints
 

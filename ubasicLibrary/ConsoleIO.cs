@@ -10,7 +10,7 @@ namespace ubasicLibrary
     {
         // Printing constraints
 
-        #region Variables
+        #region Fields
 
         int consoleWidth = 75;
         int zoneWidth = 15;

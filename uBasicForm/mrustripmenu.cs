@@ -20,7 +20,7 @@ namespace uBasicForm
 	/// The displayed numbers, however, will start with one.</para></remarks>
 	public class MruStripMenu
 	{
-        #region Variables
+        #region Fields
 
         private ClickedHandler    clickedHandler;
 		protected ToolStripMenuItem recentFileMenuItem;

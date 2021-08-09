@@ -12,7 +12,7 @@ namespace Dartmouth4
 {
     public class Evaluator
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -383,6 +383,15 @@ namespace Dartmouth4
                         Expression();
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                         Atn();
+                        break;
+                    }
+                case Tokenizer.Token.TOKENIZER_COT:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COT);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        Expression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        Cot();
                         break;
                     }
                 case Tokenizer.Token.TOKENIZER_COS:
@@ -798,6 +807,29 @@ namespace Dartmouth4
             }
             Trace.TraceInformation("Out Atn()");
         }
+		
+		//---------------------------------------------------------------}
+        // COT Top of Stack with Primary
+        private void Cot()
+        {
+            object first;
+            Trace.TraceInformation("In Cot()");
+
+            if (stack.Count > 0)
+            {
+                first = stack.Pop();
+                if (first.GetType() == typeof(string))
+                {
+                    // only expecting an integer or double
+                    Expected("double");
+                }
+                else
+                {
+                    stack.Push(1 /Math.Tan((double)first));
+                }
+            }
+            Trace.TraceInformation("Out Cot()");
+        }
 
         //---------------------------------------------------------------}
         // ATN Top of Stack with Primary
@@ -843,178 +875,6 @@ namespace Dartmouth4
                 }
             }
             Trace.TraceInformation("Out Log()");
-        }
-
-        //---------------------------------------------------------------}
-        // ASC Top of Stack with Primary
-        private void Asc()
-        {
-            object first;
-            double number = 0;
-            Trace.TraceInformation("In Asc()");
-
-            if (stack.Count > 0)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    // only expecting a string
-                    Expected("Double");
-                }
-                else
-                {
-                    string text = Convert.ToString(first);
-                    if (text.Length > 0)
-                    {
-                        byte[] asciiBytes = Encoding.ASCII.GetBytes(text);
-                        number = (double)asciiBytes[0];
-                    }
-                    stack.Push(number);
-                }
-            }
-            Trace.TraceInformation("Out Asc()");
-        }
-
-        //---------------------------------------------------------------}
-        // LEN Top of Stack 
-
-        private void Len()
-        {
-            object first;
-            Trace.TraceInformation("In Len()");
-
-            if (stack.Count > 0)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    // only expecting a string
-                    Expected("string");
-                }
-                else
-                {
-                    double number = first.ToString().Length;
-                    stack.Push(number);
-                }
-            }
-            Trace.TraceInformation("Out Len()");
-        }
-
-        //---------------------------------------------------------------}
-        // LEFT$ Top of Stack
-        // 1 - length -> first
-        // 0 - string -> second
-
-        private void Left()
-        {
-            object first;
-            object second;
-            string value;
-            int length;
-
-            Trace.TraceInformation("In Left()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() == typeof(string))
-                        {
-                            length = (int)Math.Truncate(Convert.ToDouble(first));
-                            value = second.ToString();
-                            if (length < 1)
-                            {
-                                value = "";
-                                Debug("Left: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else if (length >= value.Length)
-                            {
-                                Debug("Left: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else
-                            {
-                                value = value.Substring(0, length);
-                                Info("LEFT(\"" + value + "\"," + length + ")");
-                                Debug("Left: '" + value + "'");
-                                stack.Push(value);
-                            }
-                        }
-                        else
-                        {
-                            Expected("string");
-                        }
-                    }
-                }
-                else
-                {
-                    Expected("double");
-                }
-            }
-            Trace.TraceInformation("Out Left()");
-        }
-
-        //---------------------------------------------------------------}
-        // RIGHT$ Top of Stack with Primary
-        // 1 - length -> first
-        // 0 - string -> second
-
-        private void Right()
-        {
-            object first;
-            object second;
-            string value;
-            int length;
-            Trace.TraceInformation("In Right()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(string))
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() == typeof(string))
-                        {
-                            length = (int)Math.Truncate(Convert.ToDouble(first));
-                            value = second.ToString();
-                            if (length < 1)
-                            {
-                                value = "";
-                                Debug("Right: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else if (length >= value.Length)
-                            {
-                                Debug("Right: '" + value + "'");
-                                stack.Push(value);
-                            }
-                            else
-                            {
-                                value = value.Substring(value.Length - length, length);
-                                Info("RIGHT(\"" + value + "\"," + length + ")");
-                                Debug("Right: '" + value + "'");
-                                stack.Push(value);
-                            }
-                        }
-                        else
-                        {
-                            Expected("string");
-                        }
-                    }
-                }
-                else
-                {
-                    Expected("double");
-                }
-            }
-            Trace.TraceInformation("Out Right()");
         }
 
         #endregion functions
@@ -1192,7 +1052,10 @@ namespace Dartmouth4
                             stack.Push(truth);
                         }
                     }
-
+                }
+                else if (first.GetType() == typeof(bool))
+                {
+                    Expected("boolean");
                 }
                 else
                 {
@@ -1698,84 +1561,9 @@ namespace Dartmouth4
             }
             Trace.TraceInformation("Out Divide()");
         }
-
-        //---------------------------------------------------------------} 
-        // AND Top of Stack with Primary
-        void And()
-        {
-            object first;
-            object second;
-
-            Trace.TraceInformation("In And()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
-                {
-                    // only expecting a boolean
-                    Expected("boolean");
-                }
-                else
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
-                        {
-                            // only expecting a boolean
-                            Expected("boolean");
-                        }
-                        else
-                        {
-                            stack.Push((Boolean)first && (Boolean)second);
-                        }
-                    }
-                }
-            }
-            Trace.TraceInformation("Out And()");
-        }
-
-        //---------------------------------------------------------------} 
-        // OR Top of Stack with Primary
-        void Or()
-        {
-            object first;
-            object second;
-
-            Trace.TraceInformation("In Or()");
-
-            if (stack.Count > 1)
-            {
-                first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
-                {
-                    // only expecting a boolean
-                    Expected("boolean");
-                }
-                else
-                {
-                    if (stack.Count > 0)
-                    {
-                        second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
-                        {
-                            // only expecting a boolean
-                            Expected("boolean");
-                        }
-                        else
-                        {
-                            stack.Push((Boolean)first || (Boolean)second);
-                        }
-                    }
-                }
-            }
-            Trace.TraceInformation("Out Or()");
-        }
-
+      
         //---------------------------------------------------------------}
         // POWER Top of Stack with Primary
-
         private void Power()
         {
             object first;

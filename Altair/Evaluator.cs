@@ -10,13 +10,9 @@ namespace Altair
 {
     public class Evaluator
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        //protected System.IO.TextReader In = null;
-        //protected System.IO.TextWriter Out = null;
-        //protected System.IO.TextWriter Error = null;
 
         readonly Stack<object> stack;
 

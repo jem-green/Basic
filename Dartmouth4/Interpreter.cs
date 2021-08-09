@@ -43,7 +43,7 @@ namespace Dartmouth4
     /// </summary>
     public class Interpreter : IInterpreter
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         readonly IConsoleIO consoleIO;
@@ -51,15 +51,10 @@ namespace Dartmouth4
         int program_ptr;
         const int MAX_STRINGLEN = 40;
 
-        // Printing
-
-        const int ZONE_WIDTH = 15;
-        const int COMPACT_WIDTH = 3;
-
         // Gosub
 
         const int MAX_GOSUB_STACK_DEPTH = 10;
-        readonly int[] gosub_stack = new int[MAX_GOSUB_STACK_DEPTH];
+        readonly int[] gosubStack = new int[MAX_GOSUB_STACK_DEPTH];
         int gosubStackPointer;
 
         // for-next
@@ -416,18 +411,12 @@ namespace Dartmouth4
                 {
                     case Tokenizer.Token.TOKENIZER_INPUT:
                         {
-                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
                             InputStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DATA:
                         {
                             DataStatement();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_RESTORE:
-                        {
-                            RestoreStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_PRINT:
@@ -478,7 +467,6 @@ namespace Dartmouth4
                         }
                     case Tokenizer.Token.TOKENIZER_LET:
                         {
-                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
                             LetStatement();
                             break;
                         }
@@ -537,7 +525,7 @@ namespace Dartmouth4
                     inline = false;
                 }
             }
-            while (inline == true);
+            while ((inline == true) && (tokenizer.IsFinished() == false));
             nested--;
 
             Trace.TraceInformation("Out Statement()");
@@ -563,17 +551,6 @@ namespace Dartmouth4
            Trace.TraceInformation("In In DataStatement()");
             tokenizer.SkipTokens();
            Trace.TraceInformation("Out DataStatement()");
-        }
-
-        /// <summary>
-        /// RESTORE
-        /// </summary>
-        private void RestoreStatement()
-        {
-           Trace.TraceInformation("In RestoreStatement()");
-           tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RESTORE);
-           dataPos = 0;
-           Trace.TraceInformation("Out RestoreStatement()");
         }
 
         /// <summary>
@@ -729,6 +706,12 @@ namespace Dartmouth4
                         log.Info("PRINT " + value);
                         Emit(value);
                     }
+                    else if (data.GetType() == typeof(string))
+                    {
+                        value = data.ToString();
+                        log.Info("PRINT " + value);
+                        Emit(value);
+                    }
                     else if (data.GetType() == typeof(double))
                     {
                         number = Convert.ToDouble(data);
@@ -770,14 +753,17 @@ namespace Dartmouth4
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_IF);
             Info("IF");
             evaluator.Relation();
+            int lineNumber;
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
-            if (evaluator.PopBoolean())
+            if (evaluator.PopBoolean() == true)
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
                 {
-                    int lineNumber = tokenizer.GetInteger();
+			
+                    lineNumber = tokenizer.GetInteger();
+					Info("THEN " + lineNumber);
                     JumpLineNumber(lineNumber);
-                    //accept(Tokenizer.Token.TOKENIZER_NUMBER);
+
                     jump = false;
                 }
                 else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
@@ -795,18 +781,8 @@ namespace Dartmouth4
                 {
                     tokenizer.NextToken();
                 }
-                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
-                if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
-                {
-                    tokenizer.NextToken();
-                    Statement();
-                }
-                //else if(tokenizer.tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
-                //{
-                //    tokenizer.tokenizer_next();
-                //}
+                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
             }
-
             Trace.TraceInformation("Out IfStatement()");
             return (jump);
         }
@@ -901,7 +877,7 @@ namespace Dartmouth4
             // LET A=1{COMMA}B=2:
 
             Trace.TraceInformation("In LetStatement()");
-
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
             do
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE)
@@ -1023,6 +999,7 @@ namespace Dartmouth4
             // this means I need an input buffer that can be parsed.
 
             Trace.TraceInformation("In InputStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
 
             do
             {
@@ -1368,8 +1345,10 @@ namespace Dartmouth4
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
             if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
             {
-                gosub_stack[gosubStackPointer] = tokenizer.GetInteger();
+                gosubStack[gosubStackPointer] = tokenizer.GetInteger();
                 gosubStackPointer++;
+                Debug("GosubStatement: " + lineNumber);
+                Info("GOSUB " + lineNumber);
                 JumpLineNumber(lineNumber);
             }
             else
@@ -1379,6 +1358,9 @@ namespace Dartmouth4
             Trace.TraceInformation("Out GosubStatement()");
         }
 
+        /// <summary>
+        /// RETURN
+        /// </summary>
         private void ReturnStatement()
         {
             Trace.TraceInformation("In ReturnStatement()");
@@ -1386,7 +1368,9 @@ namespace Dartmouth4
             if (gosubStackPointer > 0)
             {
                 gosubStackPointer--;
-                JumpLineNumber(gosub_stack[gosubStackPointer]);
+                Debug("ReturnStatement: " + gosubStack[gosubStackPointer]);
+                Info("RETURN " + gosubStack[gosubStackPointer]);
+                JumpLineNumber(gosubStack[gosubStackPointer]);
             }
             else
             {
@@ -1809,7 +1793,7 @@ namespace Dartmouth4
             Trace.TraceInformation("In Run()");
             if (tokenizer.IsFinished())
             {
-                Trace.TraceInformation("In Program finished");
+                Debug("Program finished");
                 return;
             }
             LineStatement();

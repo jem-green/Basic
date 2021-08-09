@@ -31,12 +31,13 @@
 using System;
 using log4net;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dartmouth2
 {
     public class Tokenizer
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -50,10 +51,8 @@ namespace Dartmouth2
             TOKENIZER_NUMBER,
             TOKENIZER_STRING,
             TOKENIZER_INTERGER_VARIABLE,
-            TOKENIZER_STRING_VARIABLE,
             TOKENIZER_NUMERIC_VARIABLE,
             TOKENIZER_NUMERIC_ARRAY_VARIABLE,
-            TOKENIZER_STRING_ARRAY_VARIABLE,
             TOKENIZER_DATA,
             TOKENIZER_DEF,
             TOKENIZER_FN,
@@ -61,25 +60,15 @@ namespace Dartmouth2
             TOKENIZER_GOSUB,
             TOKENIZER_GOTO,
             TOKENIZER_IF,
-            TOKENIZER_INPUT,
             TOKENIZER_LET,
-            TOKENIZER_ON,
-            TOKENIZER_OPTION,
             TOKENIZER_PRINT,
-            //TOKENIZER_RANDOMISE,
-            TOKENIZER_RESTORE,
             TOKENIZER_READ,
             TOKENIZER_REM,
-            TOKENIZER_TAB,
-            TOKENIZER_ELSE,
             TOKENIZER_FOR,
             TOKENIZER_TO,
             TOKENIZER_NEXT,
             TOKENIZER_THEN,
             TOKENIZER_RETURN,
-            TOKENIZER_CALL,
-            TOKENIZER_PEEK,
-            TOKENIZER_POKE,
             TOKENIZER_END,
             TOKENIZER_STOP,
             TOKENIZER_COMMA,
@@ -118,8 +107,6 @@ namespace Dartmouth2
             TOKENIZER_ATN,
             TOKENIZER_EXP,
             TOKENIZER_LOG,
-            TOKENIZER_RANDOMIZE,
-
         };
 
         int ptr;
@@ -146,11 +133,11 @@ namespace Dartmouth2
         public readonly List<TokenKeyword> keywords;
 
         #endregion
-
         #region Constructors
 
         public Tokenizer(char[] program)
         {
+            Trace.TraceInformation("In Tokenizer()");
             //by default, read from/write to standard streams
 
             keywords = new List<TokenKeyword>(
@@ -161,7 +148,6 @@ namespace Dartmouth2
                 new  TokenKeyword("print", Token.TOKENIZER_PRINT),
                 new  TokenKeyword("if", Token.TOKENIZER_IF),
                 new  TokenKeyword("then", Token.TOKENIZER_THEN),
-                new  TokenKeyword("else", Token.TOKENIZER_ELSE),
                 new  TokenKeyword("for", Token.TOKENIZER_FOR),
                 new  TokenKeyword("to", Token.TOKENIZER_TO),
                 new  TokenKeyword("step", Token.TOKENIZER_STEP),
@@ -170,12 +156,8 @@ namespace Dartmouth2
                 new  TokenKeyword("go to", Token.TOKENIZER_GOTO),
                 new  TokenKeyword("gosub", Token.TOKENIZER_GOSUB),
                 new  TokenKeyword("return", Token.TOKENIZER_RETURN),
-                new  TokenKeyword("call", Token.TOKENIZER_CALL),
                 new  TokenKeyword("rem", Token.TOKENIZER_REM),
-                new  TokenKeyword("peek", Token.TOKENIZER_PEEK),
-                new  TokenKeyword("poke", Token.TOKENIZER_POKE),
                 new  TokenKeyword("end", Token.TOKENIZER_END),
-                new  TokenKeyword("tab", Token.TOKENIZER_TAB),
                 new  TokenKeyword("sqr", Token.TOKENIZER_SQR),
                 new  TokenKeyword("int", Token.TOKENIZER_INT),
                 new  TokenKeyword("read", Token.TOKENIZER_READ),
@@ -185,42 +167,38 @@ namespace Dartmouth2
                 new  TokenKeyword("cos", Token.TOKENIZER_COS),
                 new  TokenKeyword("tan", Token.TOKENIZER_TAN),
                 new  TokenKeyword("rnd", Token.TOKENIZER_RND),
-                new  TokenKeyword("input", Token.TOKENIZER_INPUT),
                 new  TokenKeyword("def", Token.TOKENIZER_DEF),
                 new  TokenKeyword("fn", Token.TOKENIZER_FN),
                 new  TokenKeyword("abs", Token.TOKENIZER_ABS),
                 new  TokenKeyword("atn", Token.TOKENIZER_ATN),
                 new  TokenKeyword("exp", Token.TOKENIZER_EXP),
                 new  TokenKeyword("log", Token.TOKENIZER_LOG),
-                new  TokenKeyword("restore", Token.TOKENIZER_RESTORE),
-                new  TokenKeyword("on", Token.TOKENIZER_ON),
-                new  TokenKeyword("randomize", Token.TOKENIZER_RANDOMIZE),
-
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
+            Trace.TraceInformation("Out Tokenizer()");
         }
 
         #endregion
-
         #region Methods
 
         public void AcceptToken(Token token)
         {
-            Debug("accept");
+            Trace.TraceInformation("In AcceptToken()");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
             }
             Debug("accept: Expected " + token + ", got it");
             NextToken();
-            Debug("accept");
+            Trace.TraceInformation("Out AcceptToken()");
         }
         
         public Token CheckSingleChar()
         {
-            Token token = 0;
+            Trace.TraceInformation("In CheckSingleChar()");
 
+            Token token = 0;
             if(source[ptr] == '\n')
             {
                 token =  Token.TOKENIZER_CR;
@@ -301,14 +279,17 @@ namespace Dartmouth2
             {
                 token = Token.TOKENIZER_EQ;
             }
+            Trace.TraceInformation("Out CheckSingleChar()");
             return (token);
         }
 
         public Token GetNextToken()
         {
+            Trace.TraceInformation("In GetNextToken()");
+
             Token token = Token.TOKENIZER_NONE;
             int i;
-            Debug("get_next_token():" + Convert.ToString(ptr));
+            Debug("GetNextToken():" + Convert.ToString(ptr));
 
             if ((ptr == source.Length) || (source[ptr] == (char)0))
             {
@@ -409,30 +390,10 @@ namespace Dartmouth2
                             // Two digit variable
                             nextptr++;
                             token = Token.TOKENIZER_NUMERIC_VARIABLE;
-
-                            if (source[nextptr] == '$')
-                            {
-                                // String viarable
-                                nextptr++;
-                                token = Token.TOKENIZER_STRING_VARIABLE;
-                            }
                         }
                         else
                         {
-                            if (source[nextptr] == '$')
-                            {
-                                // String viarable
-                                nextptr++;
-                                token = Token.TOKENIZER_STRING_VARIABLE;
-
-                                if (source[nextptr] == '(')
-                                {
-                                    // String array variable
-                                    nextptr++;
-                                    token = Token.TOKENIZER_STRING_ARRAY_VARIABLE;
-                                }
-                            }
-                            else if (source[nextptr] == '(')
+                            if (source[nextptr] == '(')
                             {
                                 // Array variable
                                 nextptr++;
@@ -442,34 +403,38 @@ namespace Dartmouth2
                     }
                 }
             }
-
+            Trace.TraceInformation("Out GetNextToken()");
             return (token);
         }
 
         public void GotoPosition(int position)
         {
+            Trace.TraceInformation("In GotoPosition()");
             ptr = position;
             currentToken = GetNextToken();
+            Trace.TraceInformation("Out GotoPosition()");
         }
     
         public void Init(int position)
         {
+            Trace.TraceInformation("In Init()");
             GotoPosition(position);
             currentToken = GetNextToken();
+            Trace.TraceInformation("Out Init()");
         }
 
         public Token GetToken()
         {
+            Trace.TraceInformation("In GetToken()");
             return (currentToken);
         }
 
         public void NextToken()
         {
-            Debug("tokenizer_next");
-
+            Trace.TraceInformation("in NextToken()");
             if (!IsFinished())
             {
-                Debug("tokenizer_next: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                Debug("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
                 ptr = nextptr;
 
                 while (source[ptr] == ' ')
@@ -478,17 +443,18 @@ namespace Dartmouth2
                 }
                 currentToken = GetNextToken();
 
-                Debug("tokenizer_next: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                Debug("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
             }
             else
             {
                 currentToken = Token.TOKENIZER_ENDOFINPUT;
             }
-            Debug("tokenizer_next");
+            Trace.TraceInformation("Out NextToken()");
         }
 
         public void SkipTokens()
         {
+            Trace.TraceInformation("Out SkipTokens()");
             if (!IsFinished())
             {
                 while (!(IsFinished() || source[nextptr] == '\n'))
@@ -501,11 +467,14 @@ namespace Dartmouth2
                 }
             }
 
-            Debug("tokenizer_skip: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
+            Debug("SkipTokens: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
+            
+            Trace.TraceInformation("Out SkipTokens()");
         }
 
         public int GetInteger()
         {
+            Trace.TraceInformation("In GetInteger()");
             int integer= 0;
             int i = ptr;
             while (IsDigit(source[i]))
@@ -513,11 +482,13 @@ namespace Dartmouth2
                 integer = 10 * integer + Convert.ToInt16(source[i]) - Convert.ToInt16('0');
                 i++;
             }
+            Trace.TraceInformation("Out GetInteger()");
             return (integer);
         }
 
         public double GetNumber()
         {
+            Trace.TraceInformation("In GetNumber()");
             double number = 0;
             int i = ptr;
             int j = ptr;
@@ -540,11 +511,13 @@ namespace Dartmouth2
                 }
                 i++;
             }
+            Trace.TraceInformation("Out GetNumber()");
             return (number);
         }
 
         public string Getstring()
         {
+            Trace.TraceInformation("In Getstring()");
             string _string = "";
             int i = ptr;
 
@@ -561,16 +534,19 @@ namespace Dartmouth2
                     i++;
                 }
             }
+            Trace.TraceInformation("Out Getstring()");
             return (_string);
         }
 
-        public Boolean IsFinished()
+        public bool IsFinished()
         {
-            return((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
+            Trace.TraceInformation("In IsFinished()");
+            return ((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
         }
 
         public int GetIntegerVariable()
         {
+            Trace.TraceInformation("Int GetIntegerVariable()");
             int integer;
             if ((source[ptr] >= 'a') && (source[ptr] < 'z'))
             {
@@ -580,11 +556,13 @@ namespace Dartmouth2
             {
                 integer = (int)source[ptr] - (int)'A';
             }
-            return(integer);
+            Trace.TraceInformation("Out GetIntegerVariable()");
+            return (integer);
         }
 
         public string GetNumericVariable()
         {
+            Trace.TraceInformation("Int GetNumericVariable()");
             string value = "";
             char c;
 
@@ -657,6 +635,7 @@ namespace Dartmouth2
 
         public int GetPosition()
         {
+            Trace.TraceInformation("In GetPosition()");
             return ptr;
         }
 
@@ -677,13 +656,14 @@ namespace Dartmouth2
         }
 
         #endregion
+        #region Private
 
         //--------------------------------------------------------------
         // Debug
 
         private void Debug(string message)
         {
-            if (log.IsDebugEnabled == true) { log.Debug(message); }
+            log.Debug(message);
         }
 
         //--------------------------------------------------------------
@@ -691,7 +671,7 @@ namespace Dartmouth2
 
         private void Info(string message)
         {
-            if (log.IsInfoEnabled == true) { log.Info(message); }
+           log.Info(message);
         }
 
         //--------------------------------------------------------------
@@ -699,16 +679,16 @@ namespace Dartmouth2
 
         private void Err(string s)
         {
-            //consoleIO.Error("Error: " + s + "@" + current_line_number + "\n");
-            if (log.IsErrorEnabled == true) { log.Error(s); }
+            log.Error(s);
         }
 
         //--------------------------------------------------------------
         // Report What Was Accepted
 
-        public void Expected(string message)
+        private void Expected(string message)
         {
             throw new System.ArgumentException("Unacceptable", message);
         }
+        #endregion
     }
 }

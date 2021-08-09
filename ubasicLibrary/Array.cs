@@ -8,7 +8,7 @@ namespace uBasicLibrary
 {
     public class Array
     {
-        #region Variables
+        #region Fields
 
         private readonly string _dimVariable;
         private int _dimensions;

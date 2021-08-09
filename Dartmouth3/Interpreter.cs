@@ -43,7 +43,7 @@ namespace Dartmouth3
     /// </summary>
     public class Interpreter : IInterpreter
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         readonly IConsoleIO consoleIO;
@@ -51,15 +51,10 @@ namespace Dartmouth3
         int program_ptr;
         const int MAX_STRINGLEN = 40;
 
-        // Printing
-
-        const int ZONE_WIDTH = 15;
-        const int COMPACT_WIDTH = 3;
-
         // Gosub
 
         const int MAX_GOSUB_STACK_DEPTH = 10;
-        readonly int[] gosub_stack = new int[MAX_GOSUB_STACK_DEPTH];
+        readonly int[] gosubStack = new int[MAX_GOSUB_STACK_DEPTH];
         int gosubStackPointer;
 
         // for-next
@@ -422,18 +417,12 @@ namespace Dartmouth3
                 {
                     case Tokenizer.Token.TOKENIZER_INPUT:
                         {
-                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
                             InputStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_DATA:
                         {
                             DataStatement();
-                            break;
-                        }
-                    case Tokenizer.Token.TOKENIZER_RESTORE:
-                        {
-                            RestoreStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_PRINT:
@@ -477,14 +466,13 @@ namespace Dartmouth3
                             EndStatement();
                             break;
                         }
-                    case Tokenizer.Token.TOKENIZER_STOP:
+					case Tokenizer.Token.TOKENIZER_STOP:
                         {
                             StopStatement();
                             break;
                         }
                     case Tokenizer.Token.TOKENIZER_LET:
                         {
-                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
                             LetStatement();
                             break;
                         }
@@ -533,7 +521,7 @@ namespace Dartmouth3
                     inline = false;
                 }
             }
-            while (inline == true);
+            while ((inline == true) && (tokenizer.IsFinished() == false));
             nested--;
 
             Trace.TraceInformation("Out Statement()");
@@ -546,19 +534,10 @@ namespace Dartmouth3
         private void DataStatement()
         {
            Trace.TraceInformation("In In DataStatement()");
-            tokenizer.SkipTokens();
-           Trace.TraceInformation("Out DataStatement()");
-        }
 
-        /// <summary>
-        /// RESTORE
-        /// </summary>
-        private void RestoreStatement()
-        {
-           Trace.TraceInformation("In RestoreStatement()");
-           tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RESTORE);
-           dataPos = 0;
-           Trace.TraceInformation("Out RestoreStatement()");
+            tokenizer.SkipTokens();
+
+           Trace.TraceInformation("Out DataStatement()");
         }
 
         /// <summary>
@@ -624,26 +603,19 @@ namespace Dartmouth3
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_SEMICOLON)
                 {
-                    if ((previous == Tokenizer.Token.TOKENIZER_STRING) || (previous == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (previous == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
-                    {
-                        // additional rule appears to be that if the ';' folows text then it concatinates
-                        // if ';' follows a number then it move tab zones.
-                    }
-                    else
-                    {
-                        // assume a tab spacing of 3 characters
-                        // spec defines a minimum of 6 characters
+                    // assume a tab spacing of 3 characters
+                    // spec defines a minimum of 6 characters
 
-                        tab = -consoleIO.Hpos + consoleIO.Compact * (1 + (consoleIO.Hpos / consoleIO.Compact));
-                        if (tab < 2)
-                        {
-                            tab += 3;
-                        }
-                        tab = 1;
-                        value = new string(' ', tab);
-                        log.Info("PRINT ;");
-                        Emit(value);
+                    tab = -consoleIO.Hpos + consoleIO.Compact * (1 + (consoleIO.Hpos / consoleIO.Compact));
+                    if (tab < 2)
+                    {
+                        tab += 3;
                     }
+                    tab = 1;
+                    value = new string(' ', tab);
+                    log.Info("PRINT ;");
+                    Emit(value);
+                    
                     previous = tokenizer.GetToken();
                     control = ';';
                     tokenizer.NextToken();
@@ -665,7 +637,7 @@ namespace Dartmouth3
                     Emit(value);
                     control = '\n';
                 }
-                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE))
+                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE))
                 {
                     previous = tokenizer.GetToken();
                     evaluator.Expression();
@@ -673,31 +645,6 @@ namespace Dartmouth3
                     value = FormatNumber(number);
                     log.Info("PRINT " + value);
                     Emit(value);
-                    control = '\n';
-                }
-                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
-                {
-                    previous = tokenizer.GetToken();
-                    evaluator.Expression();
-                    value = evaluator.PopString();
-                    log.Info("PRINT " + value);
-                    Emit(value);
-                    control = '\n';
-                }
-                else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_TAB)
-                {
-                    previous = tokenizer.GetToken();
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TAB);
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
-                    evaluator.Expression();
-                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.Hpos;
-                    if (tab > 0)
-                    {
-                        value = new string(' ', tab);
-                        log.Info("PRINT TAB(" + tab + ")");
-                        Emit(value);
-                    }
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     control = '\n';
                 }
                 else
@@ -755,17 +702,20 @@ namespace Dartmouth3
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_IF);
             Info("IF");
             evaluator.Relation();
+            int lineNumber;
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
-            if (evaluator.PopBoolean())
+            if (evaluator.PopBoolean() == true)
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
                 {
-                    int lineNumber = tokenizer.GetInteger();
+			
+                    lineNumber = tokenizer.GetInteger();
+					Info("THEN " + lineNumber);
                     JumpLineNumber(lineNumber);
-                    //accept(Tokenizer.Token.TOKENIZER_NUMBER);
+
                     jump = false;
                 }
-                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
+                else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE))
                 {
                     evaluator.Expression();
                 }
@@ -780,18 +730,8 @@ namespace Dartmouth3
                 {
                     tokenizer.NextToken();
                 }
-                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ELSE) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
-                if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ELSE)
-                {
-                    tokenizer.NextToken();
-                    Statement();
-                }
-                //else if(tokenizer.tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
-                //{
-                //    tokenizer.tokenizer_next();
-                //}
+                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
             }
-
             Trace.TraceInformation("Out IfStatement()");
             return (jump);
         }
@@ -812,7 +752,7 @@ namespace Dartmouth3
             // LET A=1{COMMA}B=2:
 
             Trace.TraceInformation("In LetStatement()");
-
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
             do
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE)
@@ -825,17 +765,6 @@ namespace Dartmouth3
                     evaluator.SetNumericVariable(varName, number);
                     Debug("LetStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
                     Info("LET " + Convert.ToString(varName) + "=" + number);
-                }
-                else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
-                {
-                    varName = tokenizer.GetStringVariable();
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
-                    evaluator.Expression();
-                    value = evaluator.PopString();
-                    evaluator.SetStringVariable(varName, value);
-                    Debug("LetStatement: assign '" + value + "' to string variable " + Convert.ToString(varName) + "$");
-                    Info("LET " + Convert.ToString(varName) + "$=\"" + value + "\"");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
@@ -905,6 +834,7 @@ namespace Dartmouth3
             // this means I need an input buffer that can be parsed.
 
             Trace.TraceInformation("In InputStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
 
             do
             {
@@ -947,38 +877,6 @@ namespace Dartmouth3
                     }
                     Debug("InputStatement: assign " + numeric + " to numeric variable " + Convert.ToString(varName));
                     Info("INPUT " + Convert.ToString(varName) + "=" + numeric);
-                }
-                else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
-                {
-                    varName = tokenizer.GetStringVariable();
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
-                    if ((buffer == "") || (buf_pointer >= buffer.Length))
-                    {
-                        Emit("?");
-                        buf_pointer = 0;
-                        buffer = ReadInput();
-                        Emit("\n");
-                    }
-                    value = "";
-
-                    do
-                    {
-                        if (buffer[buf_pointer] == ',')
-                        {
-                            buf_pointer++;
-                            break;
-                        }
-                        else
-                        {
-                            value += buffer[buf_pointer];
-                            buf_pointer++;
-                        }
-                    }
-                    while (buf_pointer < buffer.Length);
-
-                    evaluator.SetStringVariable(varName, value);
-                    Debug("InputStatement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
-                    Info("INPUT " + Convert.ToString(varName) + "$=" + value);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
@@ -1170,8 +1068,10 @@ namespace Dartmouth3
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
             if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
             {
-                gosub_stack[gosubStackPointer] = tokenizer.GetInteger();
+                gosubStack[gosubStackPointer] = tokenizer.GetInteger();
                 gosubStackPointer++;
+                Debug("GosubStatement: " + lineNumber);
+                Info("GOSUB " + lineNumber);
                 JumpLineNumber(lineNumber);
             }
             else
@@ -1181,6 +1081,9 @@ namespace Dartmouth3
             Trace.TraceInformation("Out GosubStatement()");
         }
 
+        /// <summary>
+        /// RETURN
+        /// </summary>
         private void ReturnStatement()
         {
             Trace.TraceInformation("In ReturnStatement()");
@@ -1188,7 +1091,7 @@ namespace Dartmouth3
             if (gosubStackPointer > 0)
             {
                 gosubStackPointer--;
-                JumpLineNumber(gosub_stack[gosubStackPointer]);
+                JumpLineNumber(gosubStack[gosubStackPointer]);
             }
             else
             {
@@ -1259,6 +1162,9 @@ namespace Dartmouth3
             Trace.TraceInformation("Out NextStatement()");
         }
 
+        /// <summary>
+        /// FOR
+        /// </summary>
         private void ForStatement()
         {
             double step = 1;
@@ -1420,37 +1326,6 @@ namespace Dartmouth3
                         Info("READ " + Convert.ToString(varName) + "=" + number);
                     }
                 }
-                else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
-                {
-                    varName = tokenizer.GetStringVariable();
-                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
-
-                    // Now need to read the data from the data statement
-
-                    if (data.Count == 0)
-                    {
-                        read = ReadData(dataPos);
-                        if (read == false)
-                        {
-                            ended = true;
-                            Abort("out of data");
-                        }
-                        else
-                        {
-                            value = Convert.ToString(data.Dequeue());
-                            evaluator.SetStringVariable(varName, value);
-                            Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
-                            Info("READ " + Convert.ToString(varName) + "$=" + value);
-                        }
-                    }
-                    else
-                    {
-                        value = Convert.ToString(data.Dequeue());
-                        evaluator.SetStringVariable(varName, value);
-                        Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
-                        Info("READ " + Convert.ToString(varName) + "$=" + value);
-                    }
-                }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
                     if (data.Count == 0)
@@ -1570,7 +1445,7 @@ namespace Dartmouth3
             Trace.TraceInformation("In Run()");
             if (tokenizer.IsFinished())
             {
-                Trace.TraceInformation("In Program finished");
+                Debug("Program finished");
                 return;
             }
             LineStatement();

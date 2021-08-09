@@ -37,7 +37,7 @@ namespace uBasicLibrary
 {
     public class Tokenizer : ITokenizer
     {
-        #region Variables
+        #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
