@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ubasicConsole</RootNamespace>
     <AssemblyName>ubasicConsole</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -19,9 +19,11 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>uBasicConsole.Program</StartupObject>
@@ -39,14 +42,14 @@
     <ApplicationIcon>uBasic.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=2.0.12.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.12\lib\net20\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="TracerLibrary">
+      <HintPath>..\ThirdParty\Tracer\net452\TracerLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleIO.cs" />
@@ -64,9 +67,9 @@
       <Project>{72098349-f135-4895-9d9a-1a52cf9e40eb}</Project>
       <Name>Altair</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ubasicLibrary\uBasicLibrary.csproj">
+    <ProjectReference Include="..\ubasicLibrary\ubasicLibrary.csproj">
       <Project>{33460a7a-630e-4782-80a0-5c9f69b2d372}</Project>
-      <Name>uBasicLibrary</Name>
+      <Name>ubasicLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

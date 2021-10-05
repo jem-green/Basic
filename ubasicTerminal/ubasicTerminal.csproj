@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ApplicationIcon>ubasic.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Altair\Altair.csproj" />
+    <ProjectReference Include="..\ubasicLibrary\ubasicLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="TracerLibrary">
+      <HintPath>..\ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

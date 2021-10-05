@@ -10,8 +10,8 @@ namespace uBasicLibrary
     {
         #region Fields
 
-        string value = "";
-        SourceType source = SourceType.None;
+        object _value = "";
+        SourceType _source = SourceType.None;
         public enum SourceType
         {
             None = 0,
@@ -25,27 +25,27 @@ namespace uBasicLibrary
         public Parameter()
         {
         }
-        public Parameter(string value)
+        public Parameter(object value)
         {
-            this.value = value;
-            source = SourceType.App;
+            this._value = value;
+            _source = SourceType.App;
         }
-        public Parameter(string value, SourceType source)
+        public Parameter(object value, SourceType source)
         {
-            this.value = value;
-            this.source = source;
+            _value = value;
+            this._source = source;
         }
         #endregion
         #region Parameters
-        public string Value
+        public object Value
         {
             set
             {
-                this.value = value;
+                this._value = value;
             }
             get
             {
-                return (value);
+                return (_value);
             }
         }
 
@@ -53,18 +53,18 @@ namespace uBasicLibrary
         {
             set
             {
-                source = value;
+                _source = value;
             }
             get
             {
-                return (source);
+                return (_source);
             }
         }
         #endregion
         #region Methods
         public override string ToString()
         {
-            return (value);
+            return (Convert.ToString(_value));
         }
         #endregion
     }

@@ -2,20 +2,24 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using log4net;
+using TracerLibrary;
 using uBasicLibrary;
 using Altair;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
+
 namespace uBasicConsole
 {
     class Program
     {
-        protected static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        #region Fields
+
         static readonly IConsoleIO consoleIO = new ConsoleIO();
         public static bool isclosing = false;
         static private HandlerRoutine ctrlCHandler;
+
+        #endregion
         #region unmanaged
         // Declare the SetConsoleCtrlHandler function
         // as external and receiving a delegate.
@@ -39,10 +43,11 @@ namespace uBasicConsole
         }
 
         #endregion
+        #region Methods
 
         static void Main(string[] args)
         {
-            Trace.TraceInformation("Enter Main()");
+            Debug.WriteLine("Enter Main()");
 
             ctrlCHandler = new HandlerRoutine(ConsoleCtrlCheck);
             SetConsoleCtrlHandler(ctrlCHandler, true);
@@ -54,6 +59,28 @@ namespace uBasicConsole
 
             filePath.Value = Environment.CurrentDirectory;
             filePath.Source = Parameter.SourceType.App;
+
+            Parameter logPath = new Parameter("");
+            Parameter logName = new Parameter("ubasicterminal");
+
+            logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            logPath.Value = filePath.Value = Environment.CurrentDirectory;
+            logPath.Source = Parameter.SourceType.App;
+
+            Parameter traceLevels = new Parameter();
+            traceLevels.Value = TraceInternal.TraceLookup("CRITICAL");
+            traceLevels.Source = Parameter.SourceType.App;
+
+            // Configure tracer options
+
+            string logFilenamePath = logPath.Value.ToString() + Path.DirectorySeparatorChar + logName.Value.ToString() + ".log";
+            FileStreamWithRolling dailyRolling = new FileStreamWithRolling(logFilenamePath, new TimeSpan(1, 0, 0, 0), FileMode.Append);
+            TextWriterTraceListenerWithTime listener = new TextWriterTraceListenerWithTime(dailyRolling);
+            Trace.AutoFlush = true;
+            TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
+            listener.Filter = fileTraceFilter;
+            Trace.Listeners.Clear();
+            Trace.Listeners.Add(listener);
 
             // Check if the config file has been paased in and overwrite the registry
 
@@ -82,40 +109,104 @@ namespace uBasicConsole
                     filename.Value = filenamePath;
                     filename.Source = Parameter.SourceType.Command;
                 }
-                Info("Use filename=" + filename.Value);
-                Info("use filePath=" + filePath.Value);
+                TraceInternal.TraceVerbose("Use filename=" + filename.Value);
+                TraceInternal.TraceVerbose("use filePath=" + filePath.Value);
             }
             else
             {
+                // Check if the config file has been paased in and overwrite the defaults
+
                 for (int item = 0; item < items; item++)
                 {
-                    switch (args[item])
+                    string lookup = args[item];
+                    if (lookup.Length > 1)
                     {
+                        lookup = lookup.ToLower();
+                    }
+
+                    switch (lookup)
+                    {
+					    case "/d":
+                        case "--debug":
+                            {
+                                traceLevels.Value = args[item + 1];
+                                traceLevels.Value = traceLevels.Value.ToString().TrimStart('"');
+                                traceLevels.Value = traceLevels.Value.ToString().TrimEnd('"');
+                                traceLevels.Source = Parameter.SourceType.Command;
+                                TraceInternal.TraceVerbose("Use command value traceLevels=" + traceLevels);
+                                break;
+                            }
+                        case "/n":
+                        case "--logname":
+                            {
+                                logName.Value = args[item + 1];
+                                logName.Value = logName.Value.ToString().TrimStart('"');
+                                logName.Value = logName.Value.ToString().TrimEnd('"');
+                                logName.Source = Parameter.SourceType.Command;
+                                TraceInternal.TraceVerbose("Use command value logName=" + logName);
+                                break;
+                            }
+                        case "/p":
+                        case "--logpath":
+                            {
+                                logPath.Value = args[item + 1];
+                                logPath.Value = logPath.Value.ToString().TrimStart('"');
+                                logPath.Value = logPath.Value.ToString().TrimEnd('"');
+                                logPath.Source = Parameter.SourceType.Command;
+                                TraceInternal.TraceVerbose("Use command value logPath=" + logPath);
+                                break;
+                            }
                         case "/N":
                         case "--name":
-                            filename.Value = args[item + 1];
-                            filename.Value = filename.Value.TrimStart('"');
-                            filename.Value = filename.Value.TrimEnd('"');
-                            filename.Source = Parameter.SourceType.Command;
-                            Debug("Use command value Name=" + filename);
-                            break;
+                            {
+                                filename.Value = args[item + 1];
+                                filename.Value = filename.Value.ToString().TrimStart('"');
+                                filename.Value = filename.Value.ToString().TrimEnd('"');
+                                filename.Source = Parameter.SourceType.Command;
+                                TraceInternal.TraceVerbose("Use command value Name=" + filename);
+                                break;
+                            }
                         case "/P":
                         case "--path":
-                            filePath.Value = args[item + 1];
-                            filePath.Value = filePath.Value.TrimStart('"');
-                            filePath.Value = filePath.Value.TrimEnd('"');
-                            filePath.Source = Parameter.SourceType.Command;
-                            Debug("Use command value Path=" + filePath);
-                            break;
+                            {
+                                filePath.Value = args[item + 1];
+                                filePath.Value = filePath.Value.ToString().TrimStart('"');
+                                filePath.Value = filePath.Value.ToString().TrimEnd('"');
+                                filePath.Source = Parameter.SourceType.Command;
+                                TraceInternal.TraceVerbose("Use command value Path=" + filePath);
+                                break;
+                            }
                     }
                 }
             }
-            Info("Use Filename=" + filename.Value);
-            Info("Use Filepath=" + filePath.Value);
 
-            if ((filename.Value != "") && (filePath.Value != ""))
+            // Adjust the log location if it has been overridden by the arguments
+
+            logFilenamePath = logPath.Value.ToString() + Path.DirectorySeparatorChar + logName.Value.ToString() + ".log";
+
+            // Redirect the output
+
+            listener.Flush();
+            Trace.Listeners.Remove(listener);
+            listener.Close();
+            listener.Dispose();
+
+            dailyRolling = new FileStreamWithRolling(logFilenamePath, new TimeSpan(1, 0, 0, 0), FileMode.Append);
+            listener = new TextWriterTraceListenerWithTime(dailyRolling);
+            Trace.AutoFlush = true;
+            SourceLevels sourceLevels = TraceInternal.TraceLookup(traceLevels.Value.ToString());
+            fileTraceFilter = new System.Diagnostics.EventTypeFilter(sourceLevels);
+            listener.Filter = fileTraceFilter;
+            Trace.Listeners.Add(listener);
+
+            Trace.TraceInformation("Use Name=" + filename);
+            Trace.TraceInformation("Use Path=" + filePath);
+            Trace.TraceInformation("Use Log Name=" + logName);
+            Trace.TraceInformation("Use Log Path=" + logPath);
+
+            if ((filename.Value.ToString().Length > 0) && (filePath.Value.ToString().Length > 0))
             {
-                filenamePath = filePath.Value + Path.DirectorySeparatorChar + filename.Value;
+                filenamePath = filePath.Value.ToString() + Path.DirectorySeparatorChar + filename.Value.ToString();
                 char[] program;
                 try
                 {
@@ -138,53 +229,55 @@ namespace uBasicConsole
                     }
                     catch (Exception e)
                     {
-                        Debug(e.ToString());
-                        //Err("Program " + e.Message);
+                        TraceInternal.TraceError(e.ToString());
                     }
                 }
                 catch (Exception e1)
                 {
-                    Debug(e1.ToString());
-                    Err("Input " + e1.Message);
+                    TraceInternal.TraceVerbose(e1.ToString());
+                    TraceInternal.TraceError("Input " + e1.Message);
                 }
             }
             else
             {
-                Err("Program name not supplied");
+                TraceInternal.TraceError("Program name not supplied");
             }
 
-            Trace.TraceInformation("Exit Main()");
+            Debug.WriteLine("Exit Main()");
         }
-		
-		private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+
+        #endregion
+        #region Private
+
+        private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
         {
-            Debug("Enter ConsoleCtrlCheck()");
+            Debug.WriteLine("Enter ConsoleCtrlCheck()");
 
             switch (ctrlType)
             {
                 case CtrlTypes.CTRL_C_EVENT:
                     isclosing = true;
-                    Info("CTRL+C received:");
+                    TraceInternal.TraceVerbose("CTRL+C received:");
                     break;
 
                 case CtrlTypes.CTRL_BREAK_EVENT:
                     isclosing = true;
-                    Info("CTRL+BREAK received:");
+                    TraceInternal.TraceVerbose("CTRL+BREAK received:");
                     break;
 
                 case CtrlTypes.CTRL_CLOSE_EVENT:
                     isclosing = true;
-                    Info("Program being closed:");
+                    TraceInternal.TraceVerbose("Program being closed:");
                     break;
 
                 case CtrlTypes.CTRL_LOGOFF_EVENT:
                 case CtrlTypes.CTRL_SHUTDOWN_EVENT:
                     isclosing = true;
-                    Info("User is logging off:");
+                    TraceInternal.TraceVerbose("User is logging off:");
                     break;
 
             }
-            Debug("Exit ConsoleCtrlCheck()");
+            Debug.WriteLine("Exit ConsoleCtrlCheck()");
 
             Environment.Exit(0);
 
@@ -192,29 +285,6 @@ namespace uBasicConsole
 
         }
 
-        //--------------------------------------------------------------
-        // Info
-
-        static void Info(string s)
-        {
-            log.Info(s);
-        }
-
-        //--------------------------------------------------------------
-        // Debug
-
-        static void Debug(string s)
-        {
-            log.Debug(s);
-        }
-
-        //--------------------------------------------------------------
-        // Report an Error
-
-        static void Err(string s)
-        {
-            log.Error(s);
-        }
-
+        #endregion
     }
 }

@@ -1,9 +1,13 @@
-﻿using System;
+﻿//  Copyright (c) 2017, Jeremy Green All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Text;
 using uBasicLibrary;
 
-namespace uBasicWeb
+namespace uBasicTerminal
 {
-    public class TextAreaIO : IConsoleIO
+    public class ConsoleIO : IConsoleIO
     {
         #region Event handling
 
@@ -32,11 +36,10 @@ namespace uBasicWeb
         int _consoleWidth = 75;
         int _zoneWidth = 15;
         int _compactWidth = 3;
-        readonly int _hpos = 0;
-        readonly int _vpos = 0;
+        int _hpos = 0;
+        int _vpos = 0;
         string _input = "";
         string _output = "";
-        protected readonly object lockObject = new Object();
 
         #endregion
         #region Properties
@@ -56,31 +59,23 @@ namespace uBasicWeb
                 return (_consoleHeight);
             }
         }
+
         public string Input
         {
             set
             {
-                // need to wait here while the input is being read
-                lock (lockObject)
-                {
-                    _input += value;
-                }
+                _input = value;
             }
         }
+
         public string Output
         {
             get
             {
-                string temp;
-                // need to wait here while the output is being written
-                lock (lockObject)
-                {
-                    temp = _output;
-                    _output = "";
-                }
-                return (temp);
+                return (_output);
             }
         }
+
         public int Left
         {
             get
@@ -135,46 +130,71 @@ namespace uBasicWeb
 
         #endregion
         #region Methods
-       
-
-        #endregion
-        #region Methods
 
         public void Out(string s)
         {
-            lock (lockObject)
+            string check = s.TrimEnd(' ');
+            _hpos += s.Length;
+            if (_hpos > _consoleWidth)
             {
-                _output += s;
+                if (check.Length > 0)
+                {
+                    _hpos = s.Length;
+                    _vpos++;
+                    System.Console.Out.Write("\n");
+                    System.Console.Out.Write(s);
+                }
+                else
+                {
+                    _hpos = 0;
+                    _vpos++;
+                    System.Console.Out.Write("\n");
+                }
+            }
+            else
+            {
+                System.Console.Out.Write(s);
+                // fix the carriage return not setting hpos
+                if (s.EndsWith("\n"))
+                {
+                    _hpos = 0;
+                }
             }
         }
 
         public string In()
         {
+            ConsoleKeyInfo key;
             string value = "";
-
             do
             {
-                while (_input == "")
+                while (System.Console.KeyAvailable == false)
                 {
                     System.Threading.Thread.Sleep(250); // Loop until input is entered.
                 }
-
-                lock (lockObject)
+                key = System.Console.ReadKey(false);
+                // Issue here with deleting characters should allow for this
+                if ( key.Key == ConsoleKey.Backspace)
                 {
-                    int pos = _input.IndexOf('\n');
-                    if (pos < 0 )
+                    if (value.Length > 0)
                     {
-                        pos = _input.IndexOf('\r');
+                        value = value.Substring(0, value.Length - 1);
+                        System.Console.Write(' ');
+                        System.Console.CursorLeft--;
+
                     }
-                    if (pos > 0)
+                    else
                     {
-                        // read the input to the first \n or \r then trim the remaining
-                        value = _input.Substring(0, pos + 1);
-                        _input = _input.Substring(pos + 1, _input.Length - pos - 1);
+                        
+                        System.Console.CursorLeft++;
                     }
                 }
+                else
+                {
+                    value += key.KeyChar;
+                }
             }
-            while (value == "");
+            while (key.Key != ConsoleKey.Enter);
             return (value);
         }
 

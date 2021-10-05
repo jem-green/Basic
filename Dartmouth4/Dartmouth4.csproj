@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dartmouth2</RootNamespace>
     <AssemblyName>Dartmouth2</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=2.0.12.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -47,9 +49,9 @@
     <Compile Include="tokenizer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ubasicLibrary\uBasicLibrary.csproj">
+    <ProjectReference Include="..\ubasicLibrary\ubasicLibrary.csproj">
       <Project>{33460a7a-630e-4782-80a0-5c9f69b2d372}</Project>
-      <Name>uBasicLibrary</Name>
+      <Name>ubasicLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

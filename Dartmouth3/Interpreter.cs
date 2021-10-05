@@ -593,7 +593,7 @@ namespace Dartmouth3
                     // spec defines 5 zones then new line
 
                     previous = tokenizer.GetToken();
-                    tab = -consoleIO.Hpos + consoleIO.Zone * (1 + (consoleIO.Hpos / consoleIO.Zone));
+                    tab = -consoleIO.Left + consoleIO.Zone * (1 + (consoleIO.Left / consoleIO.Zone));
                     value = new string(' ', tab);
                     log.Info("PRINT ,");
                     Emit(value);
@@ -606,7 +606,7 @@ namespace Dartmouth3
                     // assume a tab spacing of 3 characters
                     // spec defines a minimum of 6 characters
 
-                    tab = -consoleIO.Hpos + consoleIO.Compact * (1 + (consoleIO.Hpos / consoleIO.Compact));
+                    tab = -consoleIO.Left + consoleIO.Compact * (1 + (consoleIO.Left / consoleIO.Compact));
                     if (tab < 2)
                     {
                         tab += 3;
@@ -744,7 +744,7 @@ namespace Dartmouth3
             string varName;
             int integer;
             double number;
-            string value;
+            //string value;
             int dimensions = 0;
 
             // The let statement can loop through a series of comma separated values and finish at a terminator
@@ -1282,7 +1282,7 @@ namespace Dartmouth3
             string varName;
             int integer;
             double number;
-            string value;
+            //string value;
             int dimensions = 0;
             int[] dimension = new int[10]; // 10 dimensional array limit !!!
 

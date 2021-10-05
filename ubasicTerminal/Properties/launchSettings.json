@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ubasicTerminal": {
+      "commandName": "Project",
+      "commandLineArgs": "--path \"C:\\Users\\jemgr\\Documents\\uBasic\\Creative_Computing\" --name \"wumpus.bas\" --logname \"terminaltest\" --debug \"verbose\""
+    }
+  }
+}

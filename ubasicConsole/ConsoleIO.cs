@@ -32,14 +32,49 @@ namespace uBasicConsole
 
         // Formatting constraints
 
-        readonly int _consoleHeight = 80;
-        int _consoleWidth = 75;
-        int _zoneWidth = 15;
-        int _compactWidth = 3;
-        int _hpos = 0;
-        int _vpos = 0;
-        string _input = "";
-        string _output = "";
+        private int _consoleHeight = 80;
+        private int _consoleWidth = 75;
+        private int _zoneWidth = 15;
+        private int _compactWidth = 3;
+        private Cursor cursor;
+        private string _input = "";
+        private string _output = "";
+        protected readonly object _lockObject = new Object();
+
+        struct Cursor
+        {
+            int _left;
+            int _top;
+
+            public Cursor(int left, int top)
+            {
+                _left = left;
+                _top = top;
+            }
+
+            public int Left
+            {
+                get
+                {
+                    return (_left);
+                }
+                set
+                {
+                    _left = value;
+                }
+            }
+            public int Top
+            {
+                get
+                {
+                    return (_top);
+                }
+                set
+                {
+                    _top = value;
+                }
+            }
+        }
 
         #endregion
         #region Properties
@@ -64,7 +99,11 @@ namespace uBasicConsole
         {
             set
             {
-                _input = value;
+                // need to wait here while the input is being read
+                lock (_lockObject)
+                {
+                    _input = _input + value;
+                }
             }
         }
 
@@ -72,23 +111,30 @@ namespace uBasicConsole
         {
             get
             {
-                return (_output);
+                string temp;
+                // need to wait here while the output is being written
+                lock (_lockObject)
+                {
+                    temp = _output;
+                    _output = "";
+                }
+                return (temp);
             }
         }
 
-        public int Hpos
+        public int Left
         {
             get
             {
-                return (_hpos);
+                return (cursor.Left);
             }
         }
 
-        public int Vpos
+        public int Top
         {
             get
             {
-                return (_vpos);
+                return (cursor.Top);
             }
         }
 
@@ -96,7 +142,7 @@ namespace uBasicConsole
         {
             get
             {
-                return (_vpos);
+                return (_consoleWidth);
             }
             set
             {
@@ -133,31 +179,35 @@ namespace uBasicConsole
 
         public void Out(string s)
         {
-            string check = s.TrimEnd(' ');
-            _hpos += s.Length;
-            if (_hpos > _consoleWidth)
+            lock (_lockObject)
             {
-                if (check.Length > 0)
+
+                string check = s.TrimEnd(' ');
+                cursor.Left += s.Length;
+                if (cursor.Left > _consoleWidth)
                 {
-                    _hpos = s.Length;
-                    _vpos++;
-                    System.Console.Out.Write("\n");
-                    System.Console.Out.Write(s);
+                    if (check.Length > 0)
+                    {
+                        cursor.Left = s.Length;
+                        cursor.Top++;
+                        System.Console.Out.Write("\n");
+                        System.Console.Out.Write(s);
+                    }
+                    else
+                    {
+                        cursor.Left = 0;
+                        cursor.Top++;
+                        System.Console.Out.Write("\n");
+                    }
                 }
                 else
                 {
-                    _hpos = 0;
-                    _vpos++;
-                    System.Console.Out.Write("\n");
-                }
-            }
-            else
-            {
-                System.Console.Out.Write(s);
-                // fix the carriage return not setting hpos
-                if (s.EndsWith("\n"))
-                {
-                    _hpos = 0;
+                    System.Console.Out.Write(s);
+                    // fix the carriage return not setting hpos
+                    if (s.EndsWith("\n"))
+                    {
+                        cursor.Left = 0;
+                    }
                 }
             }
         }
@@ -166,7 +216,7 @@ namespace uBasicConsole
         {
             ConsoleKeyInfo key;
             string value = "";
-            //do
+            do
             {
                 while (System.Console.KeyAvailable == false)
                 {
@@ -174,24 +224,27 @@ namespace uBasicConsole
                 }
                 key = System.Console.ReadKey(false);
                 // Issue here with deleting characters should allow for this
-                if ( key.Key == ConsoleKey.Backspace)
+                lock (_lockObject)
                 {
-                    if (value.Length > 0)
+                    if (key.Key == ConsoleKey.Backspace)
                     {
-                        value = value.Substring(0, value.Length - 1);
-                        System.Console.Write(' ');
-                        System.Console.CursorLeft--;
+                        if (value.Length > 0)
+                        {
+                            value = value.Substring(0, value.Length - 1);
+                            System.Console.Write(' ');
+                            System.Console.CursorLeft--;
 
+                        }
+                        else
+                        {
+
+                            System.Console.CursorLeft++;
+                        }
                     }
                     else
                     {
-                        
-                        System.Console.CursorLeft++;
+                        value += key.KeyChar;
                     }
-                }
-                else
-                {
-                    value += key.KeyChar;
                 }
             }
             while (key.Key != ConsoleKey.Enter);

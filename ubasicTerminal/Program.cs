@@ -1,15 +1,18 @@
 ﻿using System;
-using TracerLibrary;
-using System.Diagnostics;
-using System.Windows.Forms;
-using uBasicLibrary;
 using System.IO;
+using TracerLibrary;
+using uBasicLibrary;
+using Altair;
+using System.Diagnostics;
+using System.Threading;
 
-namespace uBasicForm
+namespace uBasicTerminal
 {
-    static class Program
+    class Program
     {
         #region Fields
+
+        static readonly IConsoleIO consoleIO = new ConsoleIO();
 
         #endregion
         #region Methods
@@ -17,14 +20,11 @@ namespace uBasicForm
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-
-        [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Debug.WriteLine("Enter Main()");
 
-            string[] args = Environment.GetCommandLineArgs();
-			int pos = 0;
+            int pos = 0;
             Parameter filePath = new Parameter();
             Parameter filename = new Parameter();
 
@@ -53,14 +53,14 @@ namespace uBasicForm
             TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter((SourceLevels)traceLevels.Value);
             listener.Filter = fileTraceFilter;
             Trace.Listeners.Clear();
-            //Trace.Listeners.Add(listener);
+            Trace.Listeners.Add(listener);
 
             // Check if the config file has been paased in and overwrite the registry
 
             string filenamePath = "";
             string extension = "";
             int items = args.Length;
-            if (items == 2)
+            if (items == 1)
             {
                 filenamePath = args[0].Trim('"');
                 pos = filenamePath.LastIndexOf('.');
@@ -131,22 +131,22 @@ namespace uBasicForm
                         case "/N":
                         case "--name":
                             {
-	                            filename.Value = args[item + 1];
-	                            filename.Value = filename.Value.ToString().TrimStart('"');
-	                            filename.Value = filename.Value.ToString().TrimEnd('"');
-	                            filename.Source = Parameter.SourceType.Command;
+                                filename.Value = args[item + 1];
+                                filename.Value = filename.Value.ToString().TrimStart('"');
+                                filename.Value = filename.Value.ToString().TrimEnd('"');
+                                filename.Source = Parameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Name=" + filename);
-                            	break;
+                                break;
                             }
                         case "/P":
                         case "--path":
                             {
-	                            filePath.Value = args[item + 1];
-	                            filePath.Value = filePath.Value.ToString().TrimStart('"');
-	                            filePath.Value = filePath.Value.ToString().TrimEnd('"');
-	                            filePath.Source = Parameter.SourceType.Command;
+                                filePath.Value = args[item + 1];
+                                filePath.Value = filePath.Value.ToString().TrimStart('"');
+                                filePath.Value = filePath.Value.ToString().TrimEnd('"');
+                                filePath.Source = Parameter.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Path=" + filePath);
-                           	 	break;
+                                break;
                             }
                     }
                 }
@@ -177,13 +177,52 @@ namespace uBasicForm
             Trace.TraceInformation("Use Log Name=" + logName);
             Trace.TraceInformation("Use Log Path=" + logPath);
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ConsoleForm(filePath.Value.ToString(), filename.Value.ToString()));
+            if ((filename.Value.ToString().Length > 0) && (filePath.Value.ToString().Length > 0))
+            {
+                filenamePath = filePath.Value.ToString() + Path.DirectorySeparatorChar + filename.Value.ToString();
+                char[] program;
+                try
+                {
+                    using (StreamReader sr = new StreamReader(filenamePath))
+                    {
+                        program = sr.ReadToEnd().ToCharArray();
+                    }
+
+                    // 
+
+                    IInterpreter basic = new Altair.Interpreter(program, consoleIO);
+                    basic.Init(0);
+
+                    try
+                    {
+                        do
+                        {
+                            basic.Run();
+                        } while (!basic.Finished());
+                    }
+                    catch (Exception e)
+                    {
+                        TraceInternal.TraceError(e.ToString());
+                    }
+                }
+                catch (Exception e1)
+                {
+                    TraceInternal.TraceVerbose(e1.ToString());
+                    TraceInternal.TraceError("Input " + e1.Message);
+                }
+            }
+            else
+            {
+                TraceInternal.TraceError("Program name not supplied");
+            }
+
+            ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
+            manualResetEvent.WaitOne();
 
             Debug.WriteLine("Exit Main()");
-
         }
+
         #endregion
     }
 }

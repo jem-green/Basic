@@ -33,7 +33,7 @@ using log4net;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Altair
+namespace Basic
 {
     public class Tokenizer
     {

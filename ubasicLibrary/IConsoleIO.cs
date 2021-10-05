@@ -10,9 +10,8 @@ namespace uBasicLibrary
     {
         int Width { get; }
         int Height { get; }
-        int Hpos { get; }
-        int Vpos { get; }
-        int Console { get; set; }
+        int Left { get; }
+        int Top { get; }
         int Zone { get; set; }
         int Compact { get; set; }
         string Input { set; }
@@ -22,5 +21,6 @@ namespace uBasicLibrary
         void Error(string theErr);
         void Reset();
         event EventHandler<TextEventArgs> TextReceived;
+
     }
 }

@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using log4net;
 using uBasicLibrary;
 using System.Diagnostics;
+using TracerLibrary;
 
 namespace Altair
 {
     public class Evaluator
     {
         #region Fields
-
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         readonly Stack<object> stack;
 
@@ -73,9 +71,9 @@ namespace Altair
 
         public void Randomize()
         {
-            Trace.TraceInformation("In Randomize()");
+            Debug.WriteLine("In Randomize()");
             randomize = Environment.TickCount;
-            Trace.TraceInformation("Out Randomize()");
+            Debug.WriteLine("Out Randomize()");
         }
 
         // <b-expression>  ::= <b-term> [<orop> <b-term>]*
@@ -96,11 +94,11 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Trace.TraceInformation("In BinaryExpression()");
+            Debug.WriteLine("In BinaryExpression()");
             BinaryTerm();
 
             op = tokenizer.GetToken();
-            Debug("BinaryExpression: token " + Convert.ToString(op));
+            TraceInternal.TraceVerbose("BinaryExpression: token " + Convert.ToString(op));
             while (op == Tokenizer.Token.TOKENIZER_XOR || op == Tokenizer.Token.TOKENIZER_OR)
             {
                 tokenizer.NextToken();
@@ -121,7 +119,7 @@ namespace Altair
                 op = tokenizer.GetToken();
             }
 
-            Trace.TraceInformation("Out BinaryExpression()");
+            Debug.WriteLine("Out BinaryExpression()");
         }
 
         /// <summary>
@@ -131,11 +129,11 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Trace.TraceInformation("In BinaryTerm()");
+            Debug.WriteLine("In BinaryTerm()");
             BinaryNotFactor();
 
             op = tokenizer.GetToken();
-            Debug("BinaryTerm: token " + Convert.ToString(op));
+            TraceInternal.TraceVerbose("BinaryTerm: token " + Convert.ToString(op));
             while (op == Tokenizer.Token.TOKENIZER_AND)
             {
                 tokenizer.NextToken();
@@ -151,7 +149,7 @@ namespace Altair
                 op = tokenizer.GetToken();
             }
 
-            Trace.TraceInformation("Out BinaryTerm()");
+            Debug.WriteLine("Out BinaryTerm()");
         }
 
         /// <summary>
@@ -162,11 +160,11 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Trace.TraceInformation("In BinaryNotFactor()");
+            Debug.WriteLine("In BinaryNotFactor()");
             BinaryFactor();
 
             op = tokenizer.GetToken();
-            Debug("BinaryNotFactor: token " + Convert.ToString(op));
+            TraceInternal.TraceVerbose("BinaryNotFactor: token " + Convert.ToString(op));
             while (op == Tokenizer.Token.TOKENIZER_NOT)
             {
                 tokenizer.NextToken();
@@ -182,14 +180,14 @@ namespace Altair
                 op = tokenizer.GetToken();
             }
 
-            Trace.TraceInformation("Out BinaryNotFactor()");
+            Debug.WriteLine("Out BinaryNotFactor()");
         }
 
         public void BinaryFactor()
         {
-            Trace.TraceInformation("In BinaryFactor()");
+            Debug.WriteLine("In BinaryFactor()");
             Relation();
-            Trace.TraceInformation("Out BinaryFactor()");
+            Debug.WriteLine("Out BinaryFactor()");
 
         }
 
@@ -201,11 +199,11 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Trace.TraceInformation("In Relation()");
+            Debug.WriteLine("In Relation()");
             Expression();
             op = tokenizer.GetToken();
 
-            Debug("relation: token " + Convert.ToString(op));
+            TraceInternal.TraceVerbose("relation: token " + Convert.ToString(op));
             while (op == Tokenizer.Token.TOKENIZER_LT || op == Tokenizer.Token.TOKENIZER_GT || op == Tokenizer.Token.TOKENIZER_EQ)
             {
                 tokenizer.NextToken();
@@ -265,7 +263,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Trace.TraceInformation("Out Relation()");
+            Debug.WriteLine("Out Relation()");
         }
 
         /// <summary>
@@ -274,7 +272,7 @@ namespace Altair
         public void Expression()
         {
             Tokenizer.Token op;
-            Trace.TraceInformation("In Expression()");
+            Debug.WriteLine("In Expression()");
 
             // check if negative number
 
@@ -290,7 +288,7 @@ namespace Altair
                 Term();
             }
             op = tokenizer.GetToken();
-            Debug("Expression: token " + Convert.ToString(op));
+            TraceInternal.TraceVerbose("Expression: token " + Convert.ToString(op));
             while (op == Tokenizer.Token.TOKENIZER_PLUS || op == Tokenizer.Token.TOKENIZER_MINUS)
             {
                 tokenizer.NextToken();
@@ -310,7 +308,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Trace.TraceInformation("Out Expression()");
+            Debug.WriteLine("Out Expression()");
         }
 
         /// <summary>
@@ -319,18 +317,18 @@ namespace Altair
         /// <returns></returns>
         private void Term()
         {
-            Trace.TraceInformation("In Term()");
+            Debug.WriteLine("In Term()");
             Tokenizer.Token op;
 
-            Debug("Term: token " + tokenizer.GetToken());
+            TraceInternal.TraceVerbose("Term: token " + tokenizer.GetToken());
             Exponent();
             op = tokenizer.GetToken();
-            Debug("Term: token " + op);
+            TraceInternal.TraceVerbose("Term: token " + op);
 
             while (op == Tokenizer.Token.TOKENIZER_ASTR || op == Tokenizer.Token.TOKENIZER_SLASH || op == Tokenizer.Token.TOKENIZER_MOD)
             {
                 tokenizer.NextToken();
-                Debug("Term: token " + tokenizer.GetToken());
+                TraceInternal.TraceVerbose("Term: token " + tokenizer.GetToken());
                 Exponent();
 
                 switch (op)
@@ -348,7 +346,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Trace.TraceInformation("Out Term()");
+            Debug.WriteLine("Out Term()");
         }
 
         /// <summary>
@@ -358,9 +356,9 @@ namespace Altair
         private void Exponent()
         {
             Tokenizer.Token op;
-            Trace.TraceInformation("In Exponent()");
+            Debug.WriteLine("In Exponent()");
 
-            Debug("Exponent: token " + tokenizer.GetToken());
+            TraceInternal.TraceVerbose("Exponent: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
             {
                 case Tokenizer.Token.TOKENIZER_FUNCTION:
@@ -376,11 +374,11 @@ namespace Altair
             }
 
             op = tokenizer.GetToken();
-            Debug("Exponent: token " + op);
+            TraceInternal.TraceVerbose("Exponent: token " + op);
             while (op == Tokenizer.Token.TOKENIZER_EXPONENT)
             {
                 tokenizer.NextToken();
-                Debug("Exponent: token " + tokenizer.GetToken());
+                TraceInternal.TraceVerbose("Exponent: token " + tokenizer.GetToken());
                 switch (tokenizer.GetToken())
                 {
                     case Tokenizer.Token.TOKENIZER_FUNCTION:
@@ -404,7 +402,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Trace.TraceInformation("Out Exponent()");
+            Debug.WriteLine("Out Exponent()");
         }
 
         /// <summary>
@@ -417,16 +415,16 @@ namespace Altair
             FunctionIndex function;
             int num;
 
-            Trace.TraceInformation("In Factor()");
+            Debug.WriteLine("In Factor()");
 
-            Debug("Factor: token " + tokenizer.GetToken());
+            TraceInternal.TraceVerbose("Factor: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
             {
                 case Tokenizer.Token.TOKENIZER_FN:
                     {
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FN);
                         varName = tokenizer.GetNumericArrayVariable();
-                        Debug("Factor: function " + varName);
+                        TraceInternal.TraceVerbose("Factor: function " + varName);
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE);
                         num = varName[0] - (int)'a';
                         function = functions[num];
@@ -457,7 +455,7 @@ namespace Altair
                         for (int i = function.Parameters - 1; i >= 0; i--)
                         {
                             f = PopDouble();
-                            Debug("Factor: function numeric " + Convert.ToString(f));
+                            TraceInternal.TraceVerbose("Factor: function numeric " + Convert.ToString(f));
                             SetNumericVariable(function.Parameter[i], (double)f);
                         }
 
@@ -650,7 +648,7 @@ namespace Altair
                 case Tokenizer.Token.TOKENIZER_NUMBER:
                     {
                         f = tokenizer.GetNumber();
-                        Debug("Factor: number " + Convert.ToString(f));
+                        TraceInternal.TraceVerbose("Factor: number " + Convert.ToString(f));
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMBER);
                         stack.Push(f);
                         break;
@@ -658,7 +656,7 @@ namespace Altair
                 case Tokenizer.Token.TOKENIZER_INTEGER:
                     {
                         f = (double)tokenizer.GetInteger();
-                        Debug("Factor: integer " + Convert.ToString(f));
+                        TraceInternal.TraceVerbose("Factor: integer " + Convert.ToString(f));
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
                         stack.Push(f);
                         break;
@@ -666,7 +664,7 @@ namespace Altair
                 case Tokenizer.Token.TOKENIZER_STRING:
                     {
                         f = tokenizer.Getstring();
-                        Debug("Factor: string '" + Convert.ToString(f) + "'");
+                        TraceInternal.TraceVerbose("Factor: string '" + Convert.ToString(f) + "'");
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING);
                         stack.Push((string)f);
                         break;
@@ -682,7 +680,7 @@ namespace Altair
                 case Tokenizer.Token.TOKENIZER_STRING_VARIABLE:
                     {
                         f = GetStringVariable(tokenizer.GetStringVariable());
-                        Debug("Factor: string variable '" + Convert.ToString(f) + "'");
+                        TraceInternal.TraceVerbose("Factor: string variable '" + Convert.ToString(f) + "'");
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
                         stack.Push(f);
                         break;
@@ -690,7 +688,7 @@ namespace Altair
                 case Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE:
                     {
                         f = GetNumericVariable(tokenizer.GetNumericVariable());
-                        Debug("Factor: numeric variable " + Convert.ToString(f));
+                        TraceInternal.TraceVerbose("Factor: numeric variable " + Convert.ToString(f));
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
                         stack.Push(f);
                         break;
@@ -723,7 +721,7 @@ namespace Altair
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
 
                         f = GetNumericArrayVariable(varName, dimension, dimensions);
-                        Debug("Factor: numeric array " + Convert.ToString(f));
+                        TraceInternal.TraceVerbose("Factor: numeric array " + Convert.ToString(f));
                         stack.Push(f);
                         break;
                     }
@@ -755,7 +753,7 @@ namespace Altair
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
 
                         f = GetStringArrayVariable(varName, dimension, dimensions);
-                        Debug("Factor: string array " + Convert.ToString(f));
+                        TraceInternal.TraceVerbose("Factor: string array " + Convert.ToString(f));
                         stack.Push(f);
                         break;
                     }
@@ -764,13 +762,13 @@ namespace Altair
                     {
                         num = tokenizer.GetIntegerVariable();
                         f = GetIntVariable(num);
-                        Debug("Factor: int " + Convert.ToString(f));
+                        TraceInternal.TraceVerbose("Factor: int " + Convert.ToString(f));
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
                         stack.Push(f);
                         break;
                     }
             }
-            Trace.TraceInformation("Out Factor()");
+            Debug.WriteLine("Out Factor()");
         }
 
         #region functions
@@ -781,7 +779,7 @@ namespace Altair
         {
             object first;
             double number;
-            Trace.TraceInformation("In SquareRoot()");
+            Debug.WriteLine("In SquareRoot()");
 
             if (stack.Count > 0)
             {
@@ -796,7 +794,7 @@ namespace Altair
                     if ((double)first >= 0)
                     {
                         number = Math.Sqrt((double)first);
-                        Debug("PopSqr: " + number);
+                        TraceInternal.TraceVerbose("PopSqr: " + number);
                         stack.Push(number);
                     }
                     else
@@ -805,7 +803,7 @@ namespace Altair
                     }
                 }
             }
-            Trace.TraceInformation("Out SquareRoot()");
+            Debug.WriteLine("Out SquareRoot()");
         }
 
         //---------------------------------------------------------------}
@@ -816,7 +814,7 @@ namespace Altair
 
             object first;
             double number;
-            Trace.TraceInformation("In Abs()");
+            Debug.WriteLine("In Abs()");
 
             if (stack.Count > 0)
             {
@@ -829,11 +827,11 @@ namespace Altair
                 else
                 {
                     number = Math.Abs((double)first);
-                    Debug("Abs: " + number);
+                    TraceInternal.TraceVerbose("Abs: " + number);
                     stack.Push(number);
                 }
             }
-            Trace.TraceInformation("Out Abs()");
+            Debug.WriteLine("Out Abs()");
         }
 
         //---------------------------------------------------------------}
@@ -844,7 +842,7 @@ namespace Altair
 
             object first;
             double number;
-            Trace.TraceInformation("In Int()");
+            Debug.WriteLine("In Int()");
 
             if (stack.Count > 0)
             {
@@ -857,11 +855,11 @@ namespace Altair
                 else
                 {
                     number = Math.Truncate((double)first);
-                    Debug("Int: " + number);
+                    TraceInternal.TraceVerbose("Int: " + number);
                     stack.Push(number);
                 }
             }
-            Trace.TraceInformation("Out Int()");
+            Debug.WriteLine("Out Int()");
         }
 
         //---------------------------------------------------------------}
@@ -870,7 +868,7 @@ namespace Altair
         {
             object first;
             double number;
-            Trace.TraceInformation("In Rnd()");
+            Debug.WriteLine("In Rnd()");
 
             if (stack.Count > 0)
             {
@@ -889,11 +887,11 @@ namespace Altair
                     Random r = new Random(randomize);
                     randomize--;
                     number = r.NextDouble();
-                    Debug("Rnd: " + number);
+                    TraceInternal.TraceVerbose("Rnd: " + number);
                     stack.Push(number);
                 }
             }
-            Trace.TraceInformation("Out Rnd()");
+            Debug.WriteLine("Out Rnd()");
         }
 
         //---------------------------------------------------------------}
@@ -901,7 +899,7 @@ namespace Altair
         private void Sin()
         {
             object first;
-            Trace.TraceInformation("In Sin()");
+            Debug.WriteLine("In Sin()");
 
             if (stack.Count > 0)
             {
@@ -916,7 +914,7 @@ namespace Altair
                     stack.Push(Math.Sin((double)first));
                 }
             }
-            Trace.TraceInformation("Out Sin()");
+            Debug.WriteLine("Out Sin()");
         }
 
         //---------------------------------------------------------------}
@@ -924,7 +922,7 @@ namespace Altair
         private void Cos()
         {
             object first;
-            Trace.TraceInformation("In Cos()");
+            Debug.WriteLine("In Cos()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
@@ -938,7 +936,7 @@ namespace Altair
                     stack.Push(Math.Cos((double)first));
                 }
             }
-            Trace.TraceInformation("Out Cos()");
+            Debug.WriteLine("Out Cos()");
         }
 
         //---------------------------------------------------------------}
@@ -946,7 +944,7 @@ namespace Altair
         private void Tan()
         {
             object first;
-            Trace.TraceInformation("In Tan()");
+            Debug.WriteLine("In Tan()");
 
             if (stack.Count > 0)
             {
@@ -961,7 +959,7 @@ namespace Altair
                     stack.Push(Math.Tan((double)first));
                 }
             }
-            Trace.TraceInformation("Out Tan()");
+            Debug.WriteLine("Out Tan()");
         }
 
         //---------------------------------------------------------------}
@@ -969,7 +967,7 @@ namespace Altair
         private void Atn()
         {
             object first;
-            Trace.TraceInformation("In Atn()");
+            Debug.WriteLine("In Atn()");
 
             if (stack.Count > 0)
             {
@@ -984,7 +982,7 @@ namespace Altair
                     stack.Push(Math.Atan((double)first));
                 }
             }
-            Trace.TraceInformation("Out Atn()");
+            Debug.WriteLine("Out Atn()");
         }
 
         //---------------------------------------------------------------}
@@ -992,7 +990,7 @@ namespace Altair
         private void Exp()
         {
             object first;
-            Trace.TraceInformation("In Exp()");
+            Debug.WriteLine("In Exp()");
 
             if (stack.Count > 0)
             {
@@ -1007,7 +1005,7 @@ namespace Altair
                     stack.Push(Math.Exp((double)first));
                 }
             }
-            Trace.TraceInformation("Out Exp()");
+            Debug.WriteLine("Out Exp()");
         }
 
         //---------------------------------------------------------------}
@@ -1015,7 +1013,7 @@ namespace Altair
         private void Log()
         {
             object first;
-            Trace.TraceInformation("In Log()");
+            Debug.WriteLine("In Log()");
 
             if (stack.Count > 0)
             {
@@ -1030,7 +1028,7 @@ namespace Altair
                     stack.Push(Math.Log((double)first));
                 }
             }
-            Trace.TraceInformation("Out Log()");
+            Debug.WriteLine("Out Log()");
         }
 
         //---------------------------------------------------------------}
@@ -1039,7 +1037,7 @@ namespace Altair
         {
             object first;
             double number = 0;
-            Trace.TraceInformation("In Asc()");
+            Debug.WriteLine("In Asc()");
 
             if (stack.Count > 0)
             {
@@ -1060,7 +1058,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Trace.TraceInformation("Out Asc()");
+            Debug.WriteLine("Out Asc()");
         }
 
         //---------------------------------------------------------------}
@@ -1069,7 +1067,7 @@ namespace Altair
         {
             object first;
             string text = "";
-            Trace.TraceInformation("In Chr()");
+            Debug.WriteLine("In Chr()");
 
             if (stack.Count > 0)
             {
@@ -1091,7 +1089,7 @@ namespace Altair
                     stack.Push(text);
                 }
             }
-            Trace.TraceInformation("Out Chr()");
+            Debug.WriteLine("Out Chr()");
         }
 
         //---------------------------------------------------------------}
@@ -1099,7 +1097,7 @@ namespace Altair
         private void Len()
         {
             object first;
-            Trace.TraceInformation("In Len()");
+            Debug.WriteLine("In Len()");
 
             if (stack.Count > 0)
             {
@@ -1115,7 +1113,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Trace.TraceInformation("Out Len()");
+            Debug.WriteLine("Out Len()");
         }
 
         //---------------------------------------------------------------}
@@ -1124,7 +1122,7 @@ namespace Altair
         {
             object first;
             string value = "";
-            Trace.TraceInformation("In Str()");
+            Debug.WriteLine("In Str()");
 
             if (stack.Count > 0)
             {
@@ -1144,7 +1142,7 @@ namespace Altair
                     Expected("double");
                 }
             }
-            Trace.TraceInformation("Out Str()");
+            Debug.WriteLine("Out Str()");
         }
 
         //---------------------------------------------------------------}
@@ -1153,7 +1151,7 @@ namespace Altair
         {
             object first;
             double number = 0;
-            Trace.TraceInformation("In Val()");
+            Debug.WriteLine("In Val()");
 
             if (stack.Count > 0)
             {
@@ -1173,7 +1171,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Trace.TraceInformation("Out Val()");
+            Debug.WriteLine("Out Val()");
         }
 
         //---------------------------------------------------------------}
@@ -1188,7 +1186,7 @@ namespace Altair
             string value;
             int length;
 
-            Trace.TraceInformation("In Left()");
+            Debug.WriteLine("In Left()");
 
             if (stack.Count > 1)
             {
@@ -1205,19 +1203,19 @@ namespace Altair
                             if (length < 1)
                             {
                                 value = "";
-                                Debug("Left: '" + value + "'");
+                                TraceInternal.TraceVerbose("Left: '" + value + "'");
                                 stack.Push(value);
                             }
                             else if (length >= value.Length)
                             {
-                                Debug("Left: '" + value + "'");
+                                TraceInternal.TraceVerbose("Left: '" + value + "'");
                                 stack.Push(value);
                             }
                             else
                             {
                                 value = value.Substring(0, length);
-                                Info("LEFT(\"" + value + "\"," + length + ")");
-                                Debug("Left: '" + value + "'");
+                                TraceInternal.TraceInformation("LEFT(\"" + value + "\"," + length + ")");
+                                TraceInternal.TraceVerbose("Left: '" + value + "'");
                                 stack.Push(value);
                             }
                         }
@@ -1232,7 +1230,7 @@ namespace Altair
                     Expected("double");
                 }
             }
-            Trace.TraceInformation("Out Left()");
+            Debug.WriteLine("Out Left()");
         }
 
         //---------------------------------------------------------------}
@@ -1246,7 +1244,7 @@ namespace Altair
             object second;
             string value;
             int length;
-            Trace.TraceInformation("In Right()");
+            Debug.WriteLine("In Right()");
 
             if (stack.Count > 1)
             {
@@ -1263,19 +1261,19 @@ namespace Altair
                             if (length < 1)
                             {
                                 value = "";
-                                Debug("Right: '" + value + "'");
+                                TraceInternal.TraceVerbose("Right: '" + value + "'");
                                 stack.Push(value);
                             }
                             else if (length >= value.Length)
                             {
-                                Debug("Right: '" + value + "'");
+                                TraceInternal.TraceVerbose("Right: '" + value + "'");
                                 stack.Push(value);
                             }
                             else
                             {
                                 value = value.Substring(value.Length - length, length);
-                                Info("RIGHT(\"" + value + "\"," + length + ")");
-                                Debug("Right: '" + value + "'");
+                                TraceInternal.TraceInformation("RIGHT(\"" + value + "\"," + length + ")");
+                                TraceInternal.TraceVerbose("Right: '" + value + "'");
                                 stack.Push(value);
                             }
                         }
@@ -1290,7 +1288,7 @@ namespace Altair
                     Expected("double");
                 }
             }
-            Trace.TraceInformation("Out Right()");
+            Debug.WriteLine("Out Right()");
         }
 
         //---------------------------------------------------------------}
@@ -1308,7 +1306,7 @@ namespace Altair
             int length;
             int number;
 
-            Trace.TraceInformation("In Mid()");
+            Debug.WriteLine("In Mid()");
 
             if (parameters == 2)
             {
@@ -1328,19 +1326,19 @@ namespace Altair
                                 if (length < 1)
                                 {
                                     value = "";
-                                    Debug("Mid: '" + value + "'");
+                                    TraceInternal.TraceVerbose("Mid: '" + value + "'");
                                     stack.Push(value);
                                 }
                                 else if (length > value.Length)
                                 {
-                                    Debug("Mid: '" + value + "'");
+                                    TraceInternal.TraceVerbose("Mid: '" + value + "'");
                                     stack.Push(value);
                                 }
                                 else
                                 {
-                                    Info("MID(\"" + value + "\"," + length + ")");
+                                    TraceInternal.TraceInformation("MID(\"" + value + "\"," + length + ")");
                                     value = value.Substring(length - 1);
-                                    Debug("Mid: '" + value + "'");
+                                    TraceInternal.TraceVerbose("Mid: '" + value + "'");
                                     stack.Push(value);
                                 }
                             }
@@ -1391,20 +1389,20 @@ namespace Altair
                                         if (length < 1)
                                         {
                                             value = "";
-                                            Debug("Mid: '" + value + "'");
+                                            TraceInternal.TraceVerbose("Mid: '" + value + "'");
                                             stack.Push(value);
                                         }
                                         else if (number + length > value.Length)
                                         {
                                             value = value.Substring(number - 1);
-                                            Debug("Mid: '" + value + "'");
+                                            TraceInternal.TraceVerbose("Mid: '" + value + "'");
                                             stack.Push(value);
                                         }
                                         else
                                         {
-                                            Info("MID(\"" + value + "\"," + number + "," + length + ")");
+                                            TraceInternal.TraceInformation("MID(\"" + value + "\"," + number + "," + length + ")");
                                             value = value.Substring(number - 1, length);
-                                            Debug("Mid: '" + value + "'");
+                                            TraceInternal.TraceVerbose("Mid: '" + value + "'");
                                             stack.Push(value);
                                         }
                                     }
@@ -1426,7 +1424,7 @@ namespace Altair
                     }
                 }
             }
-            Trace.TraceInformation("Out Mid()");
+            Debug.WriteLine("Out Mid()");
         }
 
         #endregion functions
@@ -1440,7 +1438,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Trace.TraceInformation("In Less()");
+			Debug.WriteLine("In Less()");
 			
             if (stack.Count > 1)
             {
@@ -1468,8 +1466,8 @@ namespace Altair
                             {
                                 truth = false;  // first < second or first = second
                             }
-                            Debug("Less: " + truth);
-                            Info("\"" + second + "\"<\"" + first + "\"=" + truth);
+                            TraceInternal.TraceVerbose("Less: " + truth);
+                            TraceInternal.TraceInformation("\"" + second + "\"<\"" + first + "\"=" + truth);
                             stack.Push(truth);
                         }
                     }
@@ -1487,14 +1485,14 @@ namespace Altair
                         else
                         {
                             truth = Convert.ToDouble(first) > Convert.ToDouble(second);
-                            Debug("Less: " + truth);
-                            Info(second + "<" + first + "=" + truth);
+                            TraceInternal.TraceVerbose("Less: " + truth);
+                            TraceInternal.TraceInformation(second + "<" + first + "=" + truth);
                             stack.Push(truth);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out Less()");
+			Debug.WriteLine("Out Less()");
         }
 
         //---------------------------------------------------------------}
@@ -1505,7 +1503,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Trace.TraceInformation("In LessEqual()");
+			Debug.WriteLine("In LessEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1533,8 +1531,8 @@ namespace Altair
                             {
                                 truth = false;  // first < second
                             }
-                            Debug("LessEqual: " + truth);
-                            Info("\"" + second + "\"<=\"" + first + "\"=" + truth);
+                            TraceInternal.TraceVerbose("LessEqual: " + truth);
+                            TraceInternal.TraceInformation("\"" + second + "\"<=\"" + first + "\"=" + truth);
                             stack.Push(truth);
                         }
                     }
@@ -1552,14 +1550,14 @@ namespace Altair
                         else
                         {
                             truth = Convert.ToDouble(first) >= Convert.ToDouble(second);
-                            Debug("LessEqual: " + truth);
-                            Info(second + "<=" + first + "=" + truth);
+                            TraceInternal.TraceVerbose("LessEqual: " + truth);
+                            TraceInternal.TraceInformation(second + "<=" + first + "=" + truth);
                             stack.Push(truth);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out LessEqual()");
+			Debug.WriteLine("Out LessEqual()");
         }
 
         //---------------------------------------------------------------}
@@ -1570,7 +1568,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Trace.TraceInformation("In Greater()");
+			Debug.WriteLine("In Greater()");
 			
             if (stack.Count > 1)
             {
@@ -1599,8 +1597,8 @@ namespace Altair
                             {
                                 truth = false;  // first > second and first = second
                             }
-                            Debug("Greater: " + truth);
-                            Info("\"" + second + "\">\"" + first + "\"=" + truth);
+                            TraceInternal.TraceVerbose("Greater: " + truth);
+                            TraceInternal.TraceInformation("\"" + second + "\">\"" + first + "\"=" + truth);
                             stack.Push(truth);
                         }
                     }
@@ -1622,14 +1620,14 @@ namespace Altair
                         else
                         {
                             truth = Convert.ToDouble(first) < Convert.ToDouble(second);
-                            Debug("Greater: " + truth);
-                            Info(second + ">" + first + "=" + truth);
+                            TraceInternal.TraceVerbose("Greater: " + truth);
+                            TraceInternal.TraceInformation(second + ">" + first + "=" + truth);
                             stack.Push(truth);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out Greater()");
+			Debug.WriteLine("Out Greater()");
         }
 
         //---------------------------------------------------------------}
@@ -1640,7 +1638,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Trace.TraceInformation("In GreaterEqual()");
+			Debug.WriteLine("In GreaterEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1668,8 +1666,8 @@ namespace Altair
                             {
                                 truth = false;  // first > second
                             }
-                            Debug("GreaterEqual: " + truth);
-                            Info("\"" + second + "\">=\"" + first + "\"=" + truth);
+                            TraceInternal.TraceVerbose("GreaterEqual: " + truth);
+                            TraceInternal.TraceInformation("\"" + second + "\">=\"" + first + "\"=" + truth);
                             stack.Push(truth);
                         }
                     }
@@ -1687,14 +1685,14 @@ namespace Altair
                         else
                         {
                             truth = Convert.ToDouble(first) <= Convert.ToDouble(second);
-                            Debug("GreaterEqual: " + truth);
-                            Info(second + ">=" + first + "=" + truth);
+                            TraceInternal.TraceVerbose("GreaterEqual: " + truth);
+                            TraceInternal.TraceInformation(second + ">=" + first + "=" + truth);
                             stack.Push(truth);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out GreaterEqual()");
+			Debug.WriteLine("Out GreaterEqual()");
         }
 
         //---------------------------------------------------------------}
@@ -1704,7 +1702,7 @@ namespace Altair
             object first;
             object second;
 			
-			Trace.TraceInformation("In Equal()");
+			Debug.WriteLine("In Equal()");
 			
             if (stack.Count > 1)
             {
@@ -1723,8 +1721,8 @@ namespace Altair
                         else
                         {
                             truth = string.Equals(first.ToString(), second.ToString());
-                            Debug("Equal: " + truth);
-                            Info("\"" + second + "\"=\"" + first + "\"=" + truth);
+                            TraceInternal.TraceVerbose("Equal: " + truth);
+                            TraceInternal.TraceInformation("\"" + second + "\"=\"" + first + "\"=" + truth);
                             stack.Push(truth);
                         }
                     }
@@ -1742,14 +1740,14 @@ namespace Altair
                         else
                         {
                             truth = Convert.ToDouble(first) == Convert.ToDouble(second);
-                            Debug("Equal: " + truth);
-                            Info(second + "=" + first + "=" + truth);
+                            TraceInternal.TraceVerbose("Equal: " + truth);
+                            TraceInternal.TraceInformation(second + "=" + first + "=" + truth);
                             stack.Push(truth);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out Equal()");
+			Debug.WriteLine("Out Equal()");
         }
 
         //---------------------------------------------------------------}
@@ -1759,7 +1757,7 @@ namespace Altair
             object first;
             object second;
 			
-			Trace.TraceInformation("In NotEqual()");
+			Debug.WriteLine("In NotEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1778,8 +1776,8 @@ namespace Altair
                         else
                         {
                             truth = !string.Equals(first.ToString(), second.ToString());
-                            Debug("NotEqual: " + truth);
-                            Info("\"" + first + "\"<>\"" + second + "\"=" + truth);
+                            TraceInternal.TraceVerbose("NotEqual: " + truth);
+                            TraceInternal.TraceInformation("\"" + first + "\"<>\"" + second + "\"=" + truth);
                             stack.Push(truth);
                         }
                     }
@@ -1797,14 +1795,14 @@ namespace Altair
                         else
                         {
                             truth = Convert.ToDouble(first) != Convert.ToDouble(second);
-                            Debug("NotEqual: " + truth);
-                            Info(first + "<>" + second + "=" + truth);
+                            TraceInternal.TraceVerbose("NotEqual: " + truth);
+                            TraceInternal.TraceInformation(first + "<>" + second + "=" + truth);
                             stack.Push(truth);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out NotEqual()");
+			Debug.WriteLine("Out NotEqual()");
         }
 
         #endregion
@@ -1818,7 +1816,7 @@ namespace Altair
             object first;
             Boolean value = false;
 			
-			Trace.TraceInformation("In PopBoolean()");
+			Debug.WriteLine("In PopBoolean()");
 
             if (stack.Count > 0)
             {
@@ -1832,9 +1830,9 @@ namespace Altair
                 {
                     value = (Boolean)first;
                 }
-				Debug("PopBoolean: " + value);
+				TraceInternal.TraceVerbose("PopBoolean: " + value);
             }
-            Trace.TraceInformation("Out PopBoolean()");
+            Debug.WriteLine("Out PopBoolean()");
             return (value);
         }
 
@@ -1846,7 +1844,7 @@ namespace Altair
             object first;
             Double number = 0;
 			
-			Trace.TraceInformation("In PopDouble()");
+			Debug.WriteLine("In PopDouble()");
 
             if (stack.Count > 0)
             {
@@ -1860,9 +1858,9 @@ namespace Altair
                 {
                     number = Convert.ToDouble(first);
                 }
-				Debug("PopDouble: " + number);
+				TraceInternal.TraceVerbose("PopDouble: " + number);
             }
-            Trace.TraceInformation("Out PopDouble()");
+            Debug.WriteLine("Out PopDouble()");
             return (number);
         }
 
@@ -1874,7 +1872,7 @@ namespace Altair
             object first;
             int integer = 0;
 			
-			Trace.TraceInformation("In PopInteger()");
+			Debug.WriteLine("In PopInteger()");
 
             if (stack.Count > 0)
             {
@@ -1888,9 +1886,9 @@ namespace Altair
                 {
                     integer = (int)first;
                 }
-				Debug("PopInteger: " + integer);
+				TraceInternal.TraceVerbose("PopInteger: " + integer);
             }
-			Trace.TraceInformation("Out PopInteger()");
+			Debug.WriteLine("Out PopInteger()");
             return (integer);
         }
 
@@ -1902,7 +1900,7 @@ namespace Altair
             object first;
             string value = "";
 			
-			Trace.TraceInformation("In PopString()");
+			Debug.WriteLine("In PopString()");
 
             if (stack.Count > 0)
             {
@@ -1916,9 +1914,9 @@ namespace Altair
                 {
                     value = (string)first;
                 }
-				Debug("PopString: " + value);
+				TraceInternal.TraceVerbose("PopString: " + value);
             }
-            Trace.TraceInformation("Out PopString()");
+            Debug.WriteLine("Out PopString()");
             return (value);
         }
 
@@ -1927,13 +1925,13 @@ namespace Altair
         public object PopObject()
         {
             object first = null;
-			Trace.TraceInformation("In PopObject()");
+			Debug.WriteLine("In PopObject()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
-				Debug("PopObject: " + first.ToString());
+				TraceInternal.TraceVerbose("PopObject: " + first.ToString());
             }
-			Trace.TraceInformation("Out PopObject()");
+			Debug.WriteLine("Out PopObject()");
             return (first);
         }
 
@@ -1949,7 +1947,7 @@ namespace Altair
             double number;
             string value;
 			
-			Trace.TraceInformation("In Add()");
+			Debug.WriteLine("In Add()");
 
             if (stack.Count > 1)
             {
@@ -1962,7 +1960,7 @@ namespace Altair
                         if (second.GetType() == typeof(string))
                         {
                             value = second.ToString() + first.ToString();
-                            Debug("PopAdd: '" + second + "' + '" + first + "' =" + value);
+                            TraceInternal.TraceVerbose("PopAdd: '" + second + "' + '" + first + "' =" + value);
                             stack.Push(value);
                         }
                         else
@@ -1985,13 +1983,13 @@ namespace Altair
                         else
                         {
                             number = (double)second + (double)first;
-                            Debug("PopAdd: " + second + "+" + first + "=" + number);
+                            TraceInternal.TraceVerbose("PopAdd: " + second + "+" + first + "=" + number);
                             stack.Push(number);
                         }
                     }
                 }
             }
-			Trace.TraceInformation("Out Add()");
+			Debug.WriteLine("Out Add()");
         }
 
         //---------------------------------------------------------------}
@@ -2002,7 +2000,7 @@ namespace Altair
             object second;
             double number;
 
-            Trace.TraceInformation("In Subtract()");
+            Debug.WriteLine("In Subtract()");
 
             if (stack.Count > 1)
             {
@@ -2025,13 +2023,13 @@ namespace Altair
                         else
                         {
                             number = (double)second - (double)first;
-                            Debug("PopSubtract: " + second + "-" + first + "=" + number);
+                            TraceInternal.TraceVerbose("PopSubtract: " + second + "-" + first + "=" + number);
                             stack.Push(number);
                         }
                     }
                 }
             }
-            Trace.TraceInformation("Out Subtract()");
+            Debug.WriteLine("Out Subtract()");
         }
 
         //---------------------------------------------------------------}
@@ -2042,7 +2040,7 @@ namespace Altair
             object second;
             double numeric;
 
-            Trace.TraceInformation("In Multiply()");
+            Debug.WriteLine("In Multiply()");
 
             if (stack.Count > 1)
             {
@@ -2065,13 +2063,13 @@ namespace Altair
                         else
                         {
                             numeric = (double)second * (double)first;
-                            Debug("PopMultiply: " + second + "*" + first + "=" + numeric);
+                            TraceInternal.TraceVerbose("PopMultiply: " + second + "*" + first + "=" + numeric);
                             stack.Push(numeric);
                         }
                     }
                 }
             }
-            Trace.TraceInformation("Out Multiply()");
+            Debug.WriteLine("Out Multiply()");
         }
 
         //---------------------------------------------------------------}
@@ -2082,7 +2080,7 @@ namespace Altair
             object second;
             double number;
 
-            Trace.TraceInformation("In Divide()");
+            Debug.WriteLine("In Divide()");
 
             if (stack.Count > 1)
             {
@@ -2105,13 +2103,13 @@ namespace Altair
                         else
                         {
                             number = (double)second / (double)first;
-                            Debug("PopDivide: " + second + "/" + first + "=" + number);
+                            TraceInternal.TraceVerbose("PopDivide: " + second + "/" + first + "=" + number);
                             stack.Push(number);
                         }
                     }
                 }
             }
-            Trace.TraceInformation("Out Divide()");
+            Debug.WriteLine("Out Divide()");
         }
 
         //---------------------------------------------------------------} 
@@ -2120,7 +2118,7 @@ namespace Altair
         {
             object first;
 
-            Trace.TraceInformation("In Not()");
+            Debug.WriteLine("In Not()");
 
             if (stack.Count > 0)
             {
@@ -2135,7 +2133,7 @@ namespace Altair
                     stack.Push(!(bool)first);
                 }
             }
-            Trace.TraceInformation("Out Not()");
+            Debug.WriteLine("Out Not()");
         }
 
         //---------------------------------------------------------------} 
@@ -2145,7 +2143,7 @@ namespace Altair
             object first;
             object second;
 
-            Trace.TraceInformation("In And()");
+            Debug.WriteLine("In And()");
 
             if (stack.Count > 1)
             {
@@ -2172,7 +2170,7 @@ namespace Altair
                     }
                 }
             }
-            Trace.TraceInformation("Out And()");
+            Debug.WriteLine("Out And()");
         }
 
         //---------------------------------------------------------------} 
@@ -2182,7 +2180,7 @@ namespace Altair
             object first;
             object second;
 
-            Trace.TraceInformation("In Or()");
+            Debug.WriteLine("In Or()");
 
             if (stack.Count > 1)
             {
@@ -2209,7 +2207,7 @@ namespace Altair
                     }
                 }
             }
-            Trace.TraceInformation("Out Or()");
+            Debug.WriteLine("Out Or()");
         }
 
         //---------------------------------------------------------------} 
@@ -2219,7 +2217,7 @@ namespace Altair
             object first;
             object second;
 
-            Trace.TraceInformation("In Xor()");
+            Debug.WriteLine("In Xor()");
 
             if (stack.Count > 1)
             {
@@ -2246,7 +2244,7 @@ namespace Altair
                     }
                 }
             }
-            Trace.TraceInformation("Out Xor()");
+            Debug.WriteLine("Out Xor()");
         }
 
         //---------------------------------------------------------------}
@@ -2257,7 +2255,7 @@ namespace Altair
             object second;
             double number;
 
-            Trace.TraceInformation("In Power()");
+            Debug.WriteLine("In Power()");
 
             if (stack.Count > 1)
             {
@@ -2280,20 +2278,20 @@ namespace Altair
                         else
                         {
                             number = Math.Pow((double)second, (double)first);
-                            Debug("PopPower: " + number);
+                            TraceInternal.TraceVerbose("PopPower: " + number);
                             stack.Push(number);
                         }
                     }
                 }
             }
-            Trace.TraceInformation("Out Power()");
+            Debug.WriteLine("Out Power()");
         }
 
         #endregion operators
 
         public int GetIntVariable(int varnum)
         {
-            Trace.TraceInformation("In GetIntVariable()");
+            Debug.WriteLine("In GetIntVariable()");
             int integer;
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
@@ -2303,14 +2301,14 @@ namespace Altair
             {
                 integer = 0;
             }
-            Debug("varNum" + varnum + " integer=" + integer);
-            Trace.TraceInformation("Out GetIntVariable()");
+            TraceInternal.TraceVerbose("varNum" + varnum + " integer=" + integer);
+            Debug.WriteLine("Out GetIntVariable()");
             return (integer);
         }
 
         public string GetStringVariable(string varName)
         {
-            Trace.TraceInformation("In GetStringVariable()");
+            Debug.WriteLine("In GetStringVariable()");
 
             // Not sure what happens if the variable doesnt exit
             // think this should error but wonder what the specification says
@@ -2324,15 +2322,15 @@ namespace Altair
             {
                 value = "";
             }
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("Out GetStringVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
+            Debug.WriteLine("Out GetStringVariable()");
             return (value);
         }
 
         public double GetNumericVariable(string varName)
         {
             double number;
-            Trace.TraceInformation("In GetNumericVariable()");
+            Debug.WriteLine("In GetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 number = (double)numericVariables[varName];
@@ -2341,14 +2339,14 @@ namespace Altair
             {
                 number = 0;
             }
-            Debug("varName=" + varName + " number=" + number);
-            Trace.TraceInformation("Out GetNumericVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
+            Debug.WriteLine("Out GetNumericVariable()");
             return (number);
         }
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            Trace.TraceInformation("In GetNumericArrayVariable()");
+            Debug.WriteLine("In GetNumericArrayVariable()");
 
             uBasicLibrary.Array data;
             double number;
@@ -2361,14 +2359,14 @@ namespace Altair
             {
                 number = 0;
             }
-            Debug("varName=" + varName + " number=" + number);
-            Trace.TraceInformation("Out GetNumericArrayVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
+            Debug.WriteLine("Out GetNumericArrayVariable()");
             return (number);
         }
 
         public string GetStringArrayVariable(string varName, int positions, int[] position)
         {
-            Trace.TraceInformation("In GetStringArrayVariable()");
+            Debug.WriteLine("In GetStringArrayVariable()");
 
             uBasicLibrary.Array data;
             string value;
@@ -2381,14 +2379,14 @@ namespace Altair
             {
                 value = "";
             }
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("In GetStringArrayVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
+            Debug.WriteLine("In GetStringArrayVariable()");
             return (value);
         }
 
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Trace.TraceInformation("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In DeclareNumericArrayVariable()");
             uBasicLibrary.Array data;
             if (numericArrayVariables.ContainsKey(varName))
             {
@@ -2396,12 +2394,12 @@ namespace Altair
             }
             data = new uBasicLibrary.Array(varName, dimensions, dimension,(double)0);
             numericArrayVariables.Add(varName, data);
-            Trace.TraceInformation("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In DeclareNumericArrayVariable()");
         }
 
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Trace.TraceInformation("In DeclareStringArrayVariable()");
+            Debug.WriteLine("In DeclareStringArrayVariable()");
             uBasicLibrary.Array data;
             if (stringArrayVariables.ContainsKey(varName))
             {
@@ -2409,47 +2407,47 @@ namespace Altair
             }
             data = new uBasicLibrary.Array(varName, dimensions, dimension, (string)"");
             stringArrayVariables.Add(varName, data);
-            Trace.TraceInformation("Out DeclareStringArrayVariable()");
+            Debug.WriteLine("Out DeclareStringArrayVariable()");
         }
 
         public void SetIntVariable(int varnum, int integer)
         {
-            Trace.TraceInformation("In SetIntVariable()");
+            Debug.WriteLine("In SetIntVariable()");
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
                 variables[varnum] = integer;
             }
-            Debug("varNum=" + varnum + " integer=" + integer);
-            Trace.TraceInformation("Out SetIntVariable()");
+            TraceInternal.TraceVerbose("varNum=" + varnum + " integer=" + integer);
+            Debug.WriteLine("Out SetIntVariable()");
         }
 
         public void SetStringVariable(string varName, string value)
         {
-            Trace.TraceInformation("In SetStringVariable()");
+            Debug.WriteLine("In SetStringVariable()");
             if (stringVariables.ContainsKey(varName))
             {
                 stringVariables.Remove(varName);
             }
             stringVariables.Add(varName, value);
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("Out SetStringVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
+            Debug.WriteLine("Out SetStringVariable()");
         }
 
         public void SetNumericVariable(string varName, double number)
         {
-            Trace.TraceInformation("In SetNumericVariable()");
+            Debug.WriteLine("In SetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 numericVariables.Remove(varName);
             }
             numericVariables.Add(varName, number);
-            Debug("varName=" + varName + " number=" + number);
-            Trace.TraceInformation("Out SetNumericVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
+            Debug.WriteLine("Out SetNumericVariable()");
         }
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
-            Trace.TraceInformation("In SetNumericArrayVariable()");
+            Debug.WriteLine("In SetNumericArrayVariable()");
             uBasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
@@ -2461,13 +2459,13 @@ namespace Altair
             data = (uBasicLibrary.Array)numericArrayVariables[varName];
             data.Set(position, number);
         
-            Debug("varName=" + varName + " number=" + number);
-            Trace.TraceInformation("Out SetNumericArrayVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
+            Debug.WriteLine("Out SetNumericArrayVariable()");
         }
 
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
-            Trace.TraceInformation("In SetStringArrayVariable()");
+            Debug.WriteLine("In SetStringArrayVariable()");
             uBasicLibrary.Array data;
             if (!stringArrayVariables.ContainsKey(varName))
             {
@@ -2479,29 +2477,14 @@ namespace Altair
             data = (uBasicLibrary.Array)stringArrayVariables[varName];
             data.Set(position, value);
 
-            Debug("varName=" + varName + " value=" + value);
-            Trace.TraceInformation("Out SetStringArrayVariable()");
+            TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
+            Debug.WriteLine("Out SetStringArrayVariable()");
         }
 
         #endregion
         #region Private
 
-        //--------------------------------------------------------------
-        // Debug
-
-        void Debug(string s)
-        {
-            log.Debug(s);
-        }
-
-        //--------------------------------------------------------------
-        // Info
-
-        void Info(string s)
-        {
-            log.Info(s);
-        }
-
+       
         //--------------------------------------------------------------
         // Report What Was Expected 
 

@@ -6,7 +6,7 @@ using log4net;
 using uBasicLibrary;
 using System.Diagnostics;
 
-namespace Altair
+namespace Basic
 {
     public class Evaluator
     {

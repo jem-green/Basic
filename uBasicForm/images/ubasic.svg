@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -14,8 +12,11 @@
    viewBox="0 0 12.7 12.7"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
-   sodipodi:docname="uBasic.svg">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="ubasic.svg"
+   inkscape:export-filename="C:\SOURCE\GIT\cs.net\uBasic\uBasicForm\images\ubasic.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,20 +26,21 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.4"
-     inkscape:cx="15.78125"
-     inkscape:cy="20.124051"
+     inkscape:zoom="11.2"
+     inkscape:cx="20.241271"
+     inkscape:cy="22.310173"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
      units="px"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="2736"
-     inkscape:window-height="1719"
-     inkscape:window-x="-13"
-     inkscape:window-y="-13"
-     inkscape:window-maximized="1">
+     inkscape:window-width="1368"
+     inkscape:window-height="860"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:document-rotation="0">
     <sodipodi:guide
        position="2.952939,9.780134"
        orientation="1,0"
@@ -82,14 +84,31 @@
      transform="translate(0,-284.3)">
     <text
        xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:heavy;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold Italic';letter-spacing:0px;word-spacing:0px;fill:#0000ad;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;"
-       x="3.1419272"
-       y="292.35797"
-       id="text825"><tspan
+       style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.6585px;line-height:1.25;font-family:'Century Gothic';-inkscape-font-specification:'Century Gothic, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#0083cd;fill-opacity:1;stroke:none;stroke-width:2.78279;stroke-miterlimit:4;stroke-dasharray:none"
+       x="47.719299"
+       y="311.64764"
+       id="text825"
+       transform="matrix(1.0655445,0,-0.15585368,0.93848731,0,0)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><tspan
          sodipodi:role="line"
          id="tspan823"
-         x="3.1419272"
-         y="292.35797"
-         style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-family:Arial;-inkscape-font-specification:'Arial Heavy';stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;fill:#0000ad;fill-opacity:1;">μ</tspan></text>
+         x="47.719299"
+         y="311.64764"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.6585px;font-family:'Century Gothic';-inkscape-font-specification:'Century Gothic, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#0083cd;fill-opacity:1;stroke-width:2.78279;stroke-miterlimit:4;stroke-dasharray:none">μ</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.6585px;line-height:1.25;font-family:'Century Gothic';-inkscape-font-specification:'Century Gothic, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#0083cd;fill-opacity:1;stroke:none;stroke-width:2.78278;stroke-miterlimit:4;stroke-dasharray:none"
+       x="48.630508"
+       y="311.63254"
+       id="text825-5"
+       transform="matrix(1.0655445,0,-0.15585368,0.93848731,0,0)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><tspan
+         sodipodi:role="line"
+         id="tspan823-0"
+         x="48.630508"
+         y="311.63254"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.6585px;font-family:'Century Gothic';-inkscape-font-specification:'Century Gothic, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#0083cd;fill-opacity:1;stroke-width:2.78278;stroke-miterlimit:4;stroke-dasharray:none">μ</tspan></text>
   </g>
 </svg>

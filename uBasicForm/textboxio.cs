@@ -24,7 +24,6 @@ namespace uBasicForm
         }
 
         #endregion
-
         #region Fields
 
         // Formatting constraints
@@ -33,13 +32,49 @@ namespace uBasicForm
         private int _consoleWidth = 75;
         private int _zoneWidth = 15;
         private int _compactWidth = 3;
-        private int _hpos = 0;
-        private int _vpos = 0;
+        private Cursor cursor;
         private string _input = "";
         private string _output = "";
         protected readonly object _lockObject = new Object();
 
+        struct Cursor
+        {
+            int _left;
+            int _top;
+
+            public Cursor(int left, int top)
+            {
+                _left = left;
+                _top = top;
+            }
+
+            public int Left
+            {
+                get
+                {
+                    return (_left);
+                }
+                set
+                {
+                    _left = value;
+                }
+            }
+            public int Top
+            {
+                get
+                {
+                    return (_top);
+                }
+                set
+                {
+                    _top = value;
+                }
+            }
+        }
+
         #endregion
+        #region Constructors
+		#endregion		
         #region Properties
 
         public int Width
@@ -47,6 +82,10 @@ namespace uBasicForm
             get
             {
                 return (_consoleWidth);
+            }
+			set
+            {
+                _consoleWidth = value;
             }
         }
 
@@ -56,7 +95,12 @@ namespace uBasicForm
             {
                 return (_consoleHeight);
             }
+			set
+            {
+                _consoleHeight = value;
+            }
         }
+
         public string Input
         {
             set
@@ -84,31 +128,19 @@ namespace uBasicForm
             }
         }
 
-        public int Hpos
+        public int Left
         {
             get
             {
-                return (_hpos);
+                return (cursor.Left);
             }
         }
 
-        public int Vpos
+        public int Top
         {
             get
             {
-                return (_vpos);
-            }
-        }
-
-        public int Console
-        {
-            get
-            {
-                return (_consoleWidth);
-            }
-            set
-            {
-                _consoleWidth = value;
+                return (cursor.Top);
             }
         }
 
@@ -191,6 +223,5 @@ namespace uBasicForm
         }
 
         #endregion
-
     }
 }

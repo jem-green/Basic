@@ -35,7 +35,7 @@ using System.Collections;
 using uBasicLibrary;
 using System.Diagnostics;
 
-namespace Altair
+namespace Basic
 {
     /// <summary>
     /// Altair basic 1975
@@ -633,7 +633,7 @@ namespace Altair
                     // spec defines 5 zones then new line
 
                     previous = tokenizer.GetToken();
-                    tab = -consoleIO.Hpos + consoleIO.Zone * (1 + (consoleIO.Hpos / consoleIO.Zone));
+                    tab = -consoleIO.Left + consoleIO.Zone * (1 + (consoleIO.Left / consoleIO.Zone));
                     value = new string(' ', tab);
                     log.Info("PRINT ,");
                     Emit(value);
@@ -653,7 +653,7 @@ namespace Altair
                         // assume a tab spacing of 3 characters
                         // spec defines a minimum of 6 characters
 
-                        tab = -consoleIO.Hpos + consoleIO.Compact * (1 + (consoleIO.Hpos / consoleIO.Compact));
+                        tab = -consoleIO.Left + consoleIO.Compact * (1 + (consoleIO.Left / consoleIO.Compact));
                         if (tab < 2)
                         {
                             tab += 3;
@@ -709,7 +709,7 @@ namespace Altair
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TAB);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
                     evaluator.Expression();
-                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.Hpos;
+                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.Left;
                     if (tab > 0)
                     {
                         value = new string(' ', tab);
