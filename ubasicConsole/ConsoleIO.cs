@@ -34,9 +34,11 @@ namespace uBasicConsole
 
         private int _consoleHeight = 80;
         private int _consoleWidth = 75;
+		private int _consoleLeft = 0;
+		private int _consoleTop = 0;
         private int _zoneWidth = 15;
         private int _compactWidth = 3;
-        private Cursor cursor;
+        private Cursor _cursor;
         private string _input = "";
         private string _output = "";
         protected readonly object _lockObject = new Object();
@@ -77,6 +79,8 @@ namespace uBasicConsole
         }
 
         #endregion
+        #region Constructors
+		#endregion		
         #region Properties
 
         public int Width
@@ -85,6 +89,10 @@ namespace uBasicConsole
             {
                 return (_consoleWidth);
             }
+			set
+            {
+                _consoleWidth = value;
+            }
         }
 
         public int Height
@@ -92,6 +100,34 @@ namespace uBasicConsole
             get
             {
                 return (_consoleHeight);
+            }
+			set
+            {
+                _consoleHeight = value;
+            }
+        }
+
+        public int Left
+        {
+            get
+            {
+                return (_consoleLeft);
+            }
+            set
+            {
+                _consoleLeft = value;
+            }
+        }
+
+        public int Top
+        {
+            get
+            {
+                return (_consoleTop);
+            }
+            set
+            {
+                _consoleTop = value;
             }
         }
 
@@ -102,7 +138,7 @@ namespace uBasicConsole
                 // need to wait here while the input is being read
                 lock (_lockObject)
                 {
-                    _input = _input + value;
+                    _input += value;
                 }
             }
         }
@@ -122,31 +158,19 @@ namespace uBasicConsole
             }
         }
 
-        public int Left
+        public int CursorLeft
         {
             get
             {
-                return (cursor.Left);
+                return (_cursor.Left);
             }
         }
 
-        public int Top
+        public int CursorTop
         {
             get
             {
-                return (cursor.Top);
-            }
-        }
-
-        public int Console
-        {
-            get
-            {
-                return (_consoleWidth);
-            }
-            set
-            {
-                _consoleWidth = value;
+                return (_cursor.Top);
             }
         }
 
@@ -183,20 +207,20 @@ namespace uBasicConsole
             {
 
                 string check = s.TrimEnd(' ');
-                cursor.Left += s.Length;
-                if (cursor.Left > _consoleWidth)
+                _cursor.Left += s.Length;
+                if (_cursor.Left > _consoleWidth)
                 {
                     if (check.Length > 0)
                     {
-                        cursor.Left = s.Length;
-                        cursor.Top++;
+                        _cursor.Left = s.Length;
+                        _cursor.Top++;
                         System.Console.Out.Write("\n");
                         System.Console.Out.Write(s);
                     }
                     else
                     {
-                        cursor.Left = 0;
-                        cursor.Top++;
+                        _cursor.Left = 0;
+                        _cursor.Top++;
                         System.Console.Out.Write("\n");
                     }
                 }
@@ -206,7 +230,7 @@ namespace uBasicConsole
                     // fix the carriage return not setting hpos
                     if (s.EndsWith("\n"))
                     {
-                        cursor.Left = 0;
+                        _cursor.Left = 0;
                     }
                 }
             }

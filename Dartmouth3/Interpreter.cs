@@ -593,7 +593,7 @@ namespace Dartmouth3
                     // spec defines 5 zones then new line
 
                     previous = tokenizer.GetToken();
-                    tab = -consoleIO.Left + consoleIO.Zone * (1 + (consoleIO.Left / consoleIO.Zone));
+                    tab = -consoleIO.CursorLeft + consoleIO.Zone * (1 + (consoleIO.CursorLeft / consoleIO.Zone));
                     value = new string(' ', tab);
                     log.Info("PRINT ,");
                     Emit(value);
@@ -606,7 +606,7 @@ namespace Dartmouth3
                     // assume a tab spacing of 3 characters
                     // spec defines a minimum of 6 characters
 
-                    tab = -consoleIO.Left + consoleIO.Compact * (1 + (consoleIO.Left / consoleIO.Compact));
+                    tab = -consoleIO.CursorLeft + consoleIO.Compact * (1 + (consoleIO.CursorLeft / consoleIO.Compact));
                     if (tab < 2)
                     {
                         tab += 3;

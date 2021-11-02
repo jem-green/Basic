@@ -1,4 +1,5 @@
-﻿using System;
+﻿//  Copyright (c) 2017, Jeremy Green All rights reserved.
+using System;
 using uBasicLibrary;
 
 namespace uBasicForm
@@ -30,9 +31,11 @@ namespace uBasicForm
 
         private int _consoleHeight = 80;
         private int _consoleWidth = 75;
+        private int _consoleLeft = 0;
+        private int _consoleTop = 0;
         private int _zoneWidth = 15;
         private int _compactWidth = 3;
-        private Cursor cursor;
+        private Cursor _cursor;
         private string _input = "";
         private string _output = "";
         protected readonly object _lockObject = new Object();
@@ -101,6 +104,30 @@ namespace uBasicForm
             }
         }
 
+        public int Left
+        {
+            get
+            {
+                return (_consoleLeft);
+            }
+            set
+            {
+                _consoleLeft = value;
+            }
+        }
+
+        public int Top
+        {
+            get
+            {
+                return (_consoleTop);
+            }
+            set
+            {
+                _consoleTop = value;
+            }
+        }
+
         public string Input
         {
             set
@@ -128,19 +155,19 @@ namespace uBasicForm
             }
         }
 
-        public int Left
+        public int CursorLeft
         {
             get
             {
-                return (cursor.Left);
+                return (_cursor.Left);
             }
         }
 
-        public int Top
+        public int CursorTop
         {
             get
             {
-                return (cursor.Top);
+                return (_cursor.Top);
             }
         }
 

@@ -28,17 +28,55 @@ namespace uBasicWeb
 
         // Formatting constraints
 
-        readonly int _consoleHeight = 80;
-        int _consoleWidth = 75;
-        int _zoneWidth = 15;
-        int _compactWidth = 3;
-        readonly int _hpos = 0;
-        readonly int _vpos = 0;
-        string _input = "";
-        string _output = "";
-        protected readonly object lockObject = new Object();
+        private int _consoleHeight = 80;
+        private int _consoleWidth = 75;
+		private int _consoleLeft = 0;
+		private int _consoleTop = 0;
+        private int _zoneWidth = 15;
+        private int _compactWidth = 3;
+        private Cursor _cursor;
+        private string _input = "";
+        private string _output = "";
+        protected readonly object _lockObject = new Object();
+
+        struct Cursor
+        {
+            int _left;
+            int _top;
+
+            public Cursor(int left, int top)
+            {
+                _left = left;
+                _top = top;
+            }
+
+            public int Left
+            {
+                get
+                {
+                    return (_left);
+                }
+                set
+                {
+                    _left = value;
+                }
+            }
+            public int Top
+            {
+                get
+                {
+                    return (_top);
+                }
+                set
+                {
+                    _top = value;
+                }
+            }
+        }
 
         #endregion
+        #region Constructors
+		#endregion		
         #region Properties
 
         public int Width
@@ -46,6 +84,10 @@ namespace uBasicWeb
             get
             {
                 return (_consoleWidth);
+            }
+			set
+            {
+                _consoleWidth = value;
             }
         }
 
@@ -55,13 +97,42 @@ namespace uBasicWeb
             {
                 return (_consoleHeight);
             }
+			set
+            {
+                _consoleHeight = value;
+            }
         }
+
+        public int Left
+        {
+            get
+            {
+                return (_consoleLeft);
+            }
+            set
+            {
+                _consoleLeft = value;
+            }
+        }
+
+        public int Top
+        {
+            get
+            {
+                return (_consoleTop);
+            }
+            set
+            {
+                _consoleTop = value;
+            }
+        }
+
         public string Input
         {
             set
             {
                 // need to wait here while the input is being read
-                lock (lockObject)
+                lock (_lockObject)
                 {
                     _input += value;
                 }
@@ -73,7 +144,7 @@ namespace uBasicWeb
             {
                 string temp;
                 // need to wait here while the output is being written
-                lock (lockObject)
+                lock (_lockObject)
                 {
                     temp = _output;
                     _output = "";
@@ -81,31 +152,19 @@ namespace uBasicWeb
                 return (temp);
             }
         }
-        public int Left
+        public int CursorLeft
         {
             get
             {
-                return (_hpos);
+                return (_cursor.Left);
             }
         }
 
-        public int Top
+        public int CursorTop
         {
             get
             {
-                return (_vpos);
-            }
-        }
-
-        public int Console
-        {
-            get
-            {
-                return (_vpos);
-            }
-            set
-            {
-                _consoleWidth = value;
+                return (_cursor.Top);
             }
         }
 
@@ -142,7 +201,7 @@ namespace uBasicWeb
 
         public void Out(string s)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 _output += s;
             }

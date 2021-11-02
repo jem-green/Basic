@@ -157,7 +157,7 @@ namespace uBasicConsole
                                 break;
                             }
                         case "/N":
-                        case "--name":
+                        case "--filename":
                             {
                                 filename.Value = args[item + 1];
                                 filename.Value = filename.Value.ToString().TrimStart('"');
@@ -167,7 +167,7 @@ namespace uBasicConsole
                                 break;
                             }
                         case "/P":
-                        case "--path":
+                        case "--filepath":
                             {
                                 filePath.Value = args[item + 1];
                                 filePath.Value = filePath.Value.ToString().TrimStart('"');
