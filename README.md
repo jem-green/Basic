@@ -8,7 +8,7 @@ https://github.com/adamdunkels/ubasic
 Copyright (c) 2006, Adam Dunkels.
 Copyright (C) 1988 Jack W. Crenshaw. 
 
-The aim was to work through the various publich documents relating to Dartmouth Basic, Altair and ECMA and build the versions of basic
+The aim was to work through the various published documents relating to Dartmouth Basic, Altair, ECMA and ISO and build the versions of basic
 
 * Basic 2 - October 1964
 * Basic 3 - September 1966
