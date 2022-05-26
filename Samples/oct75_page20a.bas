@@ -1,0 +1,4 @@
+10 LET A$ = "ALTAIR 8800"
+20 LET B$="MITS"+" "+A$
+30 PRINT B$
+40 END

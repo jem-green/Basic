@@ -1,0 +1,7 @@
+10 READ A,B,C$
+20 DATA 1,2,"HELLO"
+30 PRINT "A=";A;" B=";B;" C$=";C$
+30 END
+
+
+
