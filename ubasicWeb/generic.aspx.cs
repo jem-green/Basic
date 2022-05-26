@@ -32,7 +32,7 @@ namespace uBasicWeb
                 char[] program;
                 try
                 {
-                    string input = Server.MapPath("~/" + filename + ".txt");
+                    string input = Server.MapPath("~/" + filename + ".bas");
 
                     using (StreamReader sr = new StreamReader(input))
                     {

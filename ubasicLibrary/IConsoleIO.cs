@@ -28,6 +28,10 @@ namespace uBasicLibrary
         string In();
         void Error(string theErr);
         void Reset();
+
+        #endregion
+        #region Events
+
         event EventHandler<TextEventArgs> TextReceived;
 
         #endregion

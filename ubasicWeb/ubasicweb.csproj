@@ -74,16 +74,18 @@
   <ItemGroup>
     <Content Include="Generic.aspx" />
     <Content Include="Orbit.aspx" />
-    <Content Include="orbit.txt">
+    <Content Include="orbit.bas">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SuperStarTrek.aspx" />
-    <Content Include="superstartrekins.txt" />
+    <Content Include="superstartrekins.bas" />
     <Content Include="Wumpus.aspx" />
-    <Content Include="Wumpus.txt" />
+    <Content Include="Wumpus.bas">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <None Include="Web.Debug.config">
@@ -95,7 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="uBasic.css" />
-    <Content Include="superstartrek.txt" />
+    <Content Include="superstartrek.bas" />
     <Content Include="ThirdParty\log4net\log4net.dll" />
     <Content Include="ThirdParty\log4net\log4net.pdb" />
     <Content Include="ThirdParty\log4net\log4net.xml" />

@@ -51,20 +51,21 @@
             this.consoleTextBox.Name = "consoleTextBox";
             this.consoleTextBox.ReadOnly = true;
             this.consoleTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.consoleTextBox.Size = new System.Drawing.Size(800, 487);
+            this.consoleTextBox.Size = new System.Drawing.Size(733, 466);
             this.consoleTextBox.TabIndex = 0;
             this.consoleTextBox.Visible = false;
             this.consoleTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ConsoleTextBox_KeyPress);
             // 
             // consoleMenuStrip
             // 
+            this.consoleMenuStrip.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.consoleMenuStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.consoleMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileMenuItem,
             this.formatToolStripMenuItem});
             this.consoleMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.consoleMenuStrip.Name = "consoleMenuStrip";
-            this.consoleMenuStrip.Size = new System.Drawing.Size(800, 42);
+            this.consoleMenuStrip.Size = new System.Drawing.Size(733, 42);
             this.consoleMenuStrip.TabIndex = 1;
             this.consoleMenuStrip.Text = "menuStrip1";
             // 
@@ -77,36 +78,36 @@
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileMenuItem.Name = "fileMenuItem";
-            this.fileMenuItem.Size = new System.Drawing.Size(64, 38);
+            this.fileMenuItem.Size = new System.Drawing.Size(62, 34);
             this.fileMenuItem.Text = "File";
             // 
             // openFileMenuItem
             // 
             this.openFileMenuItem.Name = "openFileMenuItem";
-            this.openFileMenuItem.Size = new System.Drawing.Size(324, 38);
+            this.openFileMenuItem.Size = new System.Drawing.Size(315, 40);
             this.openFileMenuItem.Text = "&Open";
             this.openFileMenuItem.Click += new System.EventHandler(this.FileOpenMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(321, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(312, 6);
             // 
             // recentFileToolStripMenuItem
             // 
             this.recentFileToolStripMenuItem.Name = "recentFileToolStripMenuItem";
-            this.recentFileToolStripMenuItem.Size = new System.Drawing.Size(324, 38);
+            this.recentFileToolStripMenuItem.Size = new System.Drawing.Size(315, 40);
             this.recentFileToolStripMenuItem.Text = "Recent File";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(321, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(312, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(324, 38);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(315, 40);
             this.exitToolStripMenuItem.Text = "&Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.FileExitMenuItem_Click);
             // 
@@ -116,28 +117,28 @@
             this.fontToolStripMenuItem,
             this.colorToolStripMenuItem});
             this.formatToolStripMenuItem.Name = "formatToolStripMenuItem";
-            this.formatToolStripMenuItem.Size = new System.Drawing.Size(102, 38);
+            this.formatToolStripMenuItem.Size = new System.Drawing.Size(96, 34);
             this.formatToolStripMenuItem.Text = "Format";
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(171, 38);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 40);
             this.fontToolStripMenuItem.Text = "Font";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.FormatFontMenuItem_Click);
             // 
             // colorToolStripMenuItem
             // 
             this.colorToolStripMenuItem.Name = "colorToolStripMenuItem";
-            this.colorToolStripMenuItem.Size = new System.Drawing.Size(171, 38);
+            this.colorToolStripMenuItem.Size = new System.Drawing.Size(180, 40);
             this.colorToolStripMenuItem.Text = "Color";
             this.colorToolStripMenuItem.Click += new System.EventHandler(this.FormatColorMenuItem_Click);
             // 
             // ConsoleForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 529);
+            this.ClientSize = new System.Drawing.Size(733, 508);
             this.Controls.Add(this.consoleTextBox);
             this.Controls.Add(this.consoleMenuStrip);
             this.MainMenuStrip = this.consoleMenuStrip;

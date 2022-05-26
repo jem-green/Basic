@@ -218,7 +218,7 @@ namespace uBasicWeb
                     System.Threading.Thread.Sleep(250); // Loop until input is entered.
                 }
 
-                lock (lockObject)
+                lock (_lockObject)
                 {
                     int pos = _input.IndexOf('\n');
                     if (pos < 0 )

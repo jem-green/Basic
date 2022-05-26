@@ -206,7 +206,7 @@ namespace uBasicForm
                 _output = _output + s;
             }
             TextEventArgs args = new TextEventArgs(s);
-            OnTextReceived(args);         
+            OnTextReceived(args);
         }
 
         public string In()

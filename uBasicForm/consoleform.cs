@@ -16,7 +16,7 @@ namespace uBasicForm
         static IConsoleIO textBoxIO = null;
         IInterpreter basic = null;
         int pos = 0;
-        bool stopped = true;
+        bool _stopped = true;
 
         
         // Declare a delegate used to communicate with the UI thread
@@ -70,7 +70,7 @@ namespace uBasicForm
                     mruMenu.AddFile(filenamePath);
                     basic = new Altair.Interpreter(program, textBoxIO);
 
-                    stopped = false;
+                    _stopped = false;
                     this.workerThread = new Thread(new ThreadStart(this.Run));
                     textBoxIO.Reset();
                     this.workerThread.Start();
@@ -123,7 +123,7 @@ namespace uBasicForm
 
                     basic = new Altair.Interpreter(program, textBoxIO);
 
-                    stopped = false;
+                    _stopped = false;
                     this.workerThread = new Thread(new ThreadStart(this.Run));
                     textBoxIO.Reset();
                     this.workerThread.Start();
@@ -216,7 +216,7 @@ namespace uBasicForm
 
             consoleTextBox.Enabled = false;
             consoleTextBox.Visible = false;
-            if (stopped == false)
+            if (_stopped == false)
             {
                 workerThread.Abort();
             }
@@ -259,7 +259,7 @@ namespace uBasicForm
                 	mruMenu.AddFile(filenamePath);
                     basic = new Altair.Interpreter(program, textBoxIO);
 
-                    stopped = false;
+                    _stopped = false;
                     this.workerThread = new Thread(new ThreadStart(this.Run));
                     textBoxIO.Reset();
                     this.workerThread.Start();
@@ -307,8 +307,16 @@ namespace uBasicForm
             // Set window location
             if (Settings.Default.ConsoleLocation != null)
             {
+                // fIx errors with location being negative or off the main display
+
                 this.Location = Settings.Default.ConsoleLocation;
+                if ((this.Location.X<0) || (this.Location.Y<0))
+                {
+                    this.Location = new Point(0, 0);
+                }
             }
+
+            this.WindowState = FormWindowState.Normal;
 
             // Fixed windows size
 
@@ -349,7 +357,7 @@ namespace uBasicForm
             // Need to stop the thread
             // think i will try a better approach
 
-            if (stopped == false)
+            if (_stopped == false)
             {
                 workerThread.Abort();
             }

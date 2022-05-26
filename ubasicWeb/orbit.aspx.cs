@@ -26,7 +26,7 @@ namespace uBasicWeb
             {
 
                 char[] program;
-                string input = Server.MapPath("~/orbit.txt");
+                string input = Server.MapPath("~/orbit.bas");
 
                 using (StreamReader sr = new StreamReader(input))
                 {

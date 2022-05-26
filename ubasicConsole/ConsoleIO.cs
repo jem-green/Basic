@@ -80,7 +80,19 @@ namespace uBasicConsole
 
         #endregion
         #region Constructors
-		#endregion		
+        public ConsoleIO()
+        {
+            _consoleLeft = 10;
+            _consoleTop = 0;
+            _consoleWidth = 51;
+            _consoleHeight = 30;
+            Console.CursorVisible = false;
+            Console.WindowHeight = _consoleHeight;
+            Console.WindowWidth = _consoleWidth;
+            Console.BufferHeight = Console.WindowHeight;
+            Console.BufferWidth = Console.WindowWidth;
+        }
+        #endregion
         #region Properties
 
         public int Width
@@ -205,7 +217,6 @@ namespace uBasicConsole
         {
             lock (_lockObject)
             {
-
                 string check = s.TrimEnd(' ');
                 _cursor.Left += s.Length;
                 if (_cursor.Left > _consoleWidth)
@@ -257,11 +268,9 @@ namespace uBasicConsole
                             value = value.Substring(0, value.Length - 1);
                             System.Console.Write(' ');
                             System.Console.CursorLeft--;
-
                         }
                         else
                         {
-
                             System.Console.CursorLeft++;
                         }
                     }

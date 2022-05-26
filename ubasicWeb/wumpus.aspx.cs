@@ -26,7 +26,7 @@ namespace uBasicWeb
             {
 
                 char[] program;
-                string input = Server.MapPath("~/wumpus.txt");
+                string input = Server.MapPath("~/wumpus.bas");
 
                 using (StreamReader sr = new StreamReader(input))
                 {
