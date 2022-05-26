@@ -10,7 +10,7 @@ Copyright (C) 1988 Jack W. Crenshaw.
 
 The aim was to work through the various publich documents relating to Dartmouth Basic, Altair and ECMA and build the versions of basic
 
- Basic 2 - October 1964
+  Basic 2 - October 1964
  Basic 3 - September 1966
  Basic 4 - January 1968
  Basic 5 - ?
