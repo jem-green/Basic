@@ -6,13 +6,14 @@ using System.Text;
 
 namespace uBasicLibrary
 {
-    public class Parameter
+    public class Parameter<T>
     {
         #region Fields
 
-        object _value = "";
+        T _value = default(T);
         SourceType _source = SourceType.None;
-        public enum SourceType
+
+        public enum SourceType: int
         {
             None = 0,
             Command = 1,
@@ -24,20 +25,22 @@ namespace uBasicLibrary
         #region Constructor
         public Parameter()
         {
+            this._value = typeof(T) == typeof(string) ? (T)(object)string.Empty : default(T);
         }
-        public Parameter(object value)
+
+        public Parameter(T value)
         {
             this._value = value;
             _source = SourceType.App;
         }
-        public Parameter(object value, SourceType source)
+        public Parameter(T value, SourceType source)
         {
             _value = value;
             this._source = source;
         }
         #endregion
         #region Parameters
-        public object Value
+        public T Value
         {
             set
             {

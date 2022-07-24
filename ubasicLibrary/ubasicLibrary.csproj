@@ -49,7 +49,7 @@
   <ItemGroup>
     <Compile Include="Array.cs" />
     <Compile Include="IInterpreter.cs" />
-    <Compile Include="IConsoleIO.cs" />
+    <Compile Include="IuBasicIO.cs" />
     <Compile Include="IEvaluator.cs" />
     <Compile Include="ITokenizer.cs" />
     <Compile Include="Parameter.cs" />
