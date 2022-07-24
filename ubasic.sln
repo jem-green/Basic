@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31105.61
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ubasicConsole", "ubasicConsole\ubasicConsole.csproj", "{5B071C05-CEC0-439D-A581-78113AC31366}"
 EndProject
@@ -43,7 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net452", "Net452", "{98BD9E
 		ThirdParty\Tracer\net452\TracerLibrary.pdb = ThirdParty\Tracer\net452\TracerLibrary.pdb
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ubasicTerminal", "ubasicTerminal\ubasicTerminal.csproj", "{41D03552-D2AE-4910-A266-6AA6FED17921}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ubasicTerminal", "ubasicTerminal\ubasicTerminal.csproj", "{41D03552-D2AE-4910-A266-6AA6FED17921}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

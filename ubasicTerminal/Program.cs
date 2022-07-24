@@ -12,7 +12,7 @@ namespace uBasicTerminal
     {
         #region Fields
 
-        static readonly IConsoleIO consoleIO = new ConsoleIO();
+        static readonly IuBasicIO consoleIO = new ConsoleIO();
 
         #endregion
         #region Methods
@@ -25,24 +25,27 @@ namespace uBasicTerminal
             Debug.WriteLine("Enter Main()");
 
             int pos = 0;
-            Parameter filePath = new Parameter();
-            Parameter filename = new Parameter();
+            Parameter<string> filePath = new Parameter<string>();
+            Parameter<string> filename = new Parameter<string>();
+            Parameter<string> fileExtension = new Parameter<string>();
 
             // Get the default path directory
 
             filePath.Value = Environment.CurrentDirectory;
-            filePath.Source = Parameter.SourceType.App;
+            filePath.Source = Parameter<string>.SourceType.App;
 
-            Parameter logPath = new Parameter("");
-            Parameter logName = new Parameter("ubasicterminal");
+            Parameter<string> logPath = new Parameter<string>("");
+            Parameter<string> logName = new Parameter<string>("ubasicterminal");
 
             logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
             logPath.Value = filePath.Value = Environment.CurrentDirectory;
-            logPath.Source = Parameter.SourceType.App;
+            logPath.Source = Parameter<string>.SourceType.App;
 
-            Parameter traceLevels = new Parameter();
-            traceLevels.Value = TraceInternal.TraceLookup("CRITICAL");
-            traceLevels.Source = Parameter.SourceType.App;
+            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>
+            {
+                Value = TraceInternal.TraceLookup("CRITICAL"),
+                Source = Parameter<SourceLevels>.SourceType.App
+            };
 
             // Configure tracer options
 
@@ -50,7 +53,7 @@ namespace uBasicTerminal
             FileStreamWithRolling dailyRolling = new FileStreamWithRolling(logFilenamePath, new TimeSpan(1, 0, 0, 0), FileMode.Append);
             TextWriterTraceListenerWithTime listener = new TextWriterTraceListenerWithTime(dailyRolling);
             Trace.AutoFlush = true;
-            TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter((SourceLevels)traceLevels.Value);
+            TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
             listener.Filter = fileTraceFilter;
             Trace.Listeners.Clear();
             Trace.Listeners.Add(listener);
@@ -58,7 +61,6 @@ namespace uBasicTerminal
             // Check if the config file has been paased in and overwrite the registry
 
             string filenamePath = "";
-            string extension = "";
             int items = args.Length;
             if (items == 1)
             {
@@ -66,24 +68,27 @@ namespace uBasicTerminal
                 pos = filenamePath.LastIndexOf('.');
                 if (pos > 0)
                 {
-                    extension = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    fileExtension.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    filePath.Source = Parameter<string>.SourceType.Command;
                     filenamePath = filenamePath.Substring(0, pos);
                 }
                 pos = filenamePath.LastIndexOf('\\');
                 if (pos > 0)
                 {
                     filePath.Value = filenamePath.Substring(0, pos);
-                    filePath.Source = Parameter.SourceType.Command;
+                    filePath.Source = Parameter<string>.SourceType.Command;
                     filename.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
-                    filename.Source = Parameter.SourceType.Command;
+                    filename.Source = Parameter<string>.SourceType.Command;
                 }
                 else
                 {
                     filename.Value = filenamePath;
-                    filename.Source = Parameter.SourceType.Command;
+                    filename.Source = Parameter<string>.SourceType.Command;
                 }
-                TraceInternal.TraceVerbose("Use filename=" + filename.Value);
-                TraceInternal.TraceVerbose("use filePath=" + filePath.Value);
+                TraceInternal.TraceVerbose("Use filename=" + filename.Value.ToString());
+                TraceInternal.TraceVerbose("use filePath=" + filePath.Value.ToString());
+                TraceInternal.TraceVerbose("use fileExtension=" + fileExtension.Value.ToString());
+
             }
             else
             {
@@ -96,15 +101,17 @@ namespace uBasicTerminal
                     {
                         lookup = lookup.ToLower();
                     }
+
                     switch (lookup)
                     {
 					    case "/d":
                         case "--debug":
                             {
-                                traceLevels.Value = args[item + 1];
-                                traceLevels.Value = traceLevels.Value.ToString().TrimStart('"');
-                                traceLevels.Value = traceLevels.Value.ToString().TrimEnd('"');
-                                traceLevels.Source = Parameter.SourceType.Command;
+                                string traceName = args[item + 1];
+                                traceName = traceName.TrimStart('"');
+                                traceName = traceName.TrimEnd('"');
+                                traceLevels.Value = TraceInternal.TraceLookup(traceName);
+                                traceLevels.Source = Parameter<SourceLevels>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value traceLevels=" + traceLevels);
                                 break;
                             }
@@ -114,7 +121,7 @@ namespace uBasicTerminal
                                 logName.Value = args[item + 1];
                                 logName.Value = logName.Value.ToString().TrimStart('"');
                                 logName.Value = logName.Value.ToString().TrimEnd('"');
-                                logName.Source = Parameter.SourceType.Command;
+                                logName.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value logName=" + logName);
                                 break;
                             }
@@ -124,7 +131,7 @@ namespace uBasicTerminal
                                 logPath.Value = args[item + 1];
                                 logPath.Value = logPath.Value.ToString().TrimStart('"');
                                 logPath.Value = logPath.Value.ToString().TrimEnd('"');
-                                logPath.Source = Parameter.SourceType.Command;
+                                logPath.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value logPath=" + logPath);
                                 break;
                             }
@@ -134,7 +141,7 @@ namespace uBasicTerminal
                                 filename.Value = args[item + 1];
                                 filename.Value = filename.Value.ToString().TrimStart('"');
                                 filename.Value = filename.Value.ToString().TrimEnd('"');
-                                filename.Source = Parameter.SourceType.Command;
+                                filename.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Name=" + filename);
                                 break;
                             }
@@ -144,7 +151,7 @@ namespace uBasicTerminal
                                 filePath.Value = args[item + 1];
                                 filePath.Value = filePath.Value.ToString().TrimStart('"');
                                 filePath.Value = filePath.Value.ToString().TrimEnd('"');
-                                filePath.Source = Parameter.SourceType.Command;
+                                filePath.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Path=" + filePath);
                                 break;
                             }
@@ -179,7 +186,7 @@ namespace uBasicTerminal
 
             if ((filename.Value.ToString().Length > 0) && (filePath.Value.ToString().Length > 0))
             {
-                filenamePath = filePath.Value.ToString() + Path.DirectorySeparatorChar + filename.Value.ToString();
+                filenamePath = filePath.Value.ToString() + Path.DirectorySeparatorChar + filename.Value.ToString() + ".bas";
                 char[] program;
                 try
                 {

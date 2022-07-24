@@ -7,7 +7,7 @@ using uBasicLibrary;
 
 namespace uBasicTerminal
 {
-    public class ConsoleIO : IConsoleIO
+    public class ConsoleIO : IuBasicIO
     {
         #region Event handling
 
@@ -87,6 +87,10 @@ namespace uBasicTerminal
             {
                 return (_consoleWidth);
             }
+			set
+            {
+                _consoleWidth = value;
+            }
         }
 
         public int Height
@@ -94,6 +98,10 @@ namespace uBasicTerminal
             get
             {
                 return (_consoleHeight);
+            }
+			set
+            {
+                _consoleHeight = value;
             }
         }
 
@@ -128,7 +136,7 @@ namespace uBasicTerminal
                 // need to wait here while the input is being read
                 lock (_lockObject)
                 {
-                    _input = _input + value;
+                    _input += value;
                 }
             }
         }
@@ -154,6 +162,10 @@ namespace uBasicTerminal
             {
                 return (_cursor.Left);
             }
+            set
+            {
+                _cursor.Left = value;
+            }
         }
 
         public int CursorTop
@@ -161,6 +173,10 @@ namespace uBasicTerminal
             get
             {
                 return (_cursor.Top);
+            }
+            set
+            {
+                _cursor.Top = value;
             }
         }
 
