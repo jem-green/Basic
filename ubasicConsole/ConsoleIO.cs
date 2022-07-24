@@ -7,7 +7,7 @@ using uBasicLibrary;
 
 namespace uBasicConsole
 {
-    public class ConsoleIO : IConsoleIO
+    public class ConsoleIO : IuBasicIO
     {
         #region Event handling
 
@@ -82,15 +82,15 @@ namespace uBasicConsole
         #region Constructors
         public ConsoleIO()
         {
-            _consoleLeft = 10;
+            _consoleLeft = 0;
             _consoleTop = 0;
-            _consoleWidth = 51;
-            _consoleHeight = 30;
+            _consoleWidth = 75;
+            _consoleHeight = 80;
             Console.CursorVisible = false;
-            Console.WindowHeight = _consoleHeight;
+            //Console.WindowHeight = _consoleHeight;
             Console.WindowWidth = _consoleWidth;
-            Console.BufferHeight = Console.WindowHeight;
-            Console.BufferWidth = Console.WindowWidth;
+            //Console.BufferHeight = Console.WindowHeight;
+            //Console.BufferWidth = Console.WindowWidth;
         }
         #endregion
         #region Properties
@@ -176,6 +176,10 @@ namespace uBasicConsole
             {
                 return (_cursor.Left);
             }
+            set
+            {
+                _cursor.Left = value;
+            }
         }
 
         public int CursorTop
@@ -183,6 +187,10 @@ namespace uBasicConsole
             get
             {
                 return (_cursor.Top);
+            }
+            set
+            {
+                _cursor.Top = value;
             }
         }
 

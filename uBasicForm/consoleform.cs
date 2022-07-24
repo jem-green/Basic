@@ -13,7 +13,7 @@ namespace uBasicForm
     public partial class ConsoleForm : Form
     {
         // Prepare the uBasic
-        static IConsoleIO textBoxIO = null;
+        static IuBasicIO textBoxIO = null;
         IInterpreter basic = null;
         int pos = 0;
         bool _stopped = true;
@@ -147,6 +147,13 @@ namespace uBasicForm
             if (output.Length > 0)
             {
                 this.consoleTextBox.AppendText(output);
+                //int position = consoleTextBox.SelectionLength;
+                double position = consoleTextBox.TextLength;
+                double width = consoleTextBox.Width / 8;   // assume a fix width font
+                double top = Math.Floor(position / width);
+                textBoxIO.CursorTop = (int)top;
+                double left = position - width * Math.Floor(position / width);
+                textBoxIO.CursorLeft =(int)left;
             }
         }
 

@@ -4,7 +4,7 @@ using uBasicLibrary;
 
 namespace uBasicForm
 {
-    public class TextBoxIO : IConsoleIO
+    public class TextBoxIO : IuBasicIO
     {
         #region Event handling
 
@@ -161,6 +161,10 @@ namespace uBasicForm
             {
                 return (_cursor.Left);
             }
+            set
+            {
+                _cursor.Left = value;
+            }
         }
 
         public int CursorTop
@@ -168,6 +172,10 @@ namespace uBasicForm
             get
             {
                 return (_cursor.Top);
+            }
+            set
+            {
+                _cursor.Top = value;
             }
         }
 
