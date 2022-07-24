@@ -1,0 +1,1 @@
+xcopy C:\SOURCE\GIT\cs.net\Tracer\TracerLibrary\bin\x64\Debug\*.* C:\SOURCE\GIT\cs.net\CompukitUK101\ThirdParty\tracer /Y /S

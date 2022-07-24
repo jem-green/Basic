@@ -46,7 +46,7 @@ namespace Dartmouth5
         #region Fields
 
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        readonly IConsoleIO consoleIO;
+        readonly IuBasicIO consoleIO;
 
         int program_ptr;
         const int MAX_STRINGLEN = 40;
@@ -125,7 +125,7 @@ namespace Dartmouth5
         #endregion
         #region Constructors
 
-        public Interpreter(char[] program, IConsoleIO consoleIO)
+        public Interpreter(char[] program, IuBasicIO consoleIO)
         {
             this.consoleIO = consoleIO;        
             lineIndex = new List<LineIndex>();

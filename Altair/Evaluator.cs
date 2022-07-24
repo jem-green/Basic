@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (C) 1988 Jack W. Crenshaw. All rights reserved. 
+
+using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
@@ -855,6 +857,7 @@ namespace Altair
                 else
                 {
                     number = Math.Truncate((double)first);
+                    TraceInternal.TraceInformation("INT(\"" + first + "\")");
                     TraceInternal.TraceVerbose("Int: " + number);
                     stack.Push(number);
                 }
@@ -1110,7 +1113,10 @@ namespace Altair
                 else
                 {
                     double number = first.ToString().Length;
+                    TraceInternal.TraceInformation("LEN(\"" + first + "\")");
+                    TraceInternal.TraceVerbose("Left: '" + number + "'");
                     stack.Push(number);
+
                 }
             }
             Debug.WriteLine("Out Len()");
@@ -1166,6 +1172,7 @@ namespace Altair
                     {
                         string value = Convert.ToString(first);
                         number = Convert.ToDouble(value);
+
                     }
                     catch { }
                     stack.Push(number);

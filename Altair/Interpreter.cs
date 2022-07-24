@@ -44,7 +44,7 @@ namespace Altair
     {
         #region Fields
 
-        readonly IConsoleIO consoleIO;
+        readonly IuBasicIO consoleIO;
 
         int program_ptr;
         const int MAX_STRINGLEN = 40;
@@ -140,7 +140,7 @@ namespace Altair
         #endregion
         #region Constructors
 
-        public Interpreter(char[] program, IConsoleIO consoleIO)
+        public Interpreter(char[] program, IuBasicIO consoleIO)
         {
             this.consoleIO = consoleIO;        
             lineIndex = new List<LineIndex>();
@@ -621,7 +621,7 @@ namespace Altair
                 {
                     previous = tokenizer.GetToken();
                     value = tokenizer.Getstring();
-                    TraceInternal.TraceInformation("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                     Emit(value);
                     tokenizer.NextToken();
                     control = '\n';
@@ -634,7 +634,7 @@ namespace Altair
                     previous = tokenizer.GetToken();
                     tab = -consoleIO.CursorLeft + consoleIO.Zone * (1 + (consoleIO.CursorLeft / consoleIO.Zone));
                     value = new string(' ', tab);
-                    TraceInternal.TraceInformation("PRINT ,");
+                    TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                     Emit(value);
                     control = ',';
                     tokenizer.NextToken();
@@ -642,7 +642,7 @@ namespace Altair
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_SEMICOLON)
                 {
-                    if ((previous == Tokenizer.Token.TOKENIZER_STRING) || (previous == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (previous == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
+                    if ((previous == Tokenizer.Token.TOKENIZER_SEMICOLON) || (previous == Tokenizer.Token.TOKENIZER_STRING) || (previous == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (previous == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
                     {
                         // additional rule appears to be that if the ';' folows text then it concatinates
                         // if ';' follows a number then it move tab zones.
@@ -659,7 +659,7 @@ namespace Altair
                         }
                         tab = 1;
                         value = new string(' ', tab);
-                        TraceInternal.TraceInformation("PRINT ;");
+                        TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                         Emit(value);
                     }
                     previous = tokenizer.GetToken();
@@ -679,7 +679,7 @@ namespace Altair
                     previous = tokenizer.GetToken();
                     number = tokenizer.GetNumber();
                     value = FormatNumber(number);
-                    TraceInternal.TraceInformation("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                     Emit(value);
                     control = '\n';
                 }
@@ -689,7 +689,7 @@ namespace Altair
                     evaluator.Expression();
                     number = evaluator.PopDouble();
                     value = FormatNumber(number);
-                    TraceInternal.TraceInformation("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                     Emit(value);
                     control = '\n';
                 }
@@ -698,7 +698,7 @@ namespace Altair
                     previous = tokenizer.GetToken();
                     evaluator.Expression();
                     value = evaluator.PopString();
-                    TraceInternal.TraceInformation("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                     Emit(value);
                     control = '\n';
                 }
@@ -708,9 +708,22 @@ namespace Altair
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TAB);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
                     evaluator.Expression();
-                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.CursorLeft;
+                    tab = (int)Math.Truncate(evaluator.PopDouble());
                     if (tab > 0)
                     {
+                        // Error here as TAB is not spaces but absolute so
+                        // might be issues if the cursor position is beyond the 
+                        // the current tab
+
+                        if (consoleIO.CursorLeft < tab)
+                        {
+                            tab = tab - consoleIO.CursorLeft - 1;
+                        }
+                        else
+                        {
+                            Emit("\n");
+                        }
+
                         value = new string(' ', tab);
                         TraceInternal.TraceInformation("PRINT TAB(" + tab + ")");
                         Emit(value);
@@ -729,23 +742,25 @@ namespace Altair
                     {
                         int integer = Convert.ToInt32(data);
                         value = FormatNumber(integer);
-                        TraceInternal.TraceInformation("PRINT " + value);
+                        TraceInternal.TraceInformation("PRINT \"" + value + "\"");
+                        previous = Tokenizer.Token.TOKENIZER_INTEGER;
                         Emit(value);
                     }
                     else if (data.GetType() == typeof(string))
                     {
                         value = data.ToString();
-                        TraceInternal.TraceInformation("PRINT " + value);
+                        TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                         Emit(value);
+                        previous = Tokenizer.Token.TOKENIZER_STRING;
                     }
                     else if (data.GetType() == typeof(double))
                     {
                         number = Convert.ToDouble(data);
                         value = FormatNumber(number);
-                        TraceInternal.TraceInformation("PRINT " + value);
+                        TraceInternal.TraceInformation("PRINT \"" + value + "\"");
                         Emit(value);
+                        previous = Tokenizer.Token.TOKENIZER_NUMBER;
                     }
-                    previous = tokenizer.GetToken();
                     control = '\n';
                 }
 
@@ -1076,10 +1091,9 @@ namespace Altair
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
                     if ((buffer == "") || (buf_pointer >= buffer.Length))
                     {
-                        Emit("?");
+                        Emit("? ");
                         buf_pointer = 0;
                         buffer = ReadInput();
-                        Emit("\n");
                     }
                     value = "";
 
@@ -1116,10 +1130,10 @@ namespace Altair
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_VARIABLE);
                     if ((buffer == "") || (buf_pointer >= buffer.Length))
                     {
-                        Emit("?");
+                        Emit("? ");
                         buf_pointer = 0;
                         buffer = ReadInput();
-                        Emit("\n");
+                        //Emit("\n");
                     }
                     value = "";
 

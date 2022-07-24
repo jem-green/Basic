@@ -41,6 +41,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
+    <Reference Include="TracerLibrary">
+      <HintPath>..\ThirdParty\Tracer\net452\TracerLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Evaluator.cs" />
