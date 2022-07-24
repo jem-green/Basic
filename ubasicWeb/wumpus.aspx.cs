@@ -9,7 +9,7 @@ namespace uBasicWeb
     public partial class Wumpus : System.Web.UI.Page, System.Web.UI.ICallbackEventHandler
     {
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        static readonly IConsoleIO textAreaIO = new TextAreaIO();
+        static readonly IuBasicIO textAreaIO = new TextAreaIO();
         protected String returnValue;
         IInterpreter basic;
 

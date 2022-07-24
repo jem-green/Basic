@@ -3,7 +3,7 @@ using uBasicLibrary;
 
 namespace uBasicWeb
 {
-    public class TextAreaIO : IConsoleIO
+    public class TextAreaIO : IuBasicIO
     {
         #region Event handling
 
@@ -158,6 +158,10 @@ namespace uBasicWeb
             {
                 return (_cursor.Left);
             }
+            set
+            {
+                _cursor.Left = value;
+            }
         }
 
         public int CursorTop
@@ -165,6 +169,10 @@ namespace uBasicWeb
             get
             {
                 return (_cursor.Top);
+            }
+            set
+            {
+                _cursor.Top = value;
             }
         }
 

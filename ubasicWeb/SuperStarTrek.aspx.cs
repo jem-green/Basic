@@ -8,7 +8,7 @@ namespace uBasicWeb
 {
     public partial class SuperStarTrek : System.Web.UI.Page, System.Web.UI.ICallbackEventHandler
     {
-        static readonly IConsoleIO textAreaIO = new TextAreaIO();
+        static readonly IuBasicIO textAreaIO = new TextAreaIO();
         protected String returnValue;
         IInterpreter basic;
 
