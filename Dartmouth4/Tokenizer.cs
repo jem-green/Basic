@@ -705,6 +705,14 @@ namespace Dartmouth4
         }
 
         //--------------------------------------------------------------
+        // Report an Error
+
+        private void Err(string s)
+        {
+            TraceInternal.TraceError(s);
+        }
+
+        //--------------------------------------------------------------
         // Report What Was Accepted
 
         private void Expected(string message)

@@ -28,13 +28,13 @@
  *
  */
 
-using log4net;
 using System;
 
 using System.Collections.Generic;
 using System.Collections;
 using uBasicLibrary;
 using System.Diagnostics;
+using TracerLibrary;
 
 namespace Dartmouth5
 {
@@ -45,7 +45,6 @@ namespace Dartmouth5
     {
         #region Fields
 
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         readonly IuBasicIO consoleIO;
 
         int program_ptr;
@@ -139,54 +138,54 @@ namespace Dartmouth5
 
         public void Init(int position)
         {
-            Trace.TraceInformation("In Init()");
+            Debug.WriteLine("In Init()");
             program_ptr = position;
             forStackPointer = 0;
             gosubStackPointer = 0;
             IndexFree();
             tokenizer.Init(position);
             ended = false;
-            Trace.TraceInformation("Out Init()");
+            Debug.WriteLine("Out Init()");
         }
 
         private void IndexFree()
         {
-            Trace.TraceInformation("In IndexFree()");
+            Debug.WriteLine("In IndexFree()");
             lineIndex.Clear();
-            Trace.TraceInformation("Out IndexFree()");
+            Debug.WriteLine("Out IndexFree()");
         }
 
         private int IndexFind(int lineNumber)
         {
-            Trace.TraceInformation("In IndexFind()");
+            Debug.WriteLine("In IndexFind()");
             int line = 0;
             LineIndex idx = lineIndex.Find(x => x.LineNumber == lineNumber);
             if (idx.LineNumber == 0)
             {
-                Debug("IndexFind: Returning zero for " + lineNumber);
+                TraceInternal.TraceVerbose("IndexFind: Returning zero for " + lineNumber);
                 line = 0;
             }
             else
             {
-                Debug("IndexFind: Returning index for line " + Convert.ToString(lineNumber));
+                TraceInternal.TraceVerbose("IndexFind: Returning index for line " + Convert.ToString(lineNumber));
                 line = idx.ProgramTextPosition;
             }
-            Trace.TraceInformation("Out IndexFind()");
+            Debug.WriteLine("Out IndexFind()");
             return (line);
         }
 
         private void IndexAdd(int lineNumber, int sourcePosition)
         {
-            Trace.TraceInformation("In IndexAdd()");
+            Debug.WriteLine("In IndexAdd()");
             LineIndex idx = new LineIndex(lineNumber, sourcePosition);
             lineIndex.Add(idx);
-            Debug("IndexAdd: Adding index for line " + Convert.ToString(lineNumber) + " @ " + Convert.ToString(sourcePosition));
-            Trace.TraceInformation("Out IndexAdd()");
+            TraceInternal.TraceVerbose("IndexAdd: Adding index for line " + Convert.ToString(lineNumber) + " @ " + Convert.ToString(sourcePosition));
+            Debug.WriteLine("Out IndexAdd()");
         }
 
         private void JumpLineNumberSlow(int lineNumber)
         {
-            Trace.TraceInformation("In JumpLineNumberSlow()");
+            Debug.WriteLine("In JumpLineNumberSlow()");
             tokenizer.Init(program_ptr);
 
             while (tokenizer.GetInteger() != lineNumber)
@@ -207,9 +206,9 @@ namespace Dartmouth5
 
                 }
                 while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_INTEGER);
-                Debug("JumpLineNumber_slow: Found line " + tokenizer.GetInteger());
+                TraceInternal.TraceVerbose("JumpLineNumber_slow: Found line " + tokenizer.GetInteger());
             }
-            Trace.TraceInformation("Out JumpLineNumberSlow()");
+            Debug.WriteLine("Out JumpLineNumberSlow()");
         }
 
         /// <summary>
@@ -218,36 +217,36 @@ namespace Dartmouth5
         /// <param name="lineNumber"></param>
         private void JumpLineNumber(int lineNumber)
         {
-            Trace.TraceInformation("In JumpLineNumber()");
+            Debug.WriteLine("In JumpLineNumber()");
             int pos = IndexFind(lineNumber);
             if (pos > 0)
             {
-                Debug("JumpLineNumber: Going to line " + lineNumber);
+                TraceInternal.TraceVerbose("JumpLineNumber: Going to line " + lineNumber);
                 tokenizer.GotoPosition(pos);
             }
             else
             {
                 // We'll try to find a yet-unindexed line to jump to.
-                Debug("JumpLineNumber: Calling JumpLineNumber_slow " + lineNumber);
+                TraceInternal.TraceVerbose("JumpLineNumber: Calling JumpLineNumber_slow " + lineNumber);
                 JumpLineNumberSlow(lineNumber);
             }
             currentLineNumber = lineNumber;
-            Trace.TraceInformation("Out JumpLineNumber()");
+            Debug.WriteLine("Out JumpLineNumber()");
         }
 
         private string ReadInput()
         {
-            Trace.TraceInformation("In ReadInput()");
+            Debug.WriteLine("In ReadInput()");
             string value = consoleIO.In();
             value = value.TrimEnd('\r');
             value = value.TrimEnd('\n');
-            Trace.TraceInformation("In ReadInput()");
+            Debug.WriteLine("In ReadInput()");
             return (value);
         }
 
         private bool ReadData(int position)
         {
-            Trace.TraceInformation("In ReadData()");
+            Debug.WriteLine("In ReadData()");
             bool read = false;
             int current_pos = tokenizer.GetPosition();
             bool negative = false;
@@ -265,8 +264,8 @@ namespace Dartmouth5
                 }
                 while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_DATA) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.IsFinished() == false));
 
-                Debug("ReadData: Read");
-				Info("READ");
+                TraceInternal.TraceVerbose("ReadData: Read");
+				TraceInternal.TraceInformation("READ");
 
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_DATA)
                 {
@@ -286,14 +285,14 @@ namespace Dartmouth5
                             number = tokenizer.GetNumber();
                             if (negative == true)
                             {
-                                Debug("ReadData: add number " + -number);
+                                TraceInternal.TraceVerbose("ReadData: add number " + -number);
                                 data.Enqueue(-number);
                                 negative = false;
                                 read = true;
                             }
                             else
                             {
-                                Debug("ReadData: add number " + number);
+                                TraceInternal.TraceVerbose("ReadData: add number " + number);
                                 data.Enqueue(number);
                                 read = true;
                             }
@@ -304,14 +303,14 @@ namespace Dartmouth5
                             number = tokenizer.GetNumber();
                             if (negative == true)
                             {
-                                Debug("ReadData: add integer " + -number);
+                                TraceInternal.TraceVerbose("ReadData: add integer " + -number);
                                 data.Enqueue(-number);
                                 negative = false;
                                 read = true;
                             }
                             else
                             {
-                                Debug("ReadData: add integer " + number);
+                                TraceInternal.TraceVerbose("ReadData: add integer " + number);
                                 data.Enqueue(number);
                                 read = true;
                             }
@@ -319,7 +318,7 @@ namespace Dartmouth5
                         }
                         else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING)
                         {
-                            Debug("ReadData: add string " + tokenizer.Getstring());
+                            TraceInternal.TraceVerbose("ReadData: add string " + tokenizer.Getstring());
                             data.Enqueue(tokenizer.Getstring());
                             read = true;
                             tokenizer.NextToken();
@@ -338,12 +337,12 @@ namespace Dartmouth5
                     while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.IsFinished() == false));
 
                     dataPos = tokenizer.GetPosition();
-                    Debug("ReadData: Found data");
+                    TraceInternal.TraceVerbose("ReadData: Found data");
                 }
             }
             while ((read == false) && (tokenizer.IsFinished() == false));
             tokenizer.Init(current_pos);
-            Trace.TraceInformation("Out ReadData()");
+            Debug.WriteLine("Out ReadData()");
             return (read);
         }
 
@@ -355,7 +354,7 @@ namespace Dartmouth5
         // <number> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
         // <zero> ::= "0";
         // <statement_separator> ::= ":"
-        // <eol> ::= <cr> <lf> | <cr>;
+        // <eol> ::= <cr> <lf> | <cr>
 
         // <statement> ::= <OnStatement> | <IfStatement>
         // <OnStatement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
@@ -383,13 +382,13 @@ namespace Dartmouth5
         /// </summary>
         private void LineStatement()
         {
-            Trace.TraceInformation("In LineStatement()");
+            Debug.WriteLine("In LineStatement()");
             currentLineNumber = tokenizer.GetInteger();
-            Info("----------- Line number " + currentLineNumber + " ---------");
+            TraceInternal.TraceInformation("----------- Line number " + currentLineNumber + " ---------");
             IndexAdd(currentLineNumber, tokenizer.GetPosition());
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
             Statement();
-            Trace.TraceInformation("Out LineStatement()");
+            Debug.WriteLine("Out LineStatement()");
         }
 
         /// <summary>
@@ -401,7 +400,7 @@ namespace Dartmouth5
             nested++;
             Tokenizer.Token token;
 
-            Trace.TraceInformation("In Statement()");
+            Debug.WriteLine("In Statement()");
 
             // Might need to consider a loop here for multilne statements
             // otherwise it will error saying the line number is missing.
@@ -517,7 +516,7 @@ namespace Dartmouth5
                         }
                 }
 
-                Debug("statement: " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR) + " " + inline);
+                TraceInternal.TraceVerbose("statement: " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR) + " " + inline);
 
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
                 {
@@ -526,7 +525,7 @@ namespace Dartmouth5
                 }
                 else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ENDOFINPUT))
                 {
-                    Debug("statement: nested=" + nested);
+                    TraceInternal.TraceVerbose("statement: nested=" + nested);
                     if (nested == 1)
                     {
                         tokenizer.NextToken();
@@ -537,7 +536,7 @@ namespace Dartmouth5
             while ((inline == true) && (tokenizer.IsFinished() == false));
             nested--;
 
-            Trace.TraceInformation("Out Statement()");
+            Debug.WriteLine("Out Statement()");
 
         }
 
@@ -546,10 +545,10 @@ namespace Dartmouth5
         /// </summary>
         private void RandomizeStatement()
         {
-            Trace.TraceInformation("In RandomizeStatement()");
+            Debug.WriteLine("In RandomizeStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RANDOMIZE);
             evaluator.Randomize();
-            Trace.TraceInformation("Out RandomizeStatement()");
+            Debug.WriteLine("Out RandomizeStatement()");
         }
 
         /// <summary>
@@ -557,9 +556,9 @@ namespace Dartmouth5
         /// </summary>
         private void DataStatement()
         {
-           Trace.TraceInformation("In In DataStatement()");
+           Debug.WriteLine("In In DataStatement()");
             tokenizer.SkipTokens();
-           Trace.TraceInformation("Out DataStatement()");
+           Debug.WriteLine("Out DataStatement()");
         }
 
         /// <summary>
@@ -567,10 +566,10 @@ namespace Dartmouth5
         /// </summary>
         private void RestoreStatement()
         {
-           Trace.TraceInformation("In RestoreStatement()");
+           Debug.WriteLine("In RestoreStatement()");
            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RESTORE);
            dataPos = 0;
-           Trace.TraceInformation("Out RestoreStatement()");
+           Debug.WriteLine("Out RestoreStatement()");
         }
 
         /// <summary>
@@ -578,12 +577,12 @@ namespace Dartmouth5
         /// </summary>
         private void GotoStatement()
         {
-            Trace.TraceInformation("In GotoStatement()");
+            Debug.WriteLine("In GotoStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
             int lineNumber = tokenizer.GetInteger();
-            Info("GOTO " + lineNumber);
+            TraceInternal.TraceInformation("GOTO " + lineNumber);
             JumpLineNumber(lineNumber);
-            Trace.TraceInformation("Out GotoStatement()");
+            Debug.WriteLine("Out GotoStatement()");
         }
 
         /// <summary>
@@ -593,7 +592,7 @@ namespace Dartmouth5
         {
             Tokenizer.Token previous = Tokenizer.Token.TOKENIZER_NULL;
 
-            Trace.TraceInformation("In PrintStatement()");
+            Debug.WriteLine("In PrintStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PRINT);
             // Print
             // PRINT "HELLO"{CR}
@@ -602,12 +601,12 @@ namespace Dartmouth5
             // PRINT "A=";A:LET A=5{CR}
             // PRINT TAB(10);"A=";A{CR}
 
-            log.Info("PRINT");
+            TraceInternal.TraceInformation("PRINT");
 
             char control;
             do
             {
-                Debug("PrintStatement: Print loop");
+                TraceInternal.TraceVerbose("PrintStatement: Print loop");
                 int tab;
                 double number;
                 string value;
@@ -615,7 +614,7 @@ namespace Dartmouth5
                 {
                     previous = tokenizer.GetToken();
                     value = tokenizer.Getstring();
-                    log.Info("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT " + value);
                     Emit(value);
                     tokenizer.NextToken();
                     control = '\n';
@@ -628,7 +627,7 @@ namespace Dartmouth5
                     previous = tokenizer.GetToken();
                     tab = -consoleIO.CursorLeft + consoleIO.Zone * (1 + (consoleIO.CursorLeft / consoleIO.Zone));
                     value = new string(' ', tab);
-                    log.Info("PRINT ,");
+                    TraceInternal.TraceInformation("PRINT ,");
                     Emit(value);
                     control = ',';
                     tokenizer.NextToken();
@@ -653,7 +652,7 @@ namespace Dartmouth5
                         }
                         tab = 1;
                         value = new string(' ', tab);
-                        log.Info("PRINT ;");
+                        TraceInternal.TraceInformation("PRINT ;");
                         Emit(value);
                     }
                     previous = tokenizer.GetToken();
@@ -673,7 +672,7 @@ namespace Dartmouth5
                     previous = tokenizer.GetToken();
                     number = tokenizer.GetNumber();
                     value = FormatNumber(number);
-                    log.Info("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT " + value);
                     Emit(value);
                     control = '\n';
                 }
@@ -683,7 +682,7 @@ namespace Dartmouth5
                     evaluator.Expression();
                     number = evaluator.PopDouble();
                     value = FormatNumber(number);
-                    log.Info("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT " + value);
                     Emit(value);
                     control = '\n';
                 }
@@ -692,7 +691,7 @@ namespace Dartmouth5
                     previous = tokenizer.GetToken();
                     evaluator.Expression();
                     value = evaluator.PopString();
-                    log.Info("PRINT " + value);
+                    TraceInternal.TraceInformation("PRINT " + value);
                     Emit(value);
                     control = '\n';
                 }
@@ -706,7 +705,7 @@ namespace Dartmouth5
                     if (tab > 0)
                     {
                         value = new string(' ', tab);
-                        log.Info("PRINT TAB(" + tab + ")");
+                        TraceInternal.TraceInformation("PRINT TAB(" + tab + ")");
                         Emit(value);
                     }
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
@@ -723,21 +722,27 @@ namespace Dartmouth5
                     {
                         int integer = Convert.ToInt32(data);
                         value = FormatNumber(integer);
-                        log.Info("PRINT " + value);
+                        TraceInternal.TraceInformation("PRINT " + value);
+                        Emit(value);
+                    }
+                    else if (data.GetType() == typeof(string))
+                    {
+                        value = data.ToString();
+                        TraceInternal.TraceInformation("PRINT " + value);
                         Emit(value);
                     }
                     else if (data.GetType() == typeof(double))
                     {
                         number = Convert.ToDouble(data);
                         value = FormatNumber(number);
-                        log.Info("PRINT " + value);
+                        TraceInternal.TraceInformation("PRINT " + value);
                         Emit(value);
                     }
                     previous = tokenizer.GetToken();
                     control = '\n';
                 }
 
-                Debug("PrintStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+                TraceInternal.TraceVerbose("PrintStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) && (tokenizer.IsFinished() == false));
 
@@ -746,7 +751,7 @@ namespace Dartmouth5
                 Emit("\n");
             }
 
-            Trace.TraceInformation("Out PrintStatement()");
+            Debug.WriteLine("Out PrintStatement()");
         }
 
         /// <summary>
@@ -763,9 +768,9 @@ namespace Dartmouth5
             // IF A=1 PRINT "a=";a{COLON}GOTO 20{CR}
 
             bool jump = true;
-            Trace.TraceInformation("In IfStatement()");
+            Debug.WriteLine("In IfStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_IF);
-            Info("IF");
+            TraceInternal.TraceInformation("IF");
             evaluator.Relation();
             int lineNumber;
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
@@ -775,7 +780,7 @@ namespace Dartmouth5
                 {
 			
                     lineNumber = tokenizer.GetInteger();
-					Info("THEN " + lineNumber);
+					TraceInternal.TraceInformation("THEN " + lineNumber);
                     JumpLineNumber(lineNumber);
 
                     jump = false;
@@ -797,7 +802,7 @@ namespace Dartmouth5
                 }
                 while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
             }
-            Trace.TraceInformation("Out IfStatement()");
+            Debug.WriteLine("Out IfStatement()");
             return (jump);
         }
 
@@ -820,7 +825,7 @@ namespace Dartmouth5
             int parameter = 0;
             bool check = true;
 
-            Trace.TraceInformation("In OnStatement()");
+            Debug.WriteLine("In OnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ON);
             evaluator.Expression();
             number = evaluator.PopDouble();
@@ -848,7 +853,7 @@ namespace Dartmouth5
                         parameter++;
                         if (integer == parameter)
                         {
-                            Info("ON " + integer + " GOTO " + lineNumber);
+                            TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
                             JumpLineNumber(lineNumber);
                             check = false;
                         }
@@ -872,7 +877,7 @@ namespace Dartmouth5
             {
                 Abort("Expected: < " + parameter);
             }
-            Trace.TraceInformation("Out OnStatement()");
+            Debug.WriteLine("Out OnStatement()");
         }
 
         /// <summary>
@@ -890,7 +895,7 @@ namespace Dartmouth5
             // LET A=1{COMMA}B=2{CR}
             // LET A=1{COMMA}B=2:
 
-            Trace.TraceInformation("In LetStatement()");
+            Debug.WriteLine("In LetStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
             do
             {
@@ -902,8 +907,8 @@ namespace Dartmouth5
                     evaluator.Expression();
                     number = evaluator.PopDouble();
                     evaluator.SetNumericVariable(varName, number);
-                    Debug("LetStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
-                    Info("LET " + Convert.ToString(varName) + "=" + number);
+                    TraceInternal.TraceVerbose("LetStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                    TraceInternal.TraceInformation("LET " + Convert.ToString(varName) + "=" + number);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
                 {
@@ -913,8 +918,8 @@ namespace Dartmouth5
                     evaluator.Expression();
                     value = evaluator.PopString();
                     evaluator.SetStringVariable(varName, value);
-                    Debug("LetStatement: assign '" + value + "' to string variable " + Convert.ToString(varName) + "$");
-                    Info("LET " + Convert.ToString(varName) + "$=\"" + value + "\"");
+                    TraceInternal.TraceVerbose("LetStatement: assign '" + value + "' to string variable " + Convert.ToString(varName) + "$");
+                    TraceInternal.TraceInformation("LET " + Convert.ToString(varName) + "$=\"" + value + "\"");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
@@ -947,10 +952,10 @@ namespace Dartmouth5
                     }
                     catch(Exception e)
                     {
-                        Debug(e.ToString());
+                        TraceInternal.TraceVerbose(e.ToString());
                     }
-                    Debug("LetStatement: assign " + number + " to numeric array variable " + Convert.ToString(varName) + "(");
-                    Info("LET " + Convert.ToString(varName) + "()" + "=" + number);
+                    TraceInternal.TraceVerbose("LetStatement: assign " + number + " to numeric array variable " + Convert.ToString(varName) + "(");
+                    TraceInternal.TraceInformation("LET " + Convert.ToString(varName) + "()" + "=" + number);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
@@ -978,17 +983,17 @@ namespace Dartmouth5
                     evaluator.Expression();
                     value = evaluator.PopString();
                     evaluator.SetStringArrayVariable(varName, dimensions, dimension, value);
-                    Debug("LetStatement: assign '" + value + "' to string array variable " + Convert.ToString(varName) + "(");
-                    Info("LET " + Convert.ToString(varName) + "$()" + "=\"" + value + "\"");
+                    TraceInternal.TraceVerbose("LetStatement: assign '" + value + "' to string array variable " + Convert.ToString(varName) + "(");
+                    TraceInternal.TraceInformation("LET " + Convert.ToString(varName) + "$()" + "=\"" + value + "\"");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("LetStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                TraceInternal.TraceVerbose("LetStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Trace.TraceInformation("Out LetStatement()");
+            Debug.WriteLine("Out LetStatement()");
         }
 
         /// <summary>
@@ -1012,7 +1017,7 @@ namespace Dartmouth5
             // ? 10,10 will read in the two values and assign to A and B.
             // this means I need an input buffer that can be parsed.
 
-            Trace.TraceInformation("In InputStatement()");
+            Debug.WriteLine("In InputStatement()");
 
             do
             {
@@ -1053,8 +1058,8 @@ namespace Dartmouth5
                     {
                         evaluator.SetNumericVariable(varName, numeric);
                     }
-                    Debug("InputStatement: assign " + numeric + " to numeric variable " + Convert.ToString(varName));
-                    Info("INPUT " + Convert.ToString(varName) + "=" + numeric);
+                    TraceInternal.TraceVerbose("InputStatement: assign " + numeric + " to numeric variable " + Convert.ToString(varName));
+                    TraceInternal.TraceInformation("INPUT " + Convert.ToString(varName) + "=" + numeric);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
                 {
@@ -1085,8 +1090,8 @@ namespace Dartmouth5
                     while (buf_pointer < buffer.Length);
 
                     evaluator.SetStringVariable(varName, value);
-                    Debug("InputStatement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
-                    Info("INPUT " + Convert.ToString(varName) + "$=" + value);
+                    TraceInternal.TraceVerbose("InputStatement: assign " + value + " to string variable " + Convert.ToString(varName) + "$");
+                    TraceInternal.TraceInformation("INPUT " + Convert.ToString(varName) + "$=" + value);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
                 {
@@ -1143,8 +1148,8 @@ namespace Dartmouth5
                         Err("Expected: Double");
                     }
                     evaluator.SetNumericArrayVariable(varName, dimension, dimensions, numeric);
-                    Debug("InputStatement: assign " + numeric + " to array variable " + Convert.ToString(varName) + "(");
-                    Info("INPUT " + Convert.ToString(varName) + "()=" + numeric);
+                    TraceInternal.TraceVerbose("InputStatement: assign " + numeric + " to array variable " + Convert.ToString(varName) + "(");
+                    TraceInternal.TraceInformation("INPUT " + Convert.ToString(varName) + "()=" + numeric);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
@@ -1196,17 +1201,17 @@ namespace Dartmouth5
                     while (buf_pointer < buffer.Length);
 
                     evaluator.SetStringArrayVariable(varName, dimension, dimensions, value);
-                    Debug("InputStatement: assign " + value + " to string array variable " + Convert.ToString(varName) + "(");
-                    Info("INPUT " + Convert.ToString(varName) + "()=" + value);
+                    TraceInternal.TraceVerbose("InputStatement: assign " + value + " to string array variable " + Convert.ToString(varName) + "(");
+                    TraceInternal.TraceInformation("INPUT " + Convert.ToString(varName) + "()=" + value);
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("InputStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                TraceInternal.TraceVerbose("InputStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-            Trace.TraceInformation("Out InputStatement()");
+            Debug.WriteLine("Out InputStatement()");
         }
 
         /// <summary>
@@ -1219,7 +1224,7 @@ namespace Dartmouth5
             // The dim statement can loop through a series of comma separated declarations
             // DIM A(1,1),B(1,2)....{CR}
 
-            Trace.TraceInformation("In DimStatement()");
+            Debug.WriteLine("In DimStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DIM);
             do
@@ -1250,8 +1255,8 @@ namespace Dartmouth5
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     evaluator.DeclareNumericArrayVariable(varName, dimensions, dimension);
-                    Debug("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
-                    Info("DIM " + Convert.ToString(varName) + "$(" + Convert.ToString(dimensions) + ")");
+                    TraceInternal.TraceVerbose("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    TraceInternal.TraceInformation("DIM " + Convert.ToString(varName) + "$(" + Convert.ToString(dimensions) + ")");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
@@ -1277,8 +1282,8 @@ namespace Dartmouth5
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     evaluator.DeclareStringArrayVariable(varName, dimensions, dimension);
-                    Debug("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
-                    Info("DIM " + Convert.ToString(varName) + "(" + Convert.ToString(dimensions) + ")");
+                    TraceInternal.TraceVerbose("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    TraceInternal.TraceInformation("DIM " + Convert.ToString(varName) + "(" + Convert.ToString(dimensions) + ")");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
@@ -1291,7 +1296,7 @@ namespace Dartmouth5
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON)) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
 
-            Trace.TraceInformation("Out DimStatement()");
+            Debug.WriteLine("Out DimStatement()");
         }
 
         /// <summary>
@@ -1305,7 +1310,7 @@ namespace Dartmouth5
             // The def statement is followed by the function reference and then an expression
             // DEF FN{function}({parameters})={expresion}
 
-            Trace.TraceInformation("In DefStatement()");
+            Debug.WriteLine("In DefStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DEF);
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_FN)
@@ -1340,7 +1345,7 @@ namespace Dartmouth5
                 evaluator.functions[num] = new Evaluator.FunctionIndex(tokenizer.GetPosition(), parameters, parameter);
                 tokenizer.SkipTokens();
             }
-            Trace.TraceInformation("Out DefStatement()");
+            Debug.WriteLine("Out DefStatement()");
         }
 
         /// <summary>
@@ -1350,7 +1355,7 @@ namespace Dartmouth5
         {
             int lineNumber;
 
-            Trace.TraceInformation("In GosubStatement()");
+            Debug.WriteLine("In GosubStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
             lineNumber = tokenizer.GetInteger();
@@ -1366,7 +1371,7 @@ namespace Dartmouth5
             {
                 Abort("GosubStatement: gosub stack exhausted");
             }
-            Trace.TraceInformation("Out GosubStatement()");
+            Debug.WriteLine("Out GosubStatement()");
         }
 
         /// <summary>
@@ -1374,7 +1379,7 @@ namespace Dartmouth5
         /// </summary>
         private void ReturnStatement()
         {
-            Trace.TraceInformation("In ReturnStatement()");
+            Debug.WriteLine("In ReturnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RETURN);
             if (gosubStackPointer > 0)
             {
@@ -1385,7 +1390,7 @@ namespace Dartmouth5
             {
                 Abort("ReturnStatement: non-matching return");
             }
-            Trace.TraceInformation("Out ReturnStatement()");
+            Debug.WriteLine("Out ReturnStatement()");
         }
 
         /// <summary>
@@ -1393,9 +1398,9 @@ namespace Dartmouth5
         /// </summary>
         private void RemStatement()
         {
-            Trace.TraceInformation("In RemStatement");
+            Debug.WriteLine("In RemStatement");
             tokenizer.SkipTokens();
-            Trace.TraceInformation("Out RemStatement");
+            Debug.WriteLine("Out RemStatement");
         }
 
         /// <summary>
@@ -1404,15 +1409,15 @@ namespace Dartmouth5
         private void NextStatement()
         {
             double var;
-            Trace.TraceInformation("In NextStatement()");
+            Debug.WriteLine("In NextStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NEXT);
             string varName = tokenizer.GetNumericVariable();
             var = evaluator.PopDouble();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
 
-            Debug("NextStatement: variable=" + varName + " value=" + var);
-            Info("NEXT " + Convert.ToString(varName));
+            TraceInternal.TraceVerbose("NextStatement: variable=" + varName + " value=" + var);
+            TraceInternal.TraceInformation("NEXT " + Convert.ToString(varName));
 
             if (forStackPointer > 0 && varName == forStack[forStackPointer - 1].ForVariable)
             {
@@ -1447,7 +1452,7 @@ namespace Dartmouth5
                 Err("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
             }
 
-            Trace.TraceInformation("Out NextStatement()");
+            Debug.WriteLine("Out NextStatement()");
         }
 
         /// <summary>
@@ -1457,7 +1462,7 @@ namespace Dartmouth5
         {
             double step = 1;
 
-            Trace.TraceInformation("In ForStatement()");
+            Debug.WriteLine("In ForStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FOR);
             string varName = tokenizer.GetNumericVariable();
@@ -1498,8 +1503,8 @@ namespace Dartmouth5
                     forStack[forStackPointer].From = from;
                     forStack[forStackPointer].To = to;
                     forStack[forStackPointer].Step = step;
-                    Debug("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
-                    Info("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
+                    TraceInternal.TraceVerbose("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
+                    TraceInternal.TraceInformation("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
                     forStackPointer++;
                 }
                 else
@@ -1526,8 +1531,8 @@ namespace Dartmouth5
                     forStack[forStackPointer].From = from;
                     forStack[forStackPointer].To = to;
                     forStack[forStackPointer].Step = step;
-                    Debug("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
-                    Info("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
+                    TraceInternal.TraceVerbose("ForStatement: for variable=" + varName + " from=" + from + " to=" + to + " step=" + step);
+                    TraceInternal.TraceInformation("FOR " + Convert.ToString(varName) + "=" + from + " TO " + to + " STEP " + step);
                     forStackPointer++;
                 }
                 else
@@ -1535,7 +1540,7 @@ namespace Dartmouth5
                     Err("ForStatement: for stack depth exceeded");
                 }
             }
-            Trace.TraceInformation("Out ForStatement()");
+            Debug.WriteLine("Out ForStatement()");
         }
 
         /// <summary>
@@ -1543,11 +1548,11 @@ namespace Dartmouth5
         /// </summary>
         private void EndStatement()
         {
-            Trace.TraceInformation("In EndStatement()");
+            Debug.WriteLine("In EndStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_END);
-            Info("END");
+            TraceInternal.TraceInformation("END");
             ended = true;
-            Trace.TraceInformation("Out EndStatement()");
+            Debug.WriteLine("Out EndStatement()");
         }
 
         /// <summary>
@@ -1555,11 +1560,11 @@ namespace Dartmouth5
         /// </summary>
         private void StopStatement()
         {
-            Trace.TraceInformation("In StopStatement()");
+            Debug.WriteLine("In StopStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STOP);
-            Info("STOP");
+            TraceInternal.TraceInformation("STOP");
             ended = true;
-            Trace.TraceInformation("Out StopStatement()");
+            Debug.WriteLine("Out StopStatement()");
         }
 
         /// <summary>
@@ -1578,7 +1583,7 @@ namespace Dartmouth5
             // READ A{COMMA}B{CR}
             // READ A{COMMA}B{COLON}
 
-            Trace.TraceInformation("In ReadStatement()");
+            Debug.WriteLine("In ReadStatement()");
 
             do
             {
@@ -1602,16 +1607,16 @@ namespace Dartmouth5
                         {
                             number = Convert.ToDouble(data.Dequeue());
                             evaluator.SetNumericVariable(varName, number);
-                            Debug("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
-                            Info("READ " + Convert.ToString(varName) + "=" + number);
+                            TraceInternal.TraceVerbose("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                            TraceInternal.TraceInformation("READ " + Convert.ToString(varName) + "=" + number);
                         }
                     }
                     else
                     {
                         number = Convert.ToDouble(data.Dequeue());
                         evaluator.SetNumericVariable(varName, number);
-                        Debug("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
-                        Info("READ " + Convert.ToString(varName) + "=" + number);
+                        TraceInternal.TraceVerbose("ReadStatement: assign " + number + " to numeric variable " + Convert.ToString(varName));
+                        TraceInternal.TraceInformation("READ " + Convert.ToString(varName) + "=" + number);
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE)
@@ -1633,16 +1638,16 @@ namespace Dartmouth5
                         {
                             value = Convert.ToString(data.Dequeue());
                             evaluator.SetStringVariable(varName, value);
-                            Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
-                            Info("READ " + Convert.ToString(varName) + "$=" + value);
+                            TraceInternal.TraceVerbose("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                            TraceInternal.TraceInformation("READ " + Convert.ToString(varName) + "$=" + value);
                         }
                     }
                     else
                     {
                         value = Convert.ToString(data.Dequeue());
                         evaluator.SetStringVariable(varName, value);
-                        Debug("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
-                        Info("READ " + Convert.ToString(varName) + "$=" + value);
+                        TraceInternal.TraceVerbose("ReadStatement: assign " + value + "to string variable " + Convert.ToString(varName) + "$");
+                        TraceInternal.TraceInformation("READ " + Convert.ToString(varName) + "$=" + value);
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE)
@@ -1679,8 +1684,8 @@ namespace Dartmouth5
 
                     number = Convert.ToDouble(data.Dequeue());
                     evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
-                    Debug("ReadStatement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
-                    Info("READ " + Convert.ToString(varName) + "()=" + number);
+                    TraceInternal.TraceVerbose("ReadStatement: assign " + number + " to array variable " + Convert.ToString(varName) + "(");
+                    TraceInternal.TraceInformation("READ " + Convert.ToString(varName) + "()=" + number);
 
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
@@ -1717,25 +1722,25 @@ namespace Dartmouth5
 
                     value = Convert.ToString(data.Dequeue());
                     evaluator.SetStringArrayVariable(varName, dimensions, dimension, value);
-                    Debug("ReadStatement: assign " + value + " to array variable " + Convert.ToString(varName) + "(");
-                    Info("READ " + Convert.ToString(varName) + "()=" + value);
+                    TraceInternal.TraceVerbose("ReadStatement: assign " + value + " to array variable " + Convert.ToString(varName) + "(");
+                    TraceInternal.TraceInformation("READ " + Convert.ToString(varName) + "()=" + value);
 
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
                 }
-                Debug("ReadStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
+                TraceInternal.TraceVerbose("ReadStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
             while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
-           Trace.TraceInformation("Out ReadStatement()");
+           Debug.WriteLine("Out ReadStatement()");
         }
 
         #endregion Statements
 
         private string FormatNumber(Double number)
         {
-            Trace.TraceInformation("In FormatNumber()");
+            Debug.WriteLine("In FormatNumber()");
             char sign = ' ';
 
 
@@ -1790,7 +1795,7 @@ namespace Dartmouth5
                 }
                 value = sign + value;
             }
-            Trace.TraceInformation("Out FormatNumber()");
+            Debug.WriteLine("Out FormatNumber()");
             return (value);
         }
 
@@ -1799,14 +1804,14 @@ namespace Dartmouth5
         /// </summary>
         public void Run()
         {
-            Trace.TraceInformation("In Run()");
+            Debug.WriteLine("In Run()");
             if (tokenizer.IsFinished())
             {
-                Debug("Program finished");
+                TraceInternal.TraceVerbose("Program finished");
                 return;
             }
             LineStatement();
-            Trace.TraceInformation("Out Run()");
+            Debug.WriteLine("Out Run()");
         }
 
         /// <summary>
@@ -1815,9 +1820,9 @@ namespace Dartmouth5
         /// <returns></returns>
         public bool Finished()
         {
-            Trace.TraceInformation("In Finished()");
+            Debug.WriteLine("In Finished()");
             bool finished = ended || tokenizer.IsFinished();
-            Trace.TraceInformation("Out Finished()");
+            Debug.WriteLine("Out Finished()");
             return (finished);
         }
 
@@ -1832,7 +1837,7 @@ namespace Dartmouth5
         {
             string message = text + " @ " + currentLineNumber;
             consoleIO.Error(message + "\n");
-            if (log.IsErrorEnabled == true) { log.Error(message); }
+            TraceInternal.TraceError(message);
         }
 
         /// <summary>
@@ -1843,24 +1848,6 @@ namespace Dartmouth5
         {
             string message = text + " @ " + currentLineNumber;
             throw new Exception(message);
-        }
-
-        /// <summary>
-        /// Debug level log
-        /// </summary>
-        /// <param name="text"></param>
-        private void Debug(string text)
-        {
-            log.Debug(text);
-        }
-
-        /// <summary>
-        /// Info level log
-        /// </summary>
-        /// <param name="text"></param>
-        void Info(string text)
-        {
-            log.Info(text);
         }
 
         /// <summary>

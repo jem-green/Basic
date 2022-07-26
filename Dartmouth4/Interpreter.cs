@@ -348,8 +348,8 @@ namespace Dartmouth4
 
         #region Statements
 
-        // <program> ::= <line> [ <line> ]*;
-        // <line> ::= <line_number> <statement> [ <statement_separator> <statement> ]* <eol>;
+        // <program> ::= <line> [ <line> ]*
+        // <line> ::= <line_number> <statement> [ <statement_separator> <statement> ]* <eol>
         // <line_number> ::= <number> [ <zero> | <number> ]*;
         // <number> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
         // <zero> ::= "0";
@@ -360,8 +360,10 @@ namespace Dartmouth4
         //
         // <OnStatement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
         // <OnStatement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
+        // <IfStatement> ::= "IF" <expression><relation><expression> "THEN" <line>
+        // <IfStatement> ::= "IF" <expression><relation><expression> "GOTO" <line>
         //
-        // <IfStatement> ::= "IF" <expression><relation><expression> "THEN" <line> | "IF" <expression><relation><expression> "GOTO" <line>
+        // <InputStatement> ::= "INPUT" 
         //
         // <function> ::= <name> "(" <expression> [ <separator> <expression> ]* ")"
         // <name> ::= "TAB"
