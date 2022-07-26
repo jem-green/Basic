@@ -481,6 +481,7 @@ namespace Altair
                         }
                     case Tokenizer.Token.TOKENIZER_LET:
                         {
+                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
                             LetStatement();
                             break;
                         }
@@ -513,6 +514,12 @@ namespace Altair
                     case Tokenizer.Token.TOKENIZER_RANDOMIZE:
                         {
                             RandomizeStatement();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_STRING_VARIABLE:
+                    case Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE:
+                        {
+                            LetStatement();
                             break;
                         }
                     default:
@@ -811,10 +818,7 @@ namespace Altair
                         jump = false;
                     }
                 }
-                //else if(Tokenizer_token() == Tokenizer.Token.TOKENIZER_CR)
-                //{
-                //    Tokenizer_next();
-                //}
+
             }
             else if (token == Tokenizer.Token.TOKENIZER_THEN)
             {
@@ -950,7 +954,7 @@ namespace Altair
             // LET A=1{COMMA}B=2:
 
             Debug.WriteLine("In LetStatement()");
-            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
+            //tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
             do
             {
                 if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE)
@@ -1115,7 +1119,7 @@ namespace Altair
                     // conversion could error here when we get to alphanumeric inputs
                     if (double.TryParse(value, out numeric) == false)
                     {
-                        Err("Expected: Double");
+                        TraceInternal.TraceError("Expected: Double");
                     }
                     else
                     {
@@ -1133,7 +1137,6 @@ namespace Altair
                         Emit("? ");
                         buf_pointer = 0;
                         buffer = ReadInput();
-                        //Emit("\n");
                     }
                     value = "";
 
@@ -1208,7 +1211,7 @@ namespace Altair
                     // conversion could error here when we get to alphanumeric inputs
                     if (!double.TryParse(value, out numeric))
                     {
-                        Err("Expected: Double");
+                        TraceInternal.TraceError("Expected: Double");
                     }
                     evaluator.SetNumericArrayVariable(varName, dimension, dimensions, numeric);
                     TraceInternal.TraceVerbose("InputStatement: assign " + numeric + " to array variable " + Convert.ToString(varName) + "(");
@@ -1561,7 +1564,7 @@ namespace Altair
             }
             else
             {
-                Err("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
+                TraceInternal.TraceError("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
             }
 
             Debug.WriteLine("Out NextStatement()");
@@ -1621,7 +1624,7 @@ namespace Altair
                 }
                 else
                 {
-                    Err("ForStatement: for stack depth exceeded");
+                    TraceInternal.TraceError("ForStatement: for stack depth exceeded");
                 }
             }
             else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
@@ -1649,7 +1652,7 @@ namespace Altair
                 }
                 else
                 {
-                    Err("ForStatement: for stack depth exceeded");
+                    TraceInternal.TraceError("ForStatement: for stack depth exceeded");
                 }
             }
             Debug.WriteLine("Out ForStatement()");
@@ -1940,17 +1943,6 @@ namespace Altair
 
         #endregion Methods
         #region Private
-
-        /// <summary>
-        /// Error level log to console
-        /// </summary>
-        /// <param name="text"></param>
-        private void Err(string text)
-        {
-            string message = text + " @ " + currentLineNumber;
-            consoleIO.Error(message + "\n");
-            TraceInternal.TraceError(message);
-        }
 
         /// <summary>
         /// Raise exception
