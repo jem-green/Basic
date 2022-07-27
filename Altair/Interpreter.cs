@@ -518,6 +518,8 @@ namespace Altair
                         }
                     case Tokenizer.Token.TOKENIZER_STRING_VARIABLE:
                     case Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE:
+                    case Tokenizer.Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE:
+                    case Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE:
                         {
                             LetStatement();
                             break;
@@ -832,10 +834,10 @@ namespace Altair
                         JumpLineNumber(lineNumber);
                         jump = false;
                     }
-                    else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
-                    {
-                        evaluator.Expression();
-                    }
+                    //else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
+                    //{
+                    //    evaluator.Expression();
+                    //}
                     else
                     {
                         jump = Statement();
@@ -871,8 +873,10 @@ namespace Altair
             //
             // <OnStatement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
             // <OnStatement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
-            //
+            // <OnStatement> ::= "ON" <expression> "GOSUB" <line> [ "," <line> ]*
             // 
+            // If expression > number of elements then goes to next statement.
+            //
 
             bool jump = true;
 
@@ -880,6 +884,8 @@ namespace Altair
             int integer;
             int parameter = 0;
             bool check = true;
+            int mode = -1;
+            int lineNumber = 0;
 
             Debug.WriteLine("In OnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ON);
@@ -888,16 +894,28 @@ namespace Altair
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_THEN)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
+                mode = 0;
             }
             else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GOTO)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
+                mode = 1;
+            }
+            else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GOSUB)
+            {
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
+                mode = 2;
             }
 
             integer = (int)Math.Truncate(number);
+
             if (integer < 1)
             {
                 Abort("Expected: > 1");
+            }
+            else if (integer > 255)
+            {
+                Abort("Expected: < 256");
             }
             else
             {
@@ -905,35 +923,81 @@ namespace Altair
                 {
                     if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
                     {
-                        int lineNumber = tokenizer.GetInteger();
                         parameter++;
                         if (integer == parameter)
                         {
-                            TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
-                            JumpLineNumber(lineNumber);
-                            jump = false;
-                            check = false;
+                            lineNumber = tokenizer.GetInteger();
                         }
-                        else
-                        {
-                            tokenizer.NextToken();
-                        }
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
                     }
                     else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                     {
                         tokenizer.NextToken();
                     }
-                    else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ENDOFINPUT) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON))
+                }
+                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+
+                if (lineNumber > 0)
+                {
+                    if (mode == 0) // Then
                     {
-                        check = false;
+                        TraceInternal.TraceVerbose("OnStatement: " + lineNumber);
+                        TraceInternal.TraceInformation("ON " + integer + " THEN " + lineNumber);
+                        JumpLineNumber(lineNumber);
+                        jump = false;
+                    }
+                    else if (mode == 1)
+                    {
+                        TraceInternal.TraceVerbose("OnStatement: " + lineNumber);
+                        TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
+                        JumpLineNumber(lineNumber);
+                        jump = false;
+                    }
+                    else if (mode == 2)
+                    {
+                        if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR)
+                        {
+                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
+
+                            if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                            {
+                                gosubStack[gosubStackPointer].Line_number = tokenizer.GetInteger();
+                                gosubStack[gosubStackPointer].Pos_after_gosub = 0;
+                                gosubStackPointer++;
+                                TraceInternal.TraceVerbose("OnStatement: " + lineNumber);
+                                TraceInternal.TraceInformation("ON " + integer + " GOSUB " + lineNumber);
+                                JumpLineNumber(lineNumber);
+                                jump = false;
+                            }
+                            else
+                            {
+                                Abort("GosubStatement: gosub stack exhausted");
+                            }
+                        }
+                        // Statemnt of followed by another statement
+                        else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
+                        {
+                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
+
+                            if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                            {
+                                gosubStack[gosubStackPointer].Line_number = currentLineNumber;
+                                gosubStack[gosubStackPointer].Pos_after_gosub = tokenizer.GetPosition();
+                                gosubStackPointer++;
+                                TraceInternal.TraceVerbose("OnStatement: " + lineNumber + "," + tokenizer.GetPosition());
+                                TraceInternal.TraceInformation("ON " + integer + " GOSUB " + lineNumber + "," + tokenizer.GetPosition());
+                                JumpLineNumber(lineNumber);
+                                jump = false;
+                            }
+                            else
+                            {
+                                Abort("GosubStatement: gosub stack exhausted");
+                            }
+                        }
                     }
                 }
-                while (check == true);
             }
-            if (integer > parameter)
-            {
-                Abort("Expected: < " + parameter);
-            }
+
             Debug.WriteLine("Out OnStatement()");
             return (jump);
         }
@@ -1420,14 +1484,15 @@ namespace Altair
         private bool GosubStatement()
         {
             bool jump = false;
-            int linenum;
+            int lineNumber;
 
             Debug.WriteLine("In GosubStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
-            linenum = tokenizer.GetInteger();
+            lineNumber = tokenizer.GetInteger();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
 
+            // Last statement on the line
             if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_CR)
             {
 
@@ -1438,9 +1503,9 @@ namespace Altair
                     gosubStack[gosubStackPointer].Line_number = tokenizer.GetInteger();
                     gosubStack[gosubStackPointer].Pos_after_gosub = 0;
                     gosubStackPointer++;
-                    TraceInternal.TraceVerbose("GosubStatement: " + linenum);
-                    TraceInternal.TraceInformation("GOSUB " + linenum);
-                    JumpLineNumber(linenum);
+                    TraceInternal.TraceVerbose("GosubStatement: " + lineNumber);
+                    TraceInternal.TraceInformation("GOSUB " + lineNumber);
+                    JumpLineNumber(lineNumber);
                     jump = false;
                 }
                 else
@@ -1448,6 +1513,7 @@ namespace Altair
                     Abort("GosubStatement: gosub stack exhausted");
                 }
             }
+            // Statemnt of followed by another statement
             else if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_COLON)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
@@ -1457,9 +1523,9 @@ namespace Altair
                     gosubStack[gosubStackPointer].Line_number = currentLineNumber;
                     gosubStack[gosubStackPointer].Pos_after_gosub = tokenizer.GetPosition();
                     gosubStackPointer++;
-                    TraceInternal.TraceVerbose("GosubStatement: " + linenum + "," + tokenizer.GetPosition());
-                    TraceInternal.TraceInformation("GOSUB " + linenum + "," + tokenizer.GetPosition());
-                    JumpLineNumber(linenum);
+                    TraceInternal.TraceVerbose("GosubStatement: " + lineNumber + "," + tokenizer.GetPosition());
+                    TraceInternal.TraceInformation("GOSUB " + lineNumber + "," + tokenizer.GetPosition());
+                    JumpLineNumber(lineNumber);
                     jump = false;
                 }
                 else
@@ -1527,46 +1593,63 @@ namespace Altair
             Debug.WriteLine("In NextStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NEXT);
-            string varName = tokenizer.GetNumericVariable();
-            var = evaluator.PopDouble();
-            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
 
-            TraceInternal.TraceVerbose("NextStatement: variable=" + varName + " value=" + var);
-            TraceInternal.TraceInformation("NEXT " + Convert.ToString(varName));
+            // Support compound next
+            // NEXT I
+            // NEXT I,J
 
-            if (forStackPointer > 0 && varName == forStack[forStackPointer - 1].ForVariable)
+            do
             {
-                // allow for negative steps
-                double step = forStack[forStackPointer - 1].Step;
-                evaluator.SetNumericVariable(varName, evaluator.GetNumericVariable(varName) + step);
-                if (step > 0)
+                if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE)
                 {
-                    if (evaluator.GetNumericVariable(varName) <= forStack[forStackPointer - 1].To)
+
+                    string varName = tokenizer.GetNumericVariable();
+                    var = evaluator.PopDouble();
+                    tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE);
+
+                    TraceInternal.TraceVerbose("NextStatement: variable=" + varName + " value=" + var);
+                    TraceInternal.TraceInformation("NEXT " + Convert.ToString(varName));
+
+                    if (forStackPointer > 0 && varName == forStack[forStackPointer - 1].ForVariable)
                     {
-                        tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
+                        // allow for negative steps
+                        double step = forStack[forStackPointer - 1].Step;
+                        evaluator.SetNumericVariable(varName, evaluator.GetNumericVariable(varName) + step);
+                        if (step > 0)
+                        {
+                            if (evaluator.GetNumericVariable(varName) <= forStack[forStackPointer - 1].To)
+                            {
+                                tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
+                            }
+                            else
+                            {
+                                forStackPointer--;
+                            }
+                        }
+                        else
+                        {
+                            if (evaluator.GetNumericVariable(varName) >= forStack[forStackPointer - 1].To)
+                            {
+                                tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
+                            }
+                            else
+                            {
+                                forStackPointer--;
+                            }
+                        }
                     }
                     else
                     {
-                        forStackPointer--;
+                        TraceInternal.TraceError("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
                     }
                 }
-                else
+                else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
-                    if (evaluator.GetNumericVariable(varName) >= forStack[forStackPointer - 1].To)
-                    {
-                        tokenizer.GotoPosition(forStack[forStackPointer - 1].PositionAfterFor);
-                    }
-                    else
-                    {
-                        forStackPointer--;
-                    }
+                    tokenizer.NextToken();
                 }
+                TraceInternal.TraceVerbose("NextStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }
-            else
-            {
-                TraceInternal.TraceError("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
-            }
-
+            while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             Debug.WriteLine("Out NextStatement()");
         }
 

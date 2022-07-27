@@ -532,6 +532,15 @@ namespace Altair
                         Rnd();
                         break;
                     }
+                case Tokenizer.Token.TOKENIZER_SGN:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_SGN);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        Sgn();
+                        break;
+                    }
                 case Tokenizer.Token.TOKENIZER_SIN:
                     {
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_SIN);
@@ -895,6 +904,32 @@ namespace Altair
                 }
             }
             Debug.WriteLine("Out Rnd()");
+        }
+
+        //---------------------------------------------------------------}
+        // SGN Top of Stack with Primary
+        private void Sgn()
+        {
+            object first;
+            Debug.WriteLine("In Sgn()");
+
+            if (stack.Count > 0)
+            {
+                first = stack.Pop();
+                if (first.GetType() == typeof(string))
+                {
+                    // only expecting an integer or double
+                    Expected("double");
+                }
+                else
+                {
+                    double number = Math.Sign((double)first);                
+                    TraceInternal.TraceInformation("SGN(\"" + first + "\")");
+                    TraceInternal.TraceVerbose("Sgn: '" + number + "'");
+                    stack.Push(number);
+                }
+            }
+            Debug.WriteLine("Out Sgn()");
         }
 
         //---------------------------------------------------------------}
