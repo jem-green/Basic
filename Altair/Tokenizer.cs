@@ -438,6 +438,19 @@ namespace Altair
                                 // String viarable
                                 nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
+
+                                if (source[nextptr] == '(')
+                                {
+                                    // String array variable
+                                    nextptr++;
+                                    token = Token.TOKENIZER_STRING_ARRAY_VARIABLE;
+                                }
+                            }
+                            else if (source[nextptr] == '(')
+                            {
+                                // Array variable
+                                nextptr++;
+                                token = Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE;
                             }
                         }
                         else

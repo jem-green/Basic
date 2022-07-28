@@ -1385,8 +1385,8 @@ namespace Altair
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     evaluator.DeclareNumericArrayVariable(varName, dimensions, dimension);
-                    TraceInternal.TraceVerbose("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
-                    TraceInternal.TraceInformation("DIM " + Convert.ToString(varName) + "$(" + Convert.ToString(dimensions) + ")");
+                    TraceInternal.TraceVerbose("DimStatement: declare numeric array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    TraceInternal.TraceInformation("DIM " + Convert.ToString(varName) + "(" + Convert.ToString(dimensions) + ")");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
