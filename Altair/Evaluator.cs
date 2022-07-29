@@ -742,7 +742,7 @@ namespace Altair
                         int numeric;
                         int dimension = 0;
                         int[] dimensions = new int[10];
-                        varName = tokenizer.GetNumericArrayVariable();
+                        varName = tokenizer.GetStringArrayVariable();
 
                         dimensions[0] = 0;
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);

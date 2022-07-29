@@ -661,6 +661,7 @@ namespace Altair
             Debug.WriteLine("In GetNumericArrayVariable()");
 
             // Numeric array variables are single digit
+            // This appears not to be the case with ALTAIR
 
             string value = "";
             char c;
@@ -671,6 +672,13 @@ namespace Altair
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
+
+            c = source[ptr];
+            if ((c >= '0') && (c <= '9'))
+            {
+                value += c;
+            }
+
             Debug.WriteLine("Out GetNumericArrayVariable()");
             return (value);
         }
@@ -680,6 +688,7 @@ namespace Altair
             Debug.WriteLine("In GetStringArrayVariable()");
 
             // String array variables are single digit
+            // This appears not to be the case with ALTAIR
 
             string value = "";
             char c;
@@ -690,8 +699,14 @@ namespace Altair
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
-            Debug.WriteLine("Out GetStringArrayVariable()");
 
+            c = source[ptr];
+            if ((c >= '0') && (c <= '9'))
+            {
+                value += c;
+            }
+
+            Debug.WriteLine("Out GetStringArrayVariable()");
             return (value);
         }
 
