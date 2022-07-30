@@ -622,7 +622,7 @@ namespace Altair
                     }
                 case Tokenizer.Token.TOKENIZER_VAL:
                     {
-                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ASC);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_VAL);
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
                         BinaryExpression();
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
