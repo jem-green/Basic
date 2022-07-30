@@ -2493,9 +2493,9 @@ namespace Altair
             uBasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
-                // it apperas that if no DIM then defaults to 10 items
-                int[] dimension = new int[10];
-                dimension[0] = 1;
+                // it apperas that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
+                int[] dimension = new int[2];
+                dimension[1] = 10;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
             data = (uBasicLibrary.Array)numericArrayVariables[varName];
@@ -2511,9 +2511,9 @@ namespace Altair
             uBasicLibrary.Array data;
             if (!stringArrayVariables.ContainsKey(varName))
             {
-                // it apperas that if no DIM then defaults to 10 items
-                int[] dimension = new int[10];
-                dimension[0] = 1;
+                // it apperas that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
+                int[] dimension = new int[2];
+                dimension[1] = 10;
                 DeclareStringArrayVariable(varName, positions, dimension);
             }
             data = (uBasicLibrary.Array)stringArrayVariables[varName];

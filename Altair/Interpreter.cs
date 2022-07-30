@@ -1011,7 +1011,7 @@ namespace Altair
             int integer;
             double number;
             string value;
-            int dimensions = 0;
+            int positions = 0;
 
             // The let statement can loop through a series of comma separated values and finish at a terminator
             // LET A=1{COMMA}B=2{CR}
@@ -1059,8 +1059,8 @@ namespace Altair
                         {
                             evaluator.Expression();
                             integer = (int)Math.Truncate(evaluator.PopDouble());
-                            dimensions++;
-                            dimension[dimensions] = integer;
+                            positions++;
+                            dimension[positions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
@@ -1070,7 +1070,7 @@ namespace Altair
                     number = evaluator.PopDouble();
                     try
                     {
-                        evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
+                        evaluator.SetNumericArrayVariable(varName, positions, dimension, number);
                     }
                     catch(Exception e)
                     {
@@ -1082,8 +1082,8 @@ namespace Altair
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
                     varName = tokenizer.GetNumericArrayVariable();
-                    int[] dimension = new int[10]; // 10 dimensional array limit !!!
-                    dimension[0] = 0;
+                    int[] position = new int[10]; // 10 dimensional array limit !!!
+                    position[0] = 0;
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);
                     do
                     {
@@ -1095,8 +1095,8 @@ namespace Altair
                         {
                             evaluator.Expression();
                             integer = (int)Math.Truncate(evaluator.PopDouble());
-                            dimensions++;
-                            dimension[dimensions] = integer;
+                            positions++;
+                            position[positions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
@@ -1104,7 +1104,7 @@ namespace Altair
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
                     evaluator.Expression();
                     value = evaluator.PopString();
-                    evaluator.SetStringArrayVariable(varName, dimensions, dimension, value);
+                    evaluator.SetStringArrayVariable(varName, positions, position, value);
                     TraceInternal.TraceVerbose("LetStatement: assign '" + value + "' to string array variable " + Convert.ToString(varName) + "(");
                     TraceInternal.TraceInformation("LET " + Convert.ToString(varName) + "$()" + "=\"" + value + "\"");
                 }
