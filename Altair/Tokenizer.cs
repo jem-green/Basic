@@ -229,7 +229,7 @@ namespace Altair
             Debug.WriteLine("In AcceptToken()");
             if (token != GetToken())
             {
-                Expected("expected " + token + ", got " + GetToken());   
+                Expected("expected " + token + ", got " + GetToken());
             }
             TraceInternal.TraceVerbose("accept: Expected " + token + ", got it");
             NextToken();

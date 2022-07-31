@@ -526,7 +526,7 @@ namespace Altair
                         }
                     default:
                         {
-                            Abort("statement: Not implemented " + token);
+                            Abort("Statement: Not implemented " + token);
                             break;
                         }
                 }
@@ -871,7 +871,7 @@ namespace Altair
             }
             else
             {
-                Abort("statement not implemented " + token);
+                Abort("IfStatement: Not implemented " + token);
             }
             Debug.WriteLine("Out IfStatement()");
             return (jump);
@@ -926,11 +926,11 @@ namespace Altair
 
             if (integer < 1)
             {
-                Abort("Expected: > 1");
+                Abort("OnStstement: Expected: > 1");
             }
             else if (integer > 255)
             {
-                Abort("Expected: < 256");
+                Abort("OnStstement: Expected: < 256");
             }
             else
             {
@@ -1656,6 +1656,7 @@ namespace Altair
                     else
                     {
                         TraceInternal.TraceError("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
+                        Abort("NextStatement: Non-matching next " + Convert.ToString(var));
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
@@ -1814,7 +1815,7 @@ namespace Altair
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                         else
                         {
@@ -1845,7 +1846,7 @@ namespace Altair
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                         else
                         {
@@ -1871,7 +1872,7 @@ namespace Altair
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                     }
 
@@ -1909,7 +1910,7 @@ namespace Altair
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                     }
 
