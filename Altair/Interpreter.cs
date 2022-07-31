@@ -819,8 +819,24 @@ namespace Altair
                         JumpLineNumber(lineNumber);
                         jump = false;
                     }
+                    //else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
+                    //{
+                    //    evaluator.Expression();
+                    //}
+                    else
+                    {
+                        jump = Statement();
+                    }
                 }
-
+                else
+                {
+                    do
+                    {
+                        tokenizer.NextToken();
+                    }
+                    // Wonder if this should inlcude separator
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
+                }
             }
             else if (token == Tokenizer.Token.TOKENIZER_THEN)
             {
@@ -845,13 +861,12 @@ namespace Altair
                 }
                 else
                 {
-                do
-                {
-                    tokenizer.NextToken();
-                }
-				// Wonder if this should inlcude separator
-                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
-
+                    do
+                    {
+                        tokenizer.NextToken();
+                    }
+				    // Wonder if this should inlcude separator
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
                 }
             }
             else
