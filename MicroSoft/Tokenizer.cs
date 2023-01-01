@@ -33,17 +33,16 @@ using TracerLibrary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace uBasicLibrary
+namespace MicroSoft
 {
-    public class Tokenizer : ITokenizer
+    public class Tokenizer
     {
         #region Fields
 
-        
-
         public enum Token : int
         {
-            TOKENIZER_NULL = 0,
+            TOKENIZER_NULL = -1,
+            TOKENIZER_NONE = 0,
             TOKENIZER_ERROR = 1,
             TOKENIZER_ENDOFINPUT,
             TOKENIZER_INTEGER,
@@ -66,20 +65,15 @@ namespace uBasicLibrary
             TOKENIZER_ON,
             TOKENIZER_OPTION,
             TOKENIZER_PRINT,
-            //TOKENIZER_RANDOMISE,
             TOKENIZER_RESTORE,
             TOKENIZER_READ,
             TOKENIZER_REM,
             TOKENIZER_TAB,
-            TOKENIZER_ELSE,
             TOKENIZER_FOR,
             TOKENIZER_TO,
             TOKENIZER_NEXT,
             TOKENIZER_THEN,
             TOKENIZER_RETURN,
-            TOKENIZER_CALL,
-            TOKENIZER_PEEK,
-            TOKENIZER_POKE,
             TOKENIZER_END,
             TOKENIZER_STOP,
             TOKENIZER_COMMA,
@@ -87,8 +81,8 @@ namespace uBasicLibrary
             TOKENIZER_SEMICOLON,
             TOKENIZER_PLUS,
             TOKENIZER_MINUS,
-            TOKENIZER_AND,
-            TOKENIZER_OR,
+            TOKENIZER_AMPERSAND,
+            TOKENIZER_BAR,
             TOKENIZER_ASTR,
             TOKENIZER_SLASH,
             TOKENIZER_MOD,
@@ -118,7 +112,22 @@ namespace uBasicLibrary
             TOKENIZER_ATN,
             TOKENIZER_EXP,
             TOKENIZER_LOG,
-            TOKENIZER_RANDOMIZE
+            TOKENIZER_RANDOMIZE,
+            TOKENIZER_CHR,
+            TOKENIZER_RIGHT,
+            TOKENIZER_LEFT,
+            TOKENIZER_MID,
+            TOKENIZER_NOT,
+            //TOKENIZER_POS,
+            //TOKENIZER_SPC,
+            TOKENIZER_VAL,
+            TOKENIZER_ASC,
+            TOKENIZER_LEN,
+            TOKENIZER_SGN,
+            TOKENIZER_STR,
+			TOKENIZER_AND,
+            TOKENIZER_OR,
+            TOKENIZER_XOR,
         };
 
         int ptr;
@@ -149,6 +158,8 @@ namespace uBasicLibrary
 
         public Tokenizer(char[] program)
         {
+            Debug.WriteLine("In Tokenizer()");
+
             //by default, read from/write to standard streams
 
             keywords = new List<TokenKeyword>(
@@ -159,7 +170,6 @@ namespace uBasicLibrary
                 new  TokenKeyword("print", Token.TOKENIZER_PRINT),
                 new  TokenKeyword("if", Token.TOKENIZER_IF),
                 new  TokenKeyword("then", Token.TOKENIZER_THEN),
-                new  TokenKeyword("else", Token.TOKENIZER_ELSE),
                 new  TokenKeyword("for", Token.TOKENIZER_FOR),
                 new  TokenKeyword("to", Token.TOKENIZER_TO),
                 new  TokenKeyword("step", Token.TOKENIZER_STEP),
@@ -168,10 +178,7 @@ namespace uBasicLibrary
                 new  TokenKeyword("go to", Token.TOKENIZER_GOTO),
                 new  TokenKeyword("gosub", Token.TOKENIZER_GOSUB),
                 new  TokenKeyword("return", Token.TOKENIZER_RETURN),
-                new  TokenKeyword("call", Token.TOKENIZER_CALL),
                 new  TokenKeyword("rem", Token.TOKENIZER_REM),
-                new  TokenKeyword("peek", Token.TOKENIZER_PEEK),
-                new  TokenKeyword("poke", Token.TOKENIZER_POKE),
                 new  TokenKeyword("end", Token.TOKENIZER_END),
                 new  TokenKeyword("tab", Token.TOKENIZER_TAB),
                 new  TokenKeyword("sqr", Token.TOKENIZER_SQR),
@@ -195,30 +202,45 @@ namespace uBasicLibrary
                 new  TokenKeyword("randomize", Token.TOKENIZER_RANDOMIZE),
                 new  TokenKeyword("and", Token.TOKENIZER_AND),
                 new  TokenKeyword("or", Token.TOKENIZER_OR),
+                new  TokenKeyword("xor", Token.TOKENIZER_XOR),
+                new  TokenKeyword("chr$", Token.TOKENIZER_CHR),
+                new  TokenKeyword("left$", Token.TOKENIZER_LEFT),
+                new  TokenKeyword("mid$", Token.TOKENIZER_MID),
+                new  TokenKeyword("not", Token.TOKENIZER_NOT),
+                new  TokenKeyword("right$", Token.TOKENIZER_RIGHT),
+                new  TokenKeyword("str$", Token.TOKENIZER_STR),
+                new  TokenKeyword("sgn", Token.TOKENIZER_SGN),
+                new  TokenKeyword("asc", Token.TOKENIZER_ASC),
+                new  TokenKeyword("len", Token.TOKENIZER_LEN),
+                //new  TokenKeyword("pos", Token.TOKENIZER_POS),
+				//new  TokenKeyword("spc", Token.TOKENIZER_SPC),
+                new  TokenKeyword("val", Token.TOKENIZER_VAL),
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
+            Debug.WriteLine("Out Tokenizer()");
         }
 
         #endregion
         #region Methods
 
-        public void AcceptToken(Tokenizer.Token token)
+        public void AcceptToken(Token token)
         {
-            Debug.WriteLine("In AcceptToken");
+            Debug.WriteLine("In AcceptToken()");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
             }
             TraceInternal.TraceVerbose("accept: Expected " + token + ", got it");
             NextToken();
-            Trace.TraceInformation("Out AcceptToken");
+            Debug.WriteLine("Out AcceptToken()");
         }
         
         public Token CheckSingleChar()
         {
-            Token token = 0;
+            Debug.WriteLine("In CheckSingleChar()");
 
+            Token token = 0;
             if(source[ptr] == '\n')
             {
                 token =  Token.TOKENIZER_CR;
@@ -249,11 +271,11 @@ namespace uBasicLibrary
             }
             else if(source[ptr] == '&')
             {
-                token = Token.TOKENIZER_AND;
+                token = Token.TOKENIZER_AMPERSAND;
             }
             else if(source[ptr] == '|')
             {
-                token = Token.TOKENIZER_OR;
+                token = Token.TOKENIZER_BAR;
             }
             else if(source[ptr] == '*')
             {
@@ -299,14 +321,17 @@ namespace uBasicLibrary
             {
                 token = Token.TOKENIZER_EQ;
             }
+            Debug.WriteLine("Out CheckSingleChar()");
             return (token);
         }
 
         public Token GetNextToken()
         {
-            Token token = 0;
+            Debug.WriteLine("In GetNextToken()");
+
+            Token token = Token.TOKENIZER_NONE;
             int i;
-            TraceInternal.TraceVerbose("get_next_token():" + Convert.ToString(ptr));
+            TraceInternal.TraceVerbose("GetNextToken():" + Convert.ToString(ptr));
 
             if ((ptr == source.Length) || (source[ptr] == (char)0))
             {
@@ -395,7 +420,7 @@ namespace uBasicLibrary
 
                 // <varable> ::= <letter> | <letter> "$" |<letter> <digit> | <letter> <digit> "$" | <letter> "(" | <letter> "$" "("
 
-                if (token == 0)
+                if (token == Token.TOKENIZER_NONE)
                 {
                     if ((source[ptr] >= 'a' && source[ptr] <= 'z') || (source[ptr] >= 'A' && source[ptr] <= 'Z'))
                     {
@@ -440,33 +465,38 @@ namespace uBasicLibrary
                     }
                 }
             }
-
+            Debug.WriteLine("Out GetNextToken()");
             return (token);
         }
 
         public void GotoPosition(int position)
         {
+            Debug.WriteLine("In GotoPosition()");
             ptr = position;
             currentToken = GetNextToken();
+            Debug.WriteLine("Out GotoPosition()");
         }
     
         public void Init(int position)
         {
+            Debug.WriteLine("In Init()");
             GotoPosition(position);
             currentToken = GetNextToken();
+            Debug.WriteLine("Out Init()");
         }
 
         public Token GetToken()
         {
+            Debug.WriteLine("In GetToken()");
             return (currentToken);
         }
 
         public void NextToken()
         {
-            TraceInternal.TraceVerbose("tokenizer_next");
+            Debug.WriteLine("In NextToken()");
             if (!IsFinished())
             {
-                TraceInternal.TraceVerbose("tokenizer_next: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                TraceInternal.TraceVerbose("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
                 ptr = nextptr;
 
                 while (source[ptr] == ' ')
@@ -475,18 +505,18 @@ namespace uBasicLibrary
                 }
                 currentToken = GetNextToken();
 
-                TraceInternal.TraceVerbose("tokenizer_next: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                TraceInternal.TraceVerbose("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
             }
             else
             {
                 currentToken = Token.TOKENIZER_ENDOFINPUT;
             }
-            Trace.TraceInformation("Out NextToken()");
+            Debug.WriteLine("Out NextToken()");
         }
 
         public void SkipTokens()
         {
-            Debug.WriteLine("In SkipTokens()");
+            Debug.WriteLine("Out SkipTokens()");
             if (!IsFinished())
             {
                 while (!(IsFinished() || source[nextptr] == '\n'))
@@ -498,8 +528,10 @@ namespace uBasicLibrary
                     NextToken();
                 }
             }
-            TraceInternal.TraceVerbose("tokenizer_skip: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
-            Trace.TraceInformation("Out SkipTokens()");
+
+            TraceInternal.TraceVerbose("SkipTokens: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
+            
+            Debug.WriteLine("Out SkipTokens()");
         }
 
         public int GetInteger()
@@ -512,19 +544,18 @@ namespace uBasicLibrary
                 integer = 10 * integer + Convert.ToInt16(source[i]) - Convert.ToInt16('0');
                 i++;
             }
-            Debug.WriteLine("In GetInteger()");
+            Debug.WriteLine("Out GetInteger()");
             return (integer);
         }
 
         public double GetNumber()
         {
+            Debug.WriteLine("In GetNumber()");
             double number = 0;
             int i = ptr;
             int j = ptr;
             bool integer = true;
-
-            Debug.WriteLine("In GetNumber()");
-
+             
             while (IsNumber(source[i]))
             {
                 if (source[i] == '.')
@@ -542,18 +573,17 @@ namespace uBasicLibrary
                 }
                 i++;
             }
-            Debug.WriteLine("In GetNumber()");
+            Debug.WriteLine("Out GetNumber()");
             return (number);
         }
 
         public string Getstring()
         {
+            Debug.WriteLine("In Getstring()");
             string _string = "";
             int i = ptr;
 
-            Debug.WriteLine("In Getstring()");
-
-            if (GetToken() != Token.TOKENIZER_STRING)
+            if(GetToken() != Token.TOKENIZER_STRING)
             {
                 _string = "";
             }
@@ -566,22 +596,20 @@ namespace uBasicLibrary
                     i++;
                 }
             }
-            Trace.TraceInformation("Out Getstring()");
+            Debug.WriteLine("Out Getstring()");
             return (_string);
         }
 
         public bool IsFinished()
         {
-            Trace.TraceInformation("Out IsFinished()");
+            Debug.WriteLine("In IsFinished()");
             return ((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
         }
 
         public int GetIntegerVariable()
         {
+            Debug.WriteLine("Int GetIntegerVariable()");
             int integer;
-
-            Debug.WriteLine("In GetIntegerVariable()");
-
             if ((source[ptr] >= 'a') && (source[ptr] < 'z'))
             {
                 integer = (int)source[ptr] - (int)'a'; 
@@ -590,96 +618,99 @@ namespace uBasicLibrary
             {
                 integer = (int)source[ptr] - (int)'A';
             }
-            Trace.TraceInformation("Out GetIntegerVariable()");
+            Debug.WriteLine("Out GetIntegerVariable()");
             return (integer);
         }
 
         public string GetNumericVariable()
         {
+            Debug.WriteLine("Int GetNumericVariable()");
             string value = "";
             char c;
-
-            Debug.WriteLine("In GetNumericVariable()");
-
             c = source[ptr];
-            if (((c >= 'a') && (c< 'z')) || ((c >= 'A') && (c< 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c< '9'))
+            if ((c >= '0') && (c <= '9'))
             {
                 value += c;
             }
-            Trace.TraceInformation("Out GetNumericVariable()");
+            Debug.WriteLine("Out GetNumericVariable()");
             return (value);
         }
 
         public string GetNumericArrayVariable()
         {
+            Debug.WriteLine("In GetNumericArrayVariable()");
+
             // Numeric array variables are single digit
 
             string value = "";
             char c;
 
-            Debug.WriteLine("In GetNumericArrayVariable()");
-
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
-            Trace.TraceInformation("Out GetNumericArrayVariable()");
+            Debug.WriteLine("Out GetNumericArrayVariable()");
             return (value);
         }
 
         public string GetStringArrayVariable()
         {
+            Debug.WriteLine("In GetStringArrayVariable()");
+
             // String array variables are single digit
 
             string value = "";
             char c;
 
-            Debug.WriteLine("In GetStringArrayVariable()");
-
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
-            Trace.TraceInformation("Out GetStringArrayVariable()");
+            Debug.WriteLine("Out GetStringArrayVariable()");
+
             return (value);
         }
 
         public string GetStringVariable()
         {
+            Debug.WriteLine("In GetStringVariable()");
+
             string value = "";
             char c;
 
-            Debug.WriteLine("In GetStringVariable()");
-
             c = source[ptr];
-            if (((c >= 'a') && (c < 'z')) || ((c >= 'A') && (c < 'Z')))
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
 
             c = source[ptr];
-            if ((c >= '0') && (c < '9'))
+            if ((c >= '0') && (c <= '9'))
             {
                 value += c;
             }
-            Trace.TraceInformation("Out GetStringVariable()");
+
+            Debug.WriteLine("Out GetStringVariable()");
+
             return (value);
         }
 
         public int GetPosition()
         {
+            Debug.WriteLine("In GetPosition()");
+            Debug.WriteLine("Out GetPosition()");
             return ptr;
         }
 
@@ -705,7 +736,7 @@ namespace uBasicLibrary
         //--------------------------------------------------------------
         // Report What Was Accepted
 
-        public void Expected(string message)
+        private void Expected(string message)
         {
             throw new System.ArgumentException("Unacceptable", message);
         }

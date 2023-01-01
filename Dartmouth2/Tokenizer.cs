@@ -29,7 +29,6 @@
  */
 
 using System;
-using log4net;
 using System.Collections.Generic;
 using System.Diagnostics;
 using TracerLibrary;
@@ -40,7 +39,7 @@ namespace Dartmouth2
     {
         #region Fields
 
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public enum Token : int
         {

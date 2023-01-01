@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using log4net;
 using uBasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
@@ -15,7 +14,7 @@ namespace Dartmouth2
     {
         #region Fields
 
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         //protected System.IO.TextReader In = null;
         //protected System.IO.TextWriter Out = null;

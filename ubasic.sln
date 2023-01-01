@@ -43,7 +43,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net452", "Net452", "{98BD9E
 		ThirdParty\Tracer\net452\TracerLibrary.pdb = ThirdParty\Tracer\net452\TracerLibrary.pdb
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ubasicTerminal", "ubasicTerminal\ubasicTerminal.csproj", "{41D03552-D2AE-4910-A266-6AA6FED17921}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroSoft", "MicroSoft\MicroSoft.csproj", "{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnetcoreapp3.1", "dotnetcoreapp3.1", "{52F6F7FB-B52E-468A-9C02-C6B0030E235A}"
+	ProjectSection(SolutionItems) = preProject
+		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.deps.json = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.deps.json
+		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll
+		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.pdb = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.pdb
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,10 +102,10 @@ Global
 		{90522D17-49A9-410B-9671-5066E5EA28B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90522D17-49A9-410B-9671-5066E5EA28B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90522D17-49A9-410B-9671-5066E5EA28B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{41D03552-D2AE-4910-A266-6AA6FED17921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{41D03552-D2AE-4910-A266-6AA6FED17921}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{41D03552-D2AE-4910-A266-6AA6FED17921}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{41D03552-D2AE-4910-A266-6AA6FED17921}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +114,7 @@ Global
 		{B1214313-AA97-4F53-AD43-0C0B7E174D9E} = {DB2F84D6-7991-42A4-AC8B-656E30F48A0F}
 		{088569AB-2A6A-4E7B-87DE-D2FAC5EF92E1} = {DB2F84D6-7991-42A4-AC8B-656E30F48A0F}
 		{98BD9EE1-DB4B-4099-B3F3-552C34EBF3AF} = {088569AB-2A6A-4E7B-87DE-D2FAC5EF92E1}
+		{52F6F7FB-B52E-468A-9C02-C6B0030E235A} = {088569AB-2A6A-4E7B-87DE-D2FAC5EF92E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B2E2069-4D29-46D2-A417-4E4ADF178086}

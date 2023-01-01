@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using log4net;
+using TracerLibrary;
 
 namespace uBasicLibrary
 {

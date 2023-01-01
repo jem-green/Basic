@@ -29,7 +29,7 @@
  */
 
 using System;
-using log4net;
+using TracerLibrary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -39,7 +39,7 @@ namespace Dartmouth3
     {
         #region Fields
 
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public enum Token : int
         {
@@ -138,7 +138,7 @@ namespace Dartmouth3
 
         public Tokenizer(char[] program)
         {
-            Trace.TraceInformation("In Tokenizer()");
+            Debug.WriteLine("In Tokenizer()");
             //by default, read from/write to standard streams
 
             keywords = new List<TokenKeyword>(
@@ -187,19 +187,19 @@ namespace Dartmouth3
 
         public void AcceptToken(Token token)
         {
-            Trace.TraceInformation("In AcceptToken()");
+            Debug.WriteLine("In AcceptToken()");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
             }
-            Debug("accept: Expected " + token + ", got it");
+            TraceInternal.TraceVerbose("accept: Expected " + token + ", got it");
             NextToken();
             Trace.TraceInformation("Out AcceptToken()");
         }
         
         public Token CheckSingleChar()
         {
-            Trace.TraceInformation("In CheckSingleChar()");
+            Debug.WriteLine("In CheckSingleChar()");
 
             Token token = 0;
             if(source[ptr] == '\n')
@@ -288,11 +288,11 @@ namespace Dartmouth3
 
         public Token GetNextToken()
         {
-            Trace.TraceInformation("In GetNextToken()");
+            Debug.WriteLine("In GetNextToken()");
 
             Token token = Token.TOKENIZER_NONE;
             int i;
-            Debug("GetNextToken():" + Convert.ToString(ptr));
+            TraceInternal.TraceVerbose("GetNextToken():" + Convert.ToString(ptr));
 
             if ((ptr == source.Length) || (source[ptr] == (char)0))
             {
@@ -322,7 +322,7 @@ namespace Dartmouth3
                             }
                             else
                             {
-                                Debug("get_next_token: error due to too short number");
+                                TraceInternal.TraceVerbose("get_next_token: error due to too short number");
                                 token = Token.TOKENIZER_ERROR;
                                 break;
                             }
@@ -330,7 +330,7 @@ namespace Dartmouth3
                     }
                     if (i >= MaximumNumberLength)
                     {
-                        Debug("get_next_token: error due to too long number");
+                        TraceInternal.TraceVerbose("get_next_token: error due to too long number");
                         token = Token.TOKENIZER_ERROR;
                     }
 
@@ -412,7 +412,7 @@ namespace Dartmouth3
 
         public void GotoPosition(int position)
         {
-            Trace.TraceInformation("In GotoPosition()");
+            Debug.WriteLine("In GotoPosition()");
             ptr = position;
             currentToken = GetNextToken();
             Trace.TraceInformation("Out GotoPosition()");
@@ -420,7 +420,7 @@ namespace Dartmouth3
     
         public void Init(int position)
         {
-            Trace.TraceInformation("In Init()");
+            Debug.WriteLine("In Init()");
             GotoPosition(position);
             currentToken = GetNextToken();
             Trace.TraceInformation("Out Init()");
@@ -428,16 +428,16 @@ namespace Dartmouth3
 
         public Token GetToken()
         {
-            Trace.TraceInformation("In GetToken()");
+            Debug.WriteLine("In GetToken()");
             return (currentToken);
         }
 
         public void NextToken()
         {
-            Trace.TraceInformation("in NextToken()");
+            Debug.WriteLine("In NextToken()");
             if (!IsFinished())
             {
-                Debug("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                TraceInternal.TraceVerbose("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
                 ptr = nextptr;
 
                 while (source[ptr] == ' ')
@@ -446,7 +446,7 @@ namespace Dartmouth3
                 }
                 currentToken = GetNextToken();
 
-                Debug("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
+                TraceInternal.TraceVerbose("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
             }
             else
             {
@@ -470,14 +470,14 @@ namespace Dartmouth3
                 }
             }
 
-            Debug("SkipTokens: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
+            TraceInternal.TraceVerbose("SkipTokens: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
             
             Trace.TraceInformation("Out SkipTokens()");
         }
 
         public int GetInteger()
         {
-            Trace.TraceInformation("In GetInteger()");
+            Debug.WriteLine("In GetInteger()");
             int integer= 0;
             int i = ptr;
             while (IsDigit(source[i]))
@@ -491,7 +491,7 @@ namespace Dartmouth3
 
         public double GetNumber()
         {
-            Trace.TraceInformation("In GetNumber()");
+            Debug.WriteLine("In GetNumber()");
             double number = 0;
             int i = ptr;
             int j = ptr;
@@ -520,7 +520,7 @@ namespace Dartmouth3
 
         public string Getstring()
         {
-            Trace.TraceInformation("In Getstring()");
+            Debug.WriteLine("In Getstring()");
             string _string = "";
             int i = ptr;
 
@@ -543,13 +543,13 @@ namespace Dartmouth3
 
         public bool IsFinished()
         {
-            Trace.TraceInformation("In IsFinished()");
+            Debug.WriteLine("In IsFinished()");
             return ((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
         }
 
         public int GetIntegerVariable()
         {
-            Trace.TraceInformation("Int GetIntegerVariable()");
+            Debug.WriteLine("Int GetIntegerVariable()");
             int integer;
             if ((source[ptr] >= 'a') && (source[ptr] < 'z'))
             {
@@ -565,7 +565,7 @@ namespace Dartmouth3
 
         public string GetNumericVariable()
         {
-            Trace.TraceInformation("Int GetNumericVariable()");
+            Debug.WriteLine("Int GetNumericVariable()");
             string value = "";
             char c;
 
@@ -638,7 +638,7 @@ namespace Dartmouth3
 
         public int GetPosition()
         {
-            Trace.TraceInformation("In GetPosition()");
+            Debug.WriteLine("In GetPosition()");
             return ptr;
         }
 
@@ -660,30 +660,6 @@ namespace Dartmouth3
 
         #endregion
         #region Private
-
-        //--------------------------------------------------------------
-        // Debug
-
-        private void Debug(string message)
-        {
-            log.Debug(message);
-        }
-
-        //--------------------------------------------------------------
-        // Info
-
-        private void Info(string message)
-        {
-           log.Info(message);
-        }
-
-        //--------------------------------------------------------------
-        // Report an Error
-
-        private void Err(string s)
-        {
-            log.Error(s);
-        }
 
         //--------------------------------------------------------------
         // Report What Was Accepted

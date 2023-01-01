@@ -32,7 +32,7 @@ namespace uBasicForm
         // Most recently used
         protected MruStripMenu mruMenu;
 
-        public ConsoleForm(string filepath, string name)
+        public ConsoleForm(string path, string name)
         {
             Debug.WriteLine("In ConsoleForm()");
 
@@ -52,13 +52,13 @@ namespace uBasicForm
 
             this.Text = "uBasic " + ProductVersion;
 
-            if ((filepath.Length > 0) && (name.Length > 0))
+            if ((path.Length > 0) && (name.Length > 0))
             {
                 consoleTextBox.Text = "";
                 this.Text = "uBasic " + ProductVersion + " - " + name ;
 
                 string filenamePath = "";
-                filenamePath = filepath + Path.DirectorySeparatorChar + name + ".bas";
+                filenamePath = path + Path.DirectorySeparatorChar + name + ".bas";
                 char[] program;
                 try
                 {

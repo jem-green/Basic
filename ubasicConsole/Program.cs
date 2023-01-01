@@ -7,7 +7,7 @@ using uBasicLibrary;
 using Altair;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-
+using Microsoft.Win32;
 
 namespace uBasicConsole
 {
@@ -56,7 +56,7 @@ namespace uBasicConsole
             SetConsoleCtrlHandler(ctrlCHandler, true);
             int pos = 0;
             Parameter<string> filePath = new Parameter<string>();
-            Parameter<string> filename = new Parameter<string>();
+            Parameter<string> fileName = new Parameter<string>();
             Parameter<string> fileExtension = new Parameter<string>();
 
             // Get the default path directory
@@ -67,13 +67,14 @@ namespace uBasicConsole
             Parameter<string> logPath = new Parameter<string>("");
             Parameter<string> logName = new Parameter<string>("ubasicconsole");
 
-            logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            logPath.Value = filePath.Value = Environment.CurrentDirectory;
+            logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "ubasic";
+            //logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            //logPath.Value = filePath.Value = Environment.CurrentDirectory;
             logPath.Source = Parameter<string>.SourceType.App;
 
             Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>
             {
-                Value = TraceInternal.TraceLookup("CRITICAL"),
+                Value = TraceInternal.TraceLookup("VERBOSE"),
                 Source = Parameter<SourceLevels>.SourceType.App
             };
 
@@ -87,6 +88,123 @@ namespace uBasicConsole
             listener.Filter = fileTraceFilter;
             Trace.Listeners.Clear();
             Trace.Listeners.Add(listener);
+
+            if (IsLinux == false)
+            {
+                // Check if the registry has been set and overwrite the application defaults
+
+                RegistryKey key = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
+                string keys = "software\\green\\ubasic";
+                foreach (string subkey in keys.Split('\\'))
+                {
+                    key = key.OpenSubKey(subkey);
+                    if (key == null)
+                    {
+                        TraceInternal.TraceVerbose("Failed to open " + subkey);
+                        break;
+                    }
+                }
+
+                // Get the log path
+
+                try
+                {
+                    if (key.GetValue("logpath", "").ToString().Length > 0)
+                    {
+                        logPath.Value = (string)key.GetValue("logpath", logPath);
+                        logPath.Source = Parameter<string>.SourceType.Registry;
+                        TraceInternal.TraceVerbose("Use registry value; logPath=" + logPath);
+                    }
+                }
+                catch (NullReferenceException)
+                {
+                    TraceInternal.TraceVerbose("Registry error use default values; logPath=" + logPath.Value);
+                }
+                catch (Exception e)
+                {
+                    TraceInternal.TraceError(e.ToString());
+                }
+
+                // Get the log name
+
+                try
+                {
+                    if (key.GetValue("logname", "").ToString().Length > 0)
+                    {
+                        logName.Value = (string)key.GetValue("logname", logName);
+                        logName.Source = Parameter<string>.SourceType.Registry;
+                        TraceInternal.TraceVerbose("Use registry value; LogName=" + logName);
+                    }
+                }
+                catch (NullReferenceException)
+                {
+                    TraceInternal.TraceVerbose("Registry error use default values; LogName=" + logName.Value);
+                }
+                catch (Exception e)
+                {
+                    TraceInternal.TraceError(e.ToString());
+                }
+
+                // Get the name
+
+                try
+                {
+                    if (key.GetValue("name", "").ToString().Length > 0)
+                    {
+                        fileName.Value = (string)key.GetValue("name", fileName);
+                        fileName.Source = Parameter<string>.SourceType.Registry;
+                        TraceInternal.TraceVerbose("Use registry value Name=" + fileName);
+                    }
+                }
+                catch (NullReferenceException)
+                {
+                    TraceInternal.TraceVerbose("Registry error use default values; Name=" + fileName.Value);
+                }
+                catch (Exception e)
+                {
+                    TraceInternal.TraceError(e.ToString());
+                }
+
+                // Get the path
+
+                try
+                {
+                    if (key.GetValue("path", "").ToString().Length > 0)
+                    {
+                        filePath.Value = (string)key.GetValue("path", filePath);
+                        filePath.Source = Parameter<string>.SourceType.Registry;
+                        TraceInternal.TraceVerbose("Use registry value Path=" + filePath);
+                    }
+                }
+                catch (NullReferenceException)
+                {
+                    TraceInternal.TraceVerbose("Registry error use default values; Path=" + filePath.Value);
+                }
+                catch (Exception e)
+                {
+                    TraceInternal.TraceError(e.ToString());
+                }
+
+                // Get the traceLevels
+
+                try
+                {
+                    if (key.GetValue("debug", "").ToString().Length > 0)
+                    {
+                        traceLevels.Value = TraceInternal.TraceLookup((string)key.GetValue("debug", "verbose"));
+                        traceLevels.Source = Parameter<SourceLevels>.SourceType.Registry;
+                        TraceInternal.TraceVerbose("Use registry value; Debug=" + traceLevels.Value);
+                    }
+                }
+                catch (NullReferenceException)
+                {
+                    TraceInternal.TraceWarning("Registry error use default values; Debug=" + traceLevels.Value);
+                }
+                catch (Exception e)
+                {
+                    TraceInternal.TraceError(e.ToString());
+                }
+            }
 
             // Check if the config file has been paased in and overwrite the registry
 
@@ -107,15 +225,15 @@ namespace uBasicConsole
                 {
                     filePath.Value = filenamePath.Substring(0, pos);
                     filePath.Source = Parameter<string>.SourceType.Command;
-                    filename.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
-                    filename.Source = Parameter<string>.SourceType.Command;
+                    fileName.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    fileName.Source = Parameter<string>.SourceType.Command;
                 }
                 else
                 {
-                    filename.Value = filenamePath;
-                    filename.Source = Parameter<string>.SourceType.Command;
+                    fileName.Value = filenamePath;
+                    fileName.Source = Parameter<string>.SourceType.Command;
                 }
-                TraceInternal.TraceVerbose("Use filename=" + filename.Value.ToString());
+                TraceInternal.TraceVerbose("Use filename=" + fileName.Value.ToString());
                 TraceInternal.TraceVerbose("use filePath=" + filePath.Value.ToString());
                 TraceInternal.TraceVerbose("use fileExtension=" + fileExtension.Value.ToString());
 
@@ -168,11 +286,11 @@ namespace uBasicConsole
                         case "/N":
                         case "--name":
                             {
-                                filename.Value = args[item + 1];
-                                filename.Value = filename.Value.ToString().TrimStart('"');
-                                filename.Value = filename.Value.ToString().TrimEnd('"');
-                                filename.Source = Parameter<string>.SourceType.Command;
-                                TraceInternal.TraceVerbose("Use command value Name=" + filename);
+                                fileName.Value = args[item + 1];
+                                fileName.Value = fileName.Value.ToString().TrimStart('"');
+                                fileName.Value = fileName.Value.ToString().TrimEnd('"');
+                                fileName.Source = Parameter<string>.SourceType.Command;
+                                TraceInternal.TraceVerbose("Use command value Name=" + fileName);
                                 break;
                             }
                         case "/P":
@@ -208,15 +326,14 @@ namespace uBasicConsole
             listener.Filter = fileTraceFilter;
             Trace.Listeners.Add(listener);
 
-
-            Trace.TraceInformation("Use Name=" + filename);
+            Trace.TraceInformation("Use Name=" + fileName);
             Trace.TraceInformation("Use Path=" + filePath);
             Trace.TraceInformation("Use Log Name=" + logName);
             Trace.TraceInformation("Use Log Path=" + logPath);
 
-            if ((filename.Value.ToString().Length > 0) && (filePath.Value.ToString().Length > 0))
+            if ((fileName.Value.ToString().Length > 0) && (filePath.Value.ToString().Length > 0))
             {
-                filenamePath = filePath.Value.ToString() + Path.DirectorySeparatorChar + filename.Value.ToString() + ".bas";
+                filenamePath = filePath.Value.ToString() + Path.DirectorySeparatorChar + fileName.Value.ToString() + ".bas";
                 char[] program;
                 try
                 {
@@ -258,6 +375,15 @@ namespace uBasicConsole
 
         #endregion
         #region Private
+
+        private static bool IsLinux
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
 
         private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
         {

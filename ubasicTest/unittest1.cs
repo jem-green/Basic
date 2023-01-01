@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using uBasicLibrary;
 
 namespace uBasicTest
 {
@@ -9,6 +11,24 @@ namespace uBasicTest
         [TestMethod]
         public void TestMethod1()
         {
+            //int s = 1;
+            //int[] d = new int[s+1];
+            //uBasicLibrary.Array a = new uBasicLibrary.Array("a",s,d,"10");
+            //int[] p = new int[s+1];
+            //p[s] = 0;
+            //a.Set(p, 1);
+            //System.Diagnostics.Debug.WriteLine(a.Get(p));
+
+            int s = 2;
+            int[] d = new int[s + 1];
+            d[1] = 2;
+            d[2] = 2;
+            uBasicLibrary.Array a = new uBasicLibrary.Array("a", s, d, "10");
+            int[] p = new int[s + 1];
+            p[1] = 1;
+            p[2] = 1;
+            a.Set(p, 1);
+            System.Diagnostics.Debug.WriteLine(a.Get(p));
 
 
             // need to think about case sensitivity
@@ -123,6 +143,10 @@ namespace uBasicTest
             //input = input + @"\creative_computing\superstartrek.bas";
             //input = input + @"\creative_computing\superstartrekins.bas";
             //input = input + @"\creative_computing\wumpus.bas";
+
+
+
+
         }
     }
 }

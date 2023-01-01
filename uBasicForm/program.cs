@@ -22,6 +22,8 @@ namespace uBasicForm
         [STAThread]
         static void Main()
         {
+            // Read in specific configuration
+
             Debug.WriteLine("Enter Main()");
 
             string[] args = Environment.GetCommandLineArgs();
@@ -45,7 +47,7 @@ namespace uBasicForm
 
             Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>
             {
-                Value = TraceInternal.TraceLookup("CRITICAL"),
+                Value = TraceInternal.TraceLookup("VERBOSE"),
                 Source = Parameter<SourceLevels>.SourceType.App
             };
 
@@ -315,7 +317,11 @@ namespace uBasicForm
             Debug.WriteLine("Exit Main()");
 
         }
-        public static bool IsLinux
+
+        #endregion
+        #region Private
+
+        private static bool IsLinux
         {
             get
             {
@@ -323,6 +329,7 @@ namespace uBasicForm
                 return (p == 4) || (p == 6) || (p == 128);
             }
         }
+
         #endregion
     }
 }
