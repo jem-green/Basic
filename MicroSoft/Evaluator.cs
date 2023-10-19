@@ -2155,7 +2155,7 @@ namespace MicroSoft
             if (stack.Count > 1)
             {
                 first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
+                if (first.GetType() != typeof(bool))
                 {
                     // only expecting a boolean
                     Expected("boolean");
@@ -2165,14 +2165,14 @@ namespace MicroSoft
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
+                        if (second.GetType() != typeof(bool))
                         {
                             // only expecting a boolean
                             Expected("boolean");
                         }
                         else
                         {
-                            stack.Push((Boolean)first && (Boolean)second);
+                            stack.Push((bool)first && (bool)second);
                         }
                     }
                 }
@@ -2192,7 +2192,7 @@ namespace MicroSoft
             if (stack.Count > 1)
             {
                 first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
+                if (first.GetType() != typeof(bool))
                 {
                     // only expecting a boolean
                     Expected("boolean");
@@ -2202,14 +2202,14 @@ namespace MicroSoft
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
+                        if (second.GetType() != typeof(bool))
                         {
                             // only expecting a boolean
                             Expected("boolean");
                         }
                         else
                         {
-                            stack.Push((Boolean)first || (Boolean)second);
+                            stack.Push((bool)first || (bool)second);
                         }
                     }
                 }
@@ -2229,7 +2229,7 @@ namespace MicroSoft
             if (stack.Count > 1)
             {
                 first = stack.Pop();
-                if (first.GetType() != typeof(Boolean))
+                if (first.GetType() != typeof(bool))
                 {
                     // only expecting a boolean
                     Expected("boolean");
@@ -2239,14 +2239,14 @@ namespace MicroSoft
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() != typeof(Boolean))
+                        if (second.GetType() != typeof(bool))
                         {
                             // only expecting a boolean
                             Expected("boolean");
                         }
                         else
                         {
-                            stack.Push((Boolean)first || (Boolean)second);
+                            stack.Push((bool)first || (bool)second);
                         }
                     }
                 }

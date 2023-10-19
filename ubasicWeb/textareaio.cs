@@ -3,7 +3,7 @@ using uBasicLibrary;
 
 namespace uBasicWeb
 {
-    public class TextAreaIO : IuBasicIO
+    public class TextAreaIO : IDefaultIO
     {
         #region Event handling
 
@@ -202,10 +202,14 @@ namespace uBasicWeb
 
         #endregion
         #region Methods
-       
 
-        #endregion
-        #region Methods
+        public void Put(char c)
+        {
+            lock (_lockObject)
+            {
+                _output += c;
+            }
+        }
 
         public void Out(string s)
         {
@@ -214,6 +218,17 @@ namespace uBasicWeb
                 _output += s;
             }
         }
+
+        public char Get()
+        {
+            char value = '\0';
+            if (_input.Length > 0)
+            {
+                value = (char)_input.Substring(_input.Length - 1, 1)[0];
+            }
+            return (value);
+        }
+
 
         public string In()
         {

@@ -6,13 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ubasicConsole", "ubasicCons
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{DB2F84D6-7991-42A4-AC8B-656E30F48A0F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "log4net", "log4net", "{B1214313-AA97-4F53-AD43-0C0B7E174D9E}"
-	ProjectSection(SolutionItems) = preProject
-		ThirdParty\log4net\log4net.dll = ThirdParty\log4net\log4net.dll
-		ThirdParty\log4net\log4net.pdb = ThirdParty\log4net\log4net.pdb
-		ThirdParty\log4net\log4net.xml = ThirdParty\log4net\log4net.xml
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altair", "Altair\Altair.csproj", "{72098349-F135-4895-9D9A-1A52CF9E40EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dartmouth2", "Dartmouth2\Dartmouth2.csproj", "{236647DD-946D-4A1E-8014-33CDF11881C9}"
@@ -111,7 +104,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B1214313-AA97-4F53-AD43-0C0B7E174D9E} = {DB2F84D6-7991-42A4-AC8B-656E30F48A0F}
 		{088569AB-2A6A-4E7B-87DE-D2FAC5EF92E1} = {DB2F84D6-7991-42A4-AC8B-656E30F48A0F}
 		{98BD9EE1-DB4B-4099-B3F3-552C34EBF3AF} = {088569AB-2A6A-4E7B-87DE-D2FAC5EF92E1}
 		{52F6F7FB-B52E-468A-9C02-C6B0030E235A} = {088569AB-2A6A-4E7B-87DE-D2FAC5EF92E1}

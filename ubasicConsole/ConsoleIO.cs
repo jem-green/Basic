@@ -7,12 +7,12 @@ using uBasicLibrary;
 
 namespace uBasicConsole
 {
-    public class ConsoleIO : IuBasicIO
+    public class ConsoleIO : IDefaultIO
     {
         #region Event handling
 
         /// <summary>
-        /// Occurs when the Zmachine recives a message.
+        /// Occurs when the console recives a message.
         /// </summary>
         public event EventHandler<TextEventArgs> TextReceived;
 
@@ -221,6 +221,25 @@ namespace uBasicConsole
         #endregion
         #region Methods
 
+        public void Put(char c)
+        {
+            lock (_lockObject)
+            {
+                _cursor.Left++;
+                if (_cursor.Left > _consoleWidth)
+                {
+                    _cursor.Left = 1;
+                    _cursor.Top++;
+                    System.Console.Out.Write("\n");
+                    System.Console.Out.Write(c);
+                }
+                else
+                {
+                    System.Console.Out.Write(c);
+                }
+            }
+        }
+
         public void Out(string s)
         {
             lock (_lockObject)
@@ -253,6 +272,15 @@ namespace uBasicConsole
                     }
                 }
             }
+        }
+
+        public char Get()
+        {
+            ConsoleKeyInfo key;
+            char value = '\0';
+            key = System.Console.ReadKey(true);
+            value = key.KeyChar;
+            return (value);
         }
 
         public string In()

@@ -44,7 +44,7 @@ namespace Basic
     {
         #region Fields
 
-        readonly IuBasicIO consoleIO;
+        readonly IDefaultIO consoleIO;
 
         int program_ptr;
         const int MAX_STRINGLEN = 40;
@@ -140,7 +140,7 @@ namespace Basic
         #endregion
         #region Constructors
 
-        public Interpreter(char[] program, IuBasicIO consoleIO)
+        public Interpreter(char[] program, IDefaultIO consoleIO)
         {
             this.consoleIO = consoleIO;        
             lineIndex = new List<LineIndex>();

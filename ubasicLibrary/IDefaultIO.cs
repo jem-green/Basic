@@ -6,10 +6,9 @@ using System.Text;
 
 namespace uBasicLibrary
 {
-    public interface IuBasicIO
+    public interface IDefaultIO
     {
         #region Peroperties
-		
         int Width { get; }
         int Height { get; }
         int Left { get; }
@@ -23,9 +22,10 @@ namespace uBasicLibrary
 
         #endregion
         #region Methods
-		
         void Out(string theMsg);
+        void Put(char character);
         string In();
+        char Get();
         void Error(string theErr);
         void Reset();
 

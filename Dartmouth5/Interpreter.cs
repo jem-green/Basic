@@ -45,7 +45,7 @@ namespace Dartmouth5
     {
         #region Fields
 
-        readonly IuBasicIO consoleIO;
+        readonly IDefaultIO _IO;
 
         int program_ptr;
         const int MAX_STRINGLEN = 40;
@@ -124,9 +124,9 @@ namespace Dartmouth5
         #endregion
         #region Constructors
 
-        public Interpreter(char[] program, IuBasicIO consoleIO)
+        public Interpreter(char[] program, IDefaultIO consoleIO)
         {
-            this.consoleIO = consoleIO;        
+            this._IO = consoleIO;        
             lineIndex = new List<LineIndex>();
             tokenizer = new Tokenizer(program);
             evaluator = new Evaluator(tokenizer);
@@ -237,7 +237,7 @@ namespace Dartmouth5
         private string ReadInput()
         {
             Debug.WriteLine("In ReadInput()");
-            string value = consoleIO.In();
+            string value = _IO.In();
             value = value.TrimEnd('\r');
             value = value.TrimEnd('\n');
             Debug.WriteLine("In ReadInput()");
@@ -625,7 +625,7 @@ namespace Dartmouth5
                     // spec defines 5 zones then new line
 
                     previous = tokenizer.GetToken();
-                    tab = -consoleIO.CursorLeft + consoleIO.Zone * (1 + (consoleIO.CursorLeft / consoleIO.Zone));
+                    tab = -_IO.CursorLeft + _IO.Zone * (1 + (_IO.CursorLeft / _IO.Zone));
                     value = new string(' ', tab);
                     TraceInternal.TraceInformation("PRINT ,");
                     Emit(value);
@@ -645,7 +645,7 @@ namespace Dartmouth5
                         // assume a tab spacing of 3 characters
                         // spec defines a minimum of 6 characters
 
-                        tab = -consoleIO.CursorLeft + consoleIO.Compact * (1 + (consoleIO.CursorLeft / consoleIO.Compact));
+                        tab = -_IO.CursorLeft + _IO.Compact * (1 + (_IO.CursorLeft / _IO.Compact));
                         if (tab < 2)
                         {
                             tab += 3;
@@ -701,7 +701,7 @@ namespace Dartmouth5
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_TAB);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
                     evaluator.Expression();
-                    tab = (int)Math.Truncate(evaluator.PopDouble()) - consoleIO.CursorLeft;
+                    tab = (int)Math.Truncate(evaluator.PopDouble()) - _IO.CursorLeft;
                     if (tab > 0)
                     {
                         value = new string(' ', tab);
@@ -1836,7 +1836,7 @@ namespace Dartmouth5
         private void Err(string text)
         {
             string message = text + " @ " + currentLineNumber;
-            consoleIO.Error(message + "\n");
+            _IO.Error(message + "\n");
             TraceInternal.TraceError(message);
         }
 
@@ -1856,7 +1856,7 @@ namespace Dartmouth5
         /// <param name="s"></param>
         private void Emit(string s)
         {
-            consoleIO.Out(s);
+            _IO.Out(s);
         }
 
         #endregion

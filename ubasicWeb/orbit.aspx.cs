@@ -8,7 +8,7 @@ namespace uBasicWeb
 {
     public partial class Orbit : System.Web.UI.Page, System.Web.UI.ICallbackEventHandler
     {
-        static readonly IuBasicIO textAreaIO = new TextAreaIO();
+        static readonly IDefaultIO textAreaIO = new TextAreaIO();
         protected String returnValue;
         IInterpreter basic;
 

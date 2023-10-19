@@ -404,7 +404,7 @@ namespace Altair
                         {
                             c = new string(source, ptr, keyword.Keyword.Length);
                         }
-                        // 205/06/29 Allowed keywords to be uppercase
+                        // 2015/06/29 Allowed keywords to be uppercase
                         if ((keyword.Keyword == c) || (keyword.Keyword == c.ToLower()))
                         {
                             nextptr = ptr + keyword.Keyword.Length;
@@ -748,7 +748,7 @@ namespace Altair
         //--------------------------------------------------------------
         // Recognize a Numeric Digit 
 
-        private Boolean IsDigit(char check)
+        private bool IsDigit(char check)
         {
             return (Char.IsDigit(check));
         }
@@ -756,13 +756,13 @@ namespace Altair
         //--------------------------------------------------------------
         // Recognize a Number 
 
-        private Boolean IsNumber(char check)
+        private bool IsNumber(char check)
         {
             return (Char.IsDigit(check) || (check == '.'));
         }
 
         //--------------------------------------------------------------
-        // Report What Was Accepted
+        // Report What Was Expected
 
         private void Expected(string message)
         {

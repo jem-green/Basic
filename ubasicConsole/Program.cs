@@ -15,7 +15,7 @@ namespace uBasicConsole
     {
         #region Fields
 
-        static readonly IuBasicIO consoleIO = new ConsoleIO();
+        static readonly IDefaultIO consoleIO = new ConsoleIO();
         public static bool isclosing = false;
         static private HandlerRoutine ctrlCHandler;
 

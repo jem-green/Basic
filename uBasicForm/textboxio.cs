@@ -4,7 +4,7 @@ using uBasicLibrary;
 
 namespace uBasicForm
 {
-    public class TextBoxIO : IuBasicIO
+    public class TextBoxIO : IDefaultIO
     {
         #region Event handling
 
@@ -206,6 +206,16 @@ namespace uBasicForm
         #endregion
         #region Methods
 
+        public void Put(char c)
+        {
+            lock (_lockObject)
+            {
+                _output = _output + c;
+            }
+            TextEventArgs args = new TextEventArgs(c.ToString());
+            OnTextReceived(args);
+        }
+
         public void Out(string s)
         {
             lock (_lockObject)
@@ -215,6 +225,16 @@ namespace uBasicForm
             }
             TextEventArgs args = new TextEventArgs(s);
             OnTextReceived(args);
+        }
+
+        public char Get()
+        {
+            char value = '\0';
+            if (_input.Length > 0)
+            {
+                value = (char)_input.Substring(_input.Length - 1, 1)[0];
+            }
+            return (value);
         }
 
         public string In()

@@ -13,7 +13,7 @@ namespace uBasicForm
     public partial class ConsoleForm : Form
     {
         // Prepare the uBasic
-        static IuBasicIO textBoxIO = null;
+        static IDefaultIO textBoxIO = null;
         IInterpreter basic = null;
         int pos = 0;
         bool _stopped = true;
