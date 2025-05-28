@@ -49,7 +49,7 @@ namespace Altair
         int program_ptr;
         const int MAX_STRINGLEN = 40;
 
-        // Gosub
+        // Go-sub
 
         public struct Gosub
         {
@@ -149,7 +149,7 @@ namespace Altair
             this.program = program;
         }
 
-        #endregion Contructors
+        #endregion Constructors
         #region Methods
 
         public void Init(int position)
@@ -242,7 +242,7 @@ namespace Altair
             }
             else
             {
-                // We'll try to find a yet-unindexed line to jump to.
+                // We'll try to find a yet un-indexed line to jump to.
                 TraceInternal.TraceVerbose("JumpLineNumber: Calling JumpLineNumber_slow " + lineNumber);
                 JumpLineNumberSlow(lineNumber);
             }
@@ -410,7 +410,7 @@ namespace Altair
 
             Debug.WriteLine("In Statement()");
 
-            // Might need to consider a loop here for multilne statements
+            // Might need to consider a loop here for multi-line statements
             // otherwise it will error saying the line number is missing.
 
             do
@@ -653,7 +653,7 @@ namespace Altair
                 {
                     if ((previous == Tokenizer.Token.TOKENIZER_SEMICOLON) || (previous == Tokenizer.Token.TOKENIZER_STRING) || (previous == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (previous == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
                     {
-                        // additional rule appears to be that if the ';' folows text then it concatinates
+                        // additional rule appears to be that if the ';' follows text then it concatenates
                         // if ';' follows a number then it move tab zones.
                     }
                     else
@@ -834,7 +834,7 @@ namespace Altair
                     {
                         tokenizer.NextToken();
                     }
-                    // Wonder if this should inlcude separator
+                    // Wonder if this should include separator
                     while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
                 }
             }
@@ -865,7 +865,7 @@ namespace Altair
                     {
                         tokenizer.NextToken();
                     }
-				    // Wonder if this should inlcude separator
+				    // Wonder if this should include separator
                     while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
                 }
             }
@@ -989,7 +989,7 @@ namespace Altair
                                 Abort("GosubStatement: gosub stack exhausted");
                             }
                         }
-                        // Statemnt of followed by another statement
+                        // Statement of followed by another statement
                         else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
                         {
                             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
@@ -1453,7 +1453,7 @@ namespace Altair
             string[] parameter = new string[10]; // 10 parameter array limit !!!
 
             // The def statement is followed by the function reference and then an expression
-            // DEF FN{function}({parameters})={expresion}
+            // DEF FN{function}({parameters})={expression}
 
             Debug.WriteLine("In DefStatement()");
 
@@ -1511,7 +1511,7 @@ namespace Altair
             if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_CR)
             {
 
-                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is problematic
 
                 if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
                 {
@@ -1528,10 +1528,10 @@ namespace Altair
                     Abort("GosubStatement: gosub stack exhausted");
                 }
             }
-            // Statemnt of followed by another statement
+            // Statement of followed by another statement
             else if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_COLON)
             {
-                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is problematic
 
                 if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
                 {
@@ -1566,7 +1566,7 @@ namespace Altair
                 gosubStackPointer--;
                 if (gosubStack[gosubStackPointer].Pos_after_gosub > 0)
                 {
-                    // use the position to determine the muti-statement return point
+                    // use the position to determine the multi-statement return point
 
                     TraceInternal.TraceVerbose("ReturnStatement: " + gosubStack[gosubStackPointer].Line_number + "," + gosubStack[gosubStackPointer].Pos_after_gosub);
                     TraceInternal.TraceInformation("RETURN " + gosubStack[gosubStackPointer].Line_number + "," + gosubStack[gosubStackPointer].Pos_after_gosub);
@@ -1958,7 +1958,7 @@ namespace Altair
             char sign = ' ';
 
 
-            // a number may contain upto 9 digits excuding the decimal point, and 1 digit for sign (+ve is space)
+            // a number may contain up to 9 digits excluding the decimal point, and 1 digit for sign (+ve is space)
             // , so 11 total
             // it appears that the leading zero of a number is removed 
             //
