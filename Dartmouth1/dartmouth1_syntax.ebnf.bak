@@ -1,0 +1,57 @@
+program = line , [ line ] ;
+line = line_number , statement , eol ;
+line_number = digit , { digit } ;
+digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0" ;
+eol =  ( cr , lf ) | cr ;
+number = digit [ "." ] digit ; 
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+character = letter | digit | symbol ;
+symbol =  "|" | " " | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | "\" | "]" | "^" | "_" | "`" | "{" | "}" | "~" ;
+statement = data_statement | def_statement | dim_statement | end_statement | for_statement | gosub_statement | goto_statement | if_statement | let_statement | next_statement | print_statement | read_statement | rem_statement  | return_statement | stop_statement ;
+data_statement = "DATA" , number , [ "," number ] ;
+def_statement = "DEF FN" , letter , "(" , variable , ")" , "=" , expression ;
+dim_statement = "DIM" , ( "(" , integer , ")" | ( "(" , integer , separator , integer , ")" ) );
+end_statement = "END" ;
+for_statement = "FOR" , variable , "=" , expression , "TO" , expression , [ "STEP" , expression ] ;
+gosub_statement = "GOSUB" , line_number ;
+goto_statement = "GOTO" , line_number ;
+if_statement = "IF" , relation , "THEN" , line_number ;
+let_statement = "LET" , variable , "=" , expression ;
+next_statement = "NEXT" , variable ;
+print_statement = "PRINT" list , [ "," , list ] ;
+list = string | variable | expression ;
+read_statement = "READ" , variable [ "," , variable ] ;
+rem_statement = "REM"  [ , remark ] ;
+return_statement = "RETURN" ;
+remark = character { , character } ;
+relation = expression relop expression ;
+relop = "<" | ">" | "=" | "<=" | ">=" ;
+variable = numeric_variable | numeric_array_variable ;
+numeric_variable = letter , [digit] ; 
+numeric_array_variable = letter , [digit] , "(" , expression [ separator , expression ] , ")" ; 
+expression = term [ addop term ] ;
+addop = "+" | "-" ;
+term = factor [ mulop factor ] ;
+mulop = "*" | "/" ;
+factor = number | string | variable | function | "(" , expression , ")" ;
+function = sin_function | cos_function | tan_function | arctan_function | exponent_function | absolute_function | logarithm_function | square_root_function | def_function | integer_function | random_function  ;
+separator = "," ;
+string = quote ( | character , { character } ) , quote ;
+quote = '"' ;	
+sin_function = "SIN" , "(" , expression , ")" ;
+cos_function = "COS" , "(" , expression , ")" ;
+tan_function = "TAN" , "(" , expression , ")" ;
+arctan_function = "ATAN" , "(" , expression , ")" ;
+exponent_function = "EXP" , "(" , expression , ")" ;
+absolute_function = "ABS" , "(" , expression , ")" ;
+logarithm_function = "LOG" , "(" , expression , ")" ;
+square_root_function = "SQR" , "(" , expression , ")" ;
+def_function = "FN" , letter , "(" , variable , ")" ;
+integer_function = "INT" , "(" , expression , ")" ;
+random_function = "RND" , "(" , expression , ")" ;
+
+
+
+
+
+

@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altair", "Altair\Altair.csproj", "{72098349-F135-4895-9D9A-1A52CF9E40EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dartmouth2", "Dartmouth2\Dartmouth2.csproj", "{236647DD-946D-4A1E-8014-33CDF11881C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dartmouth1", "Dartmouth1\Dartmouth1.csproj", "{236647DD-946D-4A1E-8014-33CDF11881C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dartmouth3", "Dartmouth3\Dartmouth3.csproj", "{CAB2AD0F-E2B2-4F13-9FB2-8F2439FEC0BC}"
 EndProject
@@ -43,6 +43,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnetcoreapp3.1", "dotnetc
 		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.deps.json = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.deps.json
 		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.dll
 		ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.pdb = ThirdParty\Tracer\netcoreapp3.1\TracerLibrary.pdb
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manuals", "Manuals", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		Manuals\BASIC_1st_Edition_Oct64.pdf = Manuals\BASIC_1st_Edition_Oct64.pdf
+		Manuals\BASIC_2nd_Edition_Oct64.pdf = Manuals\BASIC_2nd_Edition_Oct64.pdf
+		Manuals\BASIC_2nd_Edition_Oct64.txt = Manuals\BASIC_2nd_Edition_Oct64.txt
+		Manuals\BASIC_3rd_Edition_Sep66.pdf = Manuals\BASIC_3rd_Edition_Sep66.pdf
+		Manuals\BASIC_3rd_Edition_Sep66.txt = Manuals\BASIC_3rd_Edition_Sep66.txt
+		Manuals\BASIC_4th_Edition_Jan68.pdf = Manuals\BASIC_4th_Edition_Jan68.pdf
+		Manuals\ECMA-116.pdf = Manuals\ECMA-116.pdf
+		Manuals\ECMA-53, 1st Edition, January 1978.pdf = Manuals\ECMA-53, 1st Edition, January 1978.pdf
+		Manuals\ECMA-55 SCOPE.pdf = Manuals\ECMA-55 SCOPE.pdf
+		Manuals\ECMA-55_1st_edition_january_1978.pdf = Manuals\ECMA-55_1st_edition_january_1978.pdf
+		Manuals\Microsoft_Basic_8086Xenix_Reference_1982.pdf = Manuals\Microsoft_Basic_8086Xenix_Reference_1982.pdf
+		Manuals\MITS_AltairBasicAppendices.pdf = Manuals\MITS_AltairBasicAppendices.pdf
+		Manuals\MITS_AltairBasicLanguage.pdf = Manuals\MITS_AltairBasicLanguage.pdf
+		Manuals\MITS_AltairBASIC_1975.pdf = Manuals\MITS_AltairBASIC_1975.pdf
+		Manuals\MITS_AltairBasic_1975_Aug75.pdf = Manuals\MITS_AltairBasic_1975_Aug75.pdf
+		Manuals\MITS_AltairBASIC_1975_text.pdf = Manuals\MITS_AltairBASIC_1975_text.pdf
+		Manuals\MITS_GettingStarted.pdf = Manuals\MITS_GettingStarted.pdf
+		Manuals\MITS_Introduction_1975.pdf = Manuals\MITS_Introduction_1975.pdf
 	EndProjectSection
 EndProject
 Global
