@@ -35,7 +35,7 @@ using uBasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace Dartmouth2
+namespace Dartmouth1
 {
     /// <summary>
     /// Dartmouth basic version 2 - Oct 68 

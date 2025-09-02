@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyTitle>Microsoft</AssemblyTitle>
+    <Product>Microsoft</Product>
+    <Copyright>Copyright ©  2016</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>
+    </DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\basicLibrary\basicLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="TracerLibrary">
+      <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

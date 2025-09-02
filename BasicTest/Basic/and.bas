@@ -1,0 +1,4 @@
+10 DIM L$(50)
+20 LET L$(1) = "HELLO"
+30 PRINT "L$(1)=";L$(1)
+40 END
