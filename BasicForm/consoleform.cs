@@ -13,9 +13,9 @@ namespace BasicForm
     public partial class ConsoleForm : Form
     {
         // Prepare Basic
-        static IDefaultIO textBoxIO = null;
-        IInterpreter basic = null;
-        int pos = 0;
+        static IDefaultIO _textBoxIO = null;
+        IInterpreter _basic = null;
+        int _pos = 0;
         bool _stopped = true;
 
         
@@ -24,13 +24,13 @@ namespace BasicForm
         private UpdateTextDelegate updateTextDelegate = null;
 
         // Declare our worker thread
-        private Thread workerThread = null;
+        private Thread _workerThread = null;
 
         // Manage the inputs
         string value = "";
 
         // Most recently used
-        protected MruStripMenu mruMenu;
+        protected MruStripMenu _mruMenu;
 
         public ConsoleForm(string path, string name)
         {
@@ -40,24 +40,23 @@ namespace BasicForm
 
             this.Icon = Resources.Basic;
 
-            textBoxIO = new TextBoxIO();
-            textBoxIO.TextReceived += new EventHandler<TextEventArgs>(OnMessageReceived);
+            _textBoxIO = new TextBoxIO();
+            _textBoxIO.TextReceived += new EventHandler<TextEventArgs>(OnMessageReceived);
 
             // Initialise the delegate
             this.updateTextDelegate = new UpdateTextDelegate(this.UpdateText);
 
             // Add most recent used
-            mruMenu = new MruStripMenuInline(fileMenuItem, recentFileToolStripMenuItem, new MruStripMenu.ClickedHandler(OnMruFile), 4);
+            _mruMenu = new MruStripMenuInline(fileMenuItem, recentFileToolStripMenuItem, new MruStripMenu.ClickedHandler(OnMruFile), 4);
             LoadFiles();
 
             Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-
             this.Text = "Basic " + version;
 
             if ((path.Length > 0) && (name.Length > 0))
             {
                 consoleTextBox.Text = "";
-                this.Text = "Basic " + ProductVersion + " - " + name ;
+                this.Text = "Basic " + version + " - " + name ;
 
                 string filenamePath = "";
                 filenamePath = path + Path.DirectorySeparatorChar + name + ".bas";
@@ -69,13 +68,13 @@ namespace BasicForm
                         program = sr.ReadToEnd().ToCharArray();
                     }
 
-                    mruMenu.AddFile(filenamePath);
-                    basic = new Altair.Interpreter(program, textBoxIO);
+                    _mruMenu.AddFile(filenamePath);
+                    _basic = new Altair.Interpreter(program, _textBoxIO);
 
                     _stopped = false;
-                    this.workerThread = new Thread(new ThreadStart(this.Run));
-                    textBoxIO.Reset();
-                    this.workerThread.Start();
+                    this._workerThread = new Thread(new ThreadStart(this.Run));
+                    _textBoxIO.Reset();
+                    this._workerThread.Start();
                     consoleTextBox.Visible = true;
                     consoleTextBox.Enabled = true;
                 }
@@ -97,12 +96,12 @@ namespace BasicForm
 
             if (File.Exists(filenamePath) == true)
             {
-                mruMenu.SetFirstFile(number);
-                pos = filenamePath.LastIndexOf('\\');
-                if (pos > 0)
+                _mruMenu.SetFirstFile(number);
+                _pos = filenamePath.LastIndexOf('\\');
+                if (_pos > 0)
                 {
-                    path = filenamePath.Substring(0, pos);
-                    filename = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    path = filenamePath.Substring(0, _pos);
+                    filename = filenamePath.Substring(_pos + 1, filenamePath.Length - _pos - 1);
                 }
                 else
                 {
@@ -111,8 +110,10 @@ namespace BasicForm
                 TraceInternal.TraceInformation("Use Name=" + filename);
                 TraceInternal.TraceInformation("Use Path=" + path);
 
+
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 consoleTextBox.Text = "";
-                this.Text = "Basic " + ProductVersion + " - " + filename;
+                this.Text = "Basic " + version + " - " + filename;
 
                 filenamePath = path + Path.DirectorySeparatorChar + filename;
                 char[] program;
@@ -123,12 +124,12 @@ namespace BasicForm
                         program = sr.ReadToEnd().ToCharArray();
                     }
 
-                    basic = new Altair.Interpreter(program, textBoxIO);
+                    _basic = new Altair.Interpreter(program, _textBoxIO);
 
                     _stopped = false;
-                    this.workerThread = new Thread(new ThreadStart(this.Run));
-                    textBoxIO.Reset();
-                    this.workerThread.Start();
+                    this._workerThread = new Thread(new ThreadStart(this.Run));
+                    _textBoxIO.Reset();
+                    this._workerThread.Start();
                     consoleTextBox.Visible = true;
                     consoleTextBox.Enabled = true;
                 }
@@ -139,13 +140,13 @@ namespace BasicForm
             }
             else
             {
-                mruMenu.RemoveFile(number);
+                _mruMenu.RemoveFile(number);
             }
         }
 
         private void UpdateText()
         {
-            string output = textBoxIO.Output;
+            string output = _textBoxIO.Output;
             if (output.Length > 0)
             {
                 this.consoleTextBox.AppendText(output);
@@ -153,9 +154,9 @@ namespace BasicForm
                 double position = consoleTextBox.TextLength;
                 double width = consoleTextBox.Width / 8;   // assume a fix width font
                 double top = Math.Floor(position / width);
-                textBoxIO.CursorTop = (int)top;
+                _textBoxIO.CursorTop = (int)top;
                 double left = position - width * Math.Floor(position / width);
-                textBoxIO.CursorLeft =(int)left;
+                _textBoxIO.CursorLeft =(int)left;
             }
         }
 
@@ -170,13 +171,13 @@ namespace BasicForm
 
         private void Run()
         {
-            basic.Init(0);
+            _basic.Init(0);
             try
             {
                 do
                 {
-                    basic.Run();
-                } while (!basic.Finished());
+                    _basic.Run();
+                } while (!_basic.IsFinished());
             }
             catch (Exception e)
             {
@@ -195,7 +196,7 @@ namespace BasicForm
             if (chr == '\r')
             {
                 value += chr;
-                textBoxIO.Input = value;
+                _textBoxIO.Input = value;
                 this.consoleTextBox.AppendText("\r" + "\n");
                 value = "";
             }
@@ -227,7 +228,7 @@ namespace BasicForm
             consoleTextBox.Visible = false;
             if (_stopped == false)
             {
-                workerThread.Abort();
+                _workerThread.Abort();
             }
 
             OpenFileDialog openFileDialog = new OpenFileDialog
@@ -240,11 +241,11 @@ namespace BasicForm
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string filenamePath = openFileDialog.FileName;
-                pos = filenamePath.LastIndexOf('\\');
-                if (pos > 0)
+                _pos = filenamePath.LastIndexOf('\\');
+                if (_pos > 0)
                 {
-                    path= filenamePath.Substring(0, pos);
-                    filename = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
+                    path= filenamePath.Substring(0, _pos);
+                    filename = filenamePath.Substring(_pos + 1, filenamePath.Length - _pos - 1);
                 }
                 else
                 {
@@ -254,7 +255,8 @@ namespace BasicForm
                 TraceInternal.TraceInformation("Use Path=" + path);
 
                 consoleTextBox.Text = "";
-                this.Text = "Basic " + ProductVersion + " - " + filename;
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                this.Text = "Basic " + version + " - " + filename;
 
 
                 filenamePath = path + Path.DirectorySeparatorChar + filename;
@@ -265,13 +267,13 @@ namespace BasicForm
                     {
                         program = sr.ReadToEnd().ToCharArray();
                     }
-                	mruMenu.AddFile(filenamePath);
-                    basic = new Altair.Interpreter(program, textBoxIO);
+                	_mruMenu.AddFile(filenamePath);
+                    _basic = new Altair.Interpreter(program, _textBoxIO);
 
                     _stopped = false;
-                    this.workerThread = new Thread(new ThreadStart(this.Run));
-                    textBoxIO.Reset();
-                    this.workerThread.Start();
+                    this._workerThread = new Thread(new ThreadStart(this.Run));
+                    _textBoxIO.Reset();
+                    this._workerThread.Start();
                     consoleTextBox.Visible = true;
                     consoleTextBox.Enabled = true;
                 }
@@ -329,7 +331,7 @@ namespace BasicForm
 
             // Fixed windows size
 
-            this.Width = textBoxIO.Width;
+            this.Width = _textBoxIO.Width;
 
             // Set window size
             if (Settings.Default.ConsoleSize != null)
@@ -365,10 +367,13 @@ namespace BasicForm
 
             // Need to stop the thread
             // think i will try a better approach
+            // add new method to end the tokeniser
 
             if (_stopped == false)
             {
-                workerThread.Abort();
+                _textBoxIO.Input = "\r\n";
+                _basic.Stop();
+                _workerThread.Join(1000);
             }
 
             // Copy window location to app settings
@@ -438,7 +443,7 @@ namespace BasicForm
                 string file = (string)Properties.Settings.Default[property];
                 if (file != "")
                 {
-                    mruMenu.AddFile(file);
+                    _mruMenu.AddFile(file);
                     TraceInternal.TraceVerbose("Load " + file);
                 }
             }
@@ -448,7 +453,7 @@ namespace BasicForm
         public void SaveFiles()
         {
             Debug.WriteLine("In SaveFiles");
-            string[] files = mruMenu.GetFiles();
+            string[] files = _mruMenu.GetFiles();
             Properties.Settings.Default["FileCount"] = files.Length;
             TraceInternal.TraceVerbose("Files=" + files.Length);
             for (int i=0; i < 4; i++)

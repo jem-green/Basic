@@ -2028,11 +2028,18 @@ namespace Altair
             Debug.WriteLine("Out Run()");
         }
 
+        public void Stop()
+        {
+            Debug.WriteLine("In Stop()");
+            ended = true;
+            Debug.WriteLine("Out Stop()");
+        }
+
         /// <summary>
         /// Finished()
         /// </summary>
         /// <returns></returns>
-        public bool Finished()
+        public bool IsFinished()
         {
             Debug.WriteLine("In Finished()");
             bool finished = ended || tokenizer.IsFinished();

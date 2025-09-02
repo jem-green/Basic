@@ -352,7 +352,7 @@ namespace BasicConsole
                         do
                         {
                             basic.Run();
-                        } while (!basic.Finished());
+                        } while (!basic.IsFinished());
                     }
                     catch (Exception e)
                     {

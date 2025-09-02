@@ -148,6 +148,13 @@ namespace Dartmouth5
             Debug.WriteLine("Out Init()");
         }
 
+        public void Stop()
+        {
+            Debug.WriteLine("In Stop()");
+            ended = true;
+            Debug.WriteLine("Out Stop()");
+        }
+
         private void IndexFree()
         {
             Debug.WriteLine("In IndexFree()");
@@ -1818,7 +1825,7 @@ namespace Dartmouth5
         /// Finished()
         /// </summary>
         /// <returns></returns>
-        public bool Finished()
+        public bool IsFinished()
         {
             Debug.WriteLine("In Finished()");
             bool finished = ended || tokenizer.IsFinished();

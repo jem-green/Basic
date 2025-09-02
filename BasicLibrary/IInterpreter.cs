@@ -10,6 +10,7 @@ namespace BasicLibrary
     {
         void Init(int pos);
         void Run();
-        bool Finished();
+        bool IsFinished();
+        void Stop();
     }
 }

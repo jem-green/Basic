@@ -244,6 +244,7 @@ namespace BasicForm
             {
                 while (_input.Length == 0)
                 {
+                    // Need a method to abort waiting for input
                     System.Threading.Thread.Sleep(250); // Loop until input is entered.
                 }
                 int pos = 0;
