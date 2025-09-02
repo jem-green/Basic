@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Web.UI;
-using uBasicLibrary;
+using BasicLibrary;
 using TracerLibrary;
 using System.IO;
 
-namespace uBasicWeb
+namespace BasicWeb
 {
     public partial class Generic : System.Web.UI.Page, System.Web.UI.ICallbackEventHandler
     {
@@ -15,7 +15,7 @@ namespace uBasicWeb
         protected void Page_Load(object sender, EventArgs e)
         {
 
-            // this is where i would want to create a new session object which is the ubasic engine.
+            // this is where i would want to create a new session object which is the basic engine.
 
             string cbReference = Page.ClientScript.GetCallbackEventReference(this, "arg", "ReceiveServerData", "context");
             string callbackScript;
@@ -25,7 +25,7 @@ namespace uBasicWeb
             if (!Page.IsPostBack)
             {
 
-                // Pass in the Ubasic file to run
+                // Pass in the basic file to run
 
                 string filename = Request["id"];
 

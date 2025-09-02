@@ -1,8 +1,8 @@
 ﻿//  Copyright (c) 2017, Jeremy Green All rights reserved.
 using System;
-using uBasicLibrary;
+using BasicLibrary;
 
-namespace uBasicForm
+namespace BasicForm
 {
     public class TextBoxIO : IDefaultIO
     {

@@ -1,5 +1,5 @@
 ﻿using System;
-using uBasicLibrary;
+using BasicLibrary;
 
 namespace BasicWeb
 {

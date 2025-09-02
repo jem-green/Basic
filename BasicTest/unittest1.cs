@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using uBasicLibrary;
+using BasicLibrary;
 
 namespace BasicTest
 {
-    [TestClass]
     public class UnitTest1
     {
-        [TestMethod]
         public void TestMethod1()
         {
             //int s = 1;
@@ -23,7 +20,7 @@ namespace BasicTest
             int[] d = new int[s + 1];
             d[1] = 2;
             d[2] = 2;
-            uBasicLibrary.Array a = new uBasicLibrary.Array("a", s, d, "10");
+            BasicLibrary.Array a = new BasicLibrary.Array("a", s, d, "10");
             int[] p = new int[s + 1];
             p[1] = 1;
             p[2] = 1;

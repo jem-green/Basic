@@ -9,12 +9,6 @@
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.12" />
-    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.8" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\basicLibrary\basicLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>

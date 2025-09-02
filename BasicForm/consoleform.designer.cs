@@ -1,4 +1,4 @@
-﻿namespace uBasicForm
+﻿namespace BasicForm
 {
     partial class ConsoleForm
     {
@@ -28,128 +28,123 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.consoleTextBox = new System.Windows.Forms.TextBox();
-            this.consoleMenuStrip = new System.Windows.Forms.MenuStrip();
-            this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.recentFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.formatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.colorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.consoleMenuStrip.SuspendLayout();
-            this.SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConsoleForm));
+            consoleTextBox = new System.Windows.Forms.TextBox();
+            consoleMenuStrip = new System.Windows.Forms.MenuStrip();
+            fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            openFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            recentFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            formatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            colorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            consoleMenuStrip.SuspendLayout();
+            SuspendLayout();
             // 
             // consoleTextBox
             // 
-            this.consoleTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.consoleTextBox.Enabled = false;
-            this.consoleTextBox.Location = new System.Drawing.Point(0, 42);
-            this.consoleTextBox.Multiline = true;
-            this.consoleTextBox.Name = "consoleTextBox";
-            this.consoleTextBox.ReadOnly = true;
-            this.consoleTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.consoleTextBox.Size = new System.Drawing.Size(733, 466);
-            this.consoleTextBox.TabIndex = 0;
-            this.consoleTextBox.Visible = false;
-            this.consoleTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ConsoleTextBox_KeyPress);
+            consoleTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            consoleTextBox.Enabled = false;
+            consoleTextBox.Location = new System.Drawing.Point(0, 42);
+            consoleTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            consoleTextBox.Multiline = true;
+            consoleTextBox.Name = "consoleTextBox";
+            consoleTextBox.ReadOnly = true;
+            consoleTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            consoleTextBox.Size = new System.Drawing.Size(866, 635);
+            consoleTextBox.TabIndex = 0;
+            consoleTextBox.Visible = false;
+            consoleTextBox.KeyPress += ConsoleTextBox_KeyPress;
             // 
             // consoleMenuStrip
             // 
-            this.consoleMenuStrip.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
-            this.consoleMenuStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
-            this.consoleMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileMenuItem,
-            this.formatToolStripMenuItem});
-            this.consoleMenuStrip.Location = new System.Drawing.Point(0, 0);
-            this.consoleMenuStrip.Name = "consoleMenuStrip";
-            this.consoleMenuStrip.Size = new System.Drawing.Size(733, 42);
-            this.consoleMenuStrip.TabIndex = 1;
-            this.consoleMenuStrip.Text = "menuStrip1";
+            consoleMenuStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+            consoleMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileMenuItem, formatToolStripMenuItem });
+            consoleMenuStrip.Location = new System.Drawing.Point(0, 0);
+            consoleMenuStrip.Name = "consoleMenuStrip";
+            consoleMenuStrip.Padding = new System.Windows.Forms.Padding(7, 3, 0, 3);
+            consoleMenuStrip.Size = new System.Drawing.Size(866, 42);
+            consoleMenuStrip.TabIndex = 1;
+            consoleMenuStrip.Text = "menuStrip1";
             // 
             // fileMenuItem
             // 
-            this.fileMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openFileMenuItem,
-            this.toolStripSeparator1,
-            this.recentFileToolStripMenuItem,
-            this.toolStripSeparator2,
-            this.exitToolStripMenuItem});
-            this.fileMenuItem.Name = "fileMenuItem";
-            this.fileMenuItem.Size = new System.Drawing.Size(62, 34);
-            this.fileMenuItem.Text = "File";
+            fileMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { openFileMenuItem, toolStripSeparator1, recentFileToolStripMenuItem, toolStripSeparator2, exitToolStripMenuItem });
+            fileMenuItem.Name = "fileMenuItem";
+            fileMenuItem.Size = new System.Drawing.Size(71, 36);
+            fileMenuItem.Text = "File";
             // 
             // openFileMenuItem
             // 
-            this.openFileMenuItem.Name = "openFileMenuItem";
-            this.openFileMenuItem.Size = new System.Drawing.Size(231, 40);
-            this.openFileMenuItem.Text = "&Open";
-            this.openFileMenuItem.Click += new System.EventHandler(this.FileOpenMenuItem_Click);
+            openFileMenuItem.Name = "openFileMenuItem";
+            openFileMenuItem.Size = new System.Drawing.Size(263, 44);
+            openFileMenuItem.Text = "&Open";
+            openFileMenuItem.Click += FileOpenMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(228, 6);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(260, 6);
             // 
             // recentFileToolStripMenuItem
             // 
-            this.recentFileToolStripMenuItem.Name = "recentFileToolStripMenuItem";
-            this.recentFileToolStripMenuItem.Size = new System.Drawing.Size(231, 40);
-            this.recentFileToolStripMenuItem.Text = "Recent File";
+            recentFileToolStripMenuItem.Name = "recentFileToolStripMenuItem";
+            recentFileToolStripMenuItem.Size = new System.Drawing.Size(263, 44);
+            recentFileToolStripMenuItem.Text = "Recent File";
             // 
             // toolStripSeparator2
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(228, 6);
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(260, 6);
             // 
             // exitToolStripMenuItem
             // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(231, 40);
-            this.exitToolStripMenuItem.Text = "&Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.FileExitMenuItem_Click);
+            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            exitToolStripMenuItem.Size = new System.Drawing.Size(263, 44);
+            exitToolStripMenuItem.Text = "&Exit";
+            exitToolStripMenuItem.Click += FileExitMenuItem_Click;
             // 
             // formatToolStripMenuItem
             // 
-            this.formatToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fontToolStripMenuItem,
-            this.colorToolStripMenuItem});
-            this.formatToolStripMenuItem.Name = "formatToolStripMenuItem";
-            this.formatToolStripMenuItem.Size = new System.Drawing.Size(96, 34);
-            this.formatToolStripMenuItem.Text = "Format";
+            formatToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { fontToolStripMenuItem, colorToolStripMenuItem });
+            formatToolStripMenuItem.Name = "formatToolStripMenuItem";
+            formatToolStripMenuItem.Size = new System.Drawing.Size(109, 36);
+            formatToolStripMenuItem.Text = "Format";
             // 
             // fontToolStripMenuItem
             // 
-            this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 40);
-            this.fontToolStripMenuItem.Text = "Font";
-            this.fontToolStripMenuItem.Click += new System.EventHandler(this.FormatFontMenuItem_Click);
+            fontToolStripMenuItem.Name = "fontToolStripMenuItem";
+            fontToolStripMenuItem.Size = new System.Drawing.Size(204, 44);
+            fontToolStripMenuItem.Text = "Font";
+            fontToolStripMenuItem.Click += FormatFontMenuItem_Click;
             // 
             // colorToolStripMenuItem
             // 
-            this.colorToolStripMenuItem.Name = "colorToolStripMenuItem";
-            this.colorToolStripMenuItem.Size = new System.Drawing.Size(180, 40);
-            this.colorToolStripMenuItem.Text = "Color";
-            this.colorToolStripMenuItem.Click += new System.EventHandler(this.FormatColorMenuItem_Click);
+            colorToolStripMenuItem.Name = "colorToolStripMenuItem";
+            colorToolStripMenuItem.Size = new System.Drawing.Size(204, 44);
+            colorToolStripMenuItem.Text = "Color";
+            colorToolStripMenuItem.Click += FormatColorMenuItem_Click;
             // 
             // ConsoleForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(733, 508);
-            this.Controls.Add(this.consoleTextBox);
-            this.Controls.Add(this.consoleMenuStrip);
-            this.MainMenuStrip = this.consoleMenuStrip;
-            this.Name = "ConsoleForm";
-            this.Text = "uBasic";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConsoleForm_FormClosing);
-            this.Load += new System.EventHandler(this.ConsoleForm_Load);
-            this.consoleMenuStrip.ResumeLayout(false);
-            this.consoleMenuStrip.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new System.Drawing.SizeF(13F, 32F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(866, 677);
+            Controls.Add(consoleTextBox);
+            Controls.Add(consoleMenuStrip);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = consoleMenuStrip;
+            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            Name = "ConsoleForm";
+            Text = "Basic";
+            FormClosing += ConsoleForm_FormClosing;
+            Load += ConsoleForm_Load;
+            consoleMenuStrip.ResumeLayout(false);
+            consoleMenuStrip.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 

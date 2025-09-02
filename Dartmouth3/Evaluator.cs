@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Text;
 using TracerLibrary;
-using uBasicLibrary;
+using BasicLibrary;
 using System.Diagnostics;
 
 namespace Dartmouth3
@@ -1537,11 +1537,11 @@ namespace Dartmouth3
         {
             Debug.WriteLine("In GetNumericArrayVariable()");
 
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             double number;
             if (numericArrayVariables.ContainsKey(varName))
             {
-                data = (uBasicLibrary.Array)numericArrayVariables[varName];
+                data = (BasicLibrary.Array)numericArrayVariables[varName];
                 number = (double)data.Get(position);
             }
             else
@@ -1557,12 +1557,12 @@ namespace Dartmouth3
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
             Debug.WriteLine("In DeclareNumericArrayVariable()");
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             if (numericArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new uBasicLibrary.Array(varName, dimensions, dimension,(double)0);
+            data = new BasicLibrary.Array(varName, dimensions, dimension,(double)0);
             numericArrayVariables.Add(varName, data);
             Debug.WriteLine("In DeclareNumericArrayVariable()");
         }
@@ -1596,7 +1596,7 @@ namespace Dartmouth3
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
             Debug.WriteLine("In SetNumericArrayVariable()");
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 10 items
@@ -1604,7 +1604,7 @@ namespace Dartmouth3
                 dimension[0] = 1;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
-            data = (uBasicLibrary.Array)numericArrayVariables[varName];
+            data = (BasicLibrary.Array)numericArrayVariables[varName];
             data.Set(position, number);
         
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using TracerLibrary;
-using uBasicLibrary;
+using BasicLibrary;
 using Altair;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -65,9 +65,9 @@ namespace BasicConsole
             filePath.Source = Parameter<string>.SourceType.App;
 
             Parameter<string> logPath = new Parameter<string>("");
-            Parameter<string> logName = new Parameter<string>("ubasicconsole");
+            Parameter<string> logName = new Parameter<string>("basicconsole");
 
-            logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "ubasic";
+            logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "basic";
             //logPath.Value = System.Reflection.Assembly.GetExecutingAssembly().Location;
             //logPath.Value = filePath.Value = Environment.CurrentDirectory;
             logPath.Source = Parameter<string>.SourceType.App;
@@ -86,15 +86,15 @@ namespace BasicConsole
             Trace.AutoFlush = true;
             TraceFilter fileTraceFilter = new System.Diagnostics.EventTypeFilter(SourceLevels.Verbose);
             listener.Filter = fileTraceFilter;
-            Trace.Listeners.Clear();
-            Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.Listeners.Clear();
+            System.Diagnostics.Trace.Listeners.Add(listener);
 
             if (IsLinux == false)
             {
                 // Check if the registry has been set and overwrite the application defaults
 
                 RegistryKey key = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
-                string keys = "software\\green\\ubasic";
+                string keys = "software\\green\\basic";
                 foreach (string subkey in keys.Split('\\'))
                 {
                     key = key.OpenSubKey(subkey);
@@ -314,7 +314,7 @@ namespace BasicConsole
             // Redirect the output
 
             listener.Flush();
-            Trace.Listeners.Remove(listener);
+            System.Diagnostics.Trace.Listeners.Remove(listener);
             listener.Close();
             listener.Dispose();
 
@@ -324,7 +324,7 @@ namespace BasicConsole
             SourceLevels sourceLevels = TraceInternal.TraceLookup(traceLevels.Value.ToString());
             fileTraceFilter = new System.Diagnostics.EventTypeFilter(sourceLevels);
             listener.Filter = fileTraceFilter;
-            Trace.Listeners.Add(listener);
+            System.Diagnostics.Trace.Listeners.Add(listener);
 
             Trace.TraceInformation("Use Name=" + fileName);
             Trace.TraceInformation("Use Path=" + filePath);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Web.UI;
-using uBasicLibrary;
+using BasicLibrary;
 using TracerLibrary;
 using System.IO;
 
@@ -15,7 +15,7 @@ namespace BasicWeb
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // this is where i would want to create a new session object which is the ubasic engine.
+            // this is where i would want to create a new session object which is the basic engine.
 
             string cbReference = Page.ClientScript.GetCallbackEventReference(this, "arg", "ReceiveServerData", "context");
             string callbackScript;

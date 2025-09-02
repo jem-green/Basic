@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 
-namespace uBasicLibrary
+namespace BasicLibrary
 {
     public class TextEventArgs : EventArgs
     {

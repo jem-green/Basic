@@ -6,7 +6,7 @@ using System.Collections;
 using System.Text;
 using TracerLibrary;
 
-namespace uBasicLibrary
+namespace BasicLibrary
 {
     public interface IEvaluator
     {

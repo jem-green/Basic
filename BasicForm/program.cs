@@ -2,11 +2,11 @@
 using TracerLibrary;
 using System.Diagnostics;
 using System.Windows.Forms;
-using uBasicLibrary;
+using BasicLibrary;
 using System.IO;
 using Microsoft.Win32;
 
-namespace uBasicForm
+namespace BasicForm
 {
     static class Program
     {
@@ -38,10 +38,10 @@ namespace uBasicForm
             filePath.Source = Parameter<string>.SourceType.App;
 
             Parameter<string> logPath = new Parameter<string>("");
-            Parameter<string> logName = new Parameter<string>("ubasicform");
+            Parameter<string> logName = new Parameter<string>("basicform");
 
-            logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "ubasic";
-            //logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + System.IO.Path.DirectorySeparatorChar + "ubasic";
+            logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "basic";
+            //logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + System.IO.Path.DirectorySeparatorChar + "basic";
             //logPath.Value = "d:\\";
             logPath.Source = Parameter<string>.SourceType.App;
 
@@ -71,7 +71,7 @@ namespace uBasicForm
                 // Check if the registry has been set and overwrite the application defaults
 
                 RegistryKey key = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry64);
-                string keys = "software\\green\\ubasic";
+                string keys = "software\\green\\basic";
                 foreach (string subkey in keys.Split('\\'))
                 {
                     key = key.OpenSubKey(subkey);

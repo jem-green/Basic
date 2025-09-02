@@ -33,7 +33,7 @@ using TracerLibrary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace uBasicLibrary
+namespace BasicLibrary
 {
     public class Tokenizer : ITokenizer
     {

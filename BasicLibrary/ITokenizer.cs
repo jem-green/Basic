@@ -1,6 +1,6 @@
 //  Copyright (c) 2017, Jeremy Green All rights reserved.
 
-namespace uBasicLibrary
+namespace BasicLibrary
 {
     public interface ITokenizer
     {

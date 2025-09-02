@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Text;
-using uBasicLibrary;
+using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
@@ -2390,11 +2390,11 @@ namespace Altair
         {
             Debug.WriteLine("In GetNumericArrayVariable()");
 
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             double number;
             if (numericArrayVariables.ContainsKey(varName))
             {
-                data = (uBasicLibrary.Array)numericArrayVariables[varName];
+                data = (BasicLibrary.Array)numericArrayVariables[varName];
                 number = (double)data.Get(position);
             }
             else
@@ -2410,11 +2410,11 @@ namespace Altair
         {
             Debug.WriteLine("In GetStringArrayVariable()");
 
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             string value;
             if (stringArrayVariables.ContainsKey(varName))
             {
-                data = (uBasicLibrary.Array)stringArrayVariables[varName];
+                data = (BasicLibrary.Array)stringArrayVariables[varName];
                 value = (string)data.Get(position);
             }
             else
@@ -2429,12 +2429,12 @@ namespace Altair
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
             Debug.WriteLine("In DeclareNumericArrayVariable()");
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             if (numericArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new uBasicLibrary.Array(varName, dimensions, dimension,(double)0);
+            data = new BasicLibrary.Array(varName, dimensions, dimension,(double)0);
             numericArrayVariables.Add(varName, data);
             Debug.WriteLine("In DeclareNumericArrayVariable()");
         }
@@ -2442,12 +2442,12 @@ namespace Altair
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
             Debug.WriteLine("In DeclareStringArrayVariable()");
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             if (stringArrayVariables.ContainsKey(varName))
             {
                 Expected("Array already defined " + varName + "(");
             }
-            data = new uBasicLibrary.Array(varName, dimensions, dimension, (string)"");
+            data = new BasicLibrary.Array(varName, dimensions, dimension, (string)"");
             stringArrayVariables.Add(varName, data);
             Debug.WriteLine("Out DeclareStringArrayVariable()");
         }
@@ -2490,7 +2490,7 @@ namespace Altair
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
             Debug.WriteLine("In SetNumericArrayVariable()");
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
@@ -2498,7 +2498,7 @@ namespace Altair
                 dimension[1] = 10;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
-            data = (uBasicLibrary.Array)numericArrayVariables[varName];
+            data = (BasicLibrary.Array)numericArrayVariables[varName];
             data.Set(position, number);
         
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
@@ -2508,7 +2508,7 @@ namespace Altair
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
             Debug.WriteLine("In SetStringArrayVariable()");
-            uBasicLibrary.Array data;
+            BasicLibrary.Array data;
             if (!stringArrayVariables.ContainsKey(varName))
             {
                 // it apperas that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
@@ -2516,7 +2516,7 @@ namespace Altair
                 dimension[1] = 10;
                 DeclareStringArrayVariable(varName, positions, dimension);
             }
-            data = (uBasicLibrary.Array)stringArrayVariables[varName];
+            data = (BasicLibrary.Array)stringArrayVariables[varName];
             data.Set(position, value);
 
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);

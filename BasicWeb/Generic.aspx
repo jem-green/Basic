@@ -4,9 +4,9 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head runat="server">
-        <title>uBasic - Orbit</title>
+        <title>Basic - Orbit</title>
         <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet"/>
-        <link href="uBasic.css" rel="stylesheet" />
+        <link href="Basic.css" rel="stylesheet" />
 
         <script type="text/javascript">
 

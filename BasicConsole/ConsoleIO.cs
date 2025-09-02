@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using uBasicLibrary;
+using BasicLibrary;
 
-namespace uBasicConsole
+namespace BasicConsole
 {
     public class ConsoleIO : IDefaultIO
     {

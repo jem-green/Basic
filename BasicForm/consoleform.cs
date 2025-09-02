@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using uBasicLibrary;
+using BasicLibrary;
 using TracerLibrary;
 using System.Threading;
-using uBasicForm.Properties;
+using BasicForm.Properties;
 using System.IO;
 using System.Diagnostics;
 
-namespace uBasicForm
+namespace BasicForm
 {
     public partial class ConsoleForm : Form
     {
-        // Prepare the uBasic
+        // Prepare Basic
         static IDefaultIO textBoxIO = null;
         IInterpreter basic = null;
         int pos = 0;
@@ -38,7 +38,7 @@ namespace uBasicForm
 
             InitializeComponent();
 
-            this.Icon = Resources.uBasic;
+            this.Icon = Resources.Basic;
 
             textBoxIO = new TextBoxIO();
             textBoxIO.TextReceived += new EventHandler<TextEventArgs>(OnMessageReceived);
@@ -50,12 +50,14 @@ namespace uBasicForm
             mruMenu = new MruStripMenuInline(fileMenuItem, recentFileToolStripMenuItem, new MruStripMenu.ClickedHandler(OnMruFile), 4);
             LoadFiles();
 
-            this.Text = "uBasic " + ProductVersion;
+            Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+            this.Text = "Basic " + version;
 
             if ((path.Length > 0) && (name.Length > 0))
             {
                 consoleTextBox.Text = "";
-                this.Text = "uBasic " + ProductVersion + " - " + name ;
+                this.Text = "Basic " + ProductVersion + " - " + name ;
 
                 string filenamePath = "";
                 filenamePath = path + Path.DirectorySeparatorChar + name + ".bas";
@@ -110,7 +112,7 @@ namespace uBasicForm
                 TraceInternal.TraceInformation("Use Path=" + path);
 
                 consoleTextBox.Text = "";
-                this.Text = "uBasic " + ProductVersion + " - " + filename;
+                this.Text = "Basic " + ProductVersion + " - " + filename;
 
                 filenamePath = path + Path.DirectorySeparatorChar + filename;
                 char[] program;
@@ -230,7 +232,7 @@ namespace uBasicForm
 
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "uBasic (*.bas)|*.bas",
+                Filter = "Basic (*.bas)|*.bas",
                 FilterIndex = 1,
                 RestoreDirectory = true
             };
@@ -252,7 +254,7 @@ namespace uBasicForm
                 TraceInternal.TraceInformation("Use Path=" + path);
 
                 consoleTextBox.Text = "";
-                this.Text = "uBasic " + ProductVersion + " - " + filename;
+                this.Text = "Basic " + ProductVersion + " - " + filename;
 
 
                 filenamePath = path + Path.DirectorySeparatorChar + filename;

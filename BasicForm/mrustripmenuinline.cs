@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace uBasicForm
+namespace BasicForm
 {
     /// <summary>
     /// Represents an inline most recently used (mru) menu.

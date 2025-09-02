@@ -21,7 +21,11 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationVersion>1.0.0</ApplicationVersion>
+	  <Version>1.0.0</Version> <!-- General version -->
+    <FileVersion>1.0.0.0</FileVersion> <!-- File version -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion> <!-- Assembly version -->
+    <Product>Basic</Product> <!-- Product name -->
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -29,11 +33,10 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <DefineConstants>
     </DefineConstants>
-    <ApplicationIcon>uBasic.ico</ApplicationIcon>
-    <StartupObject>uBasicForm.Program</StartupObject>
+    <ApplicationIcon>basic.ico</ApplicationIcon>
+    <StartupObject>BasicForm.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.12" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters" Version="2.0.0" />
@@ -44,13 +47,19 @@
     <Compile Update="MruMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="properties\settings.designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Altair\Altair.csproj" />
     <ProjectReference Include="..\basicLibrary\basicLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="uBasic.ico" />
+    <Content Include="basic.ico" />
+    <Content Include="images\basic.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -68,5 +77,11 @@
     <Reference Include="TracerLibrary">
       <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="properties\settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 </Project>
