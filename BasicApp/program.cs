@@ -28,25 +28,28 @@ namespace BasicForm
 
             string[] args = Environment.GetCommandLineArgs();
 			int pos = 0;
-            Parameter<string> filePath = new Parameter<string>("filePath","");
-            Parameter<string> fileName = new Parameter<string>("fileName","");
-            Parameter<string> fileExtension = new Parameter<string>("fileExtension","");
+            Parameter<string> filePath = new Parameter<string>();
+            Parameter<string> fileName = new Parameter<string>();
+            Parameter<string> fileExtension = new Parameter<string>();
 
             // Get the default path directory
 
             filePath.Value = Environment.CurrentDirectory;
-            filePath.Source = IParameter.SourceType.App;
+            filePath.Source = Parameter<string>.SourceType.App;
 
-            Parameter<string> logPath = new Parameter<string>("logPath","");
-            Parameter<string> logName = new Parameter<string>("logNmae","basicform");
+            Parameter<string> logPath = new Parameter<string>("");
+            Parameter<string> logName = new Parameter<string>("basicform");
 
             logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "basic";
             //logPath.Value = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + System.IO.Path.DirectorySeparatorChar + "basic";
             //logPath.Value = "d:\\";
-            logPath.Source = IParameter.SourceType.App;
+            logPath.Source = Parameter<string>.SourceType.App;
 
-            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>("traceLevels", TraceInternal.TraceLookup("VERBOSE"));
-                traceLevels.Source = IParameter.SourceType.App;
+            Parameter<SourceLevels> traceLevels = new Parameter<SourceLevels>
+            {
+                Value = TraceInternal.TraceLookup("VERBOSE"),
+                Source = Parameter<SourceLevels>.SourceType.App
+            };
 
             // Configure tracer options
 
@@ -86,7 +89,7 @@ namespace BasicForm
                     if (key.GetValue("logpath", "").ToString().Length > 0)
                     {
                         logPath.Value = (string)key.GetValue("logpath", logPath);
-                        logPath.Source = IParameter.SourceType.Registry;
+                        logPath.Source = Parameter<string>.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; logPath=" + logPath);
                     }
                 }
@@ -106,7 +109,7 @@ namespace BasicForm
                     if (key.GetValue("logname", "").ToString().Length > 0)
                     {
                         logName.Value = (string)key.GetValue("logname", logName);
-                        logName.Source = IParameter.SourceType.Registry;
+                        logName.Source = Parameter<string>.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; LogName=" + logName);
                     }
                 }
@@ -126,7 +129,7 @@ namespace BasicForm
                     if (key.GetValue("name", "").ToString().Length > 0)
                     {
                         fileName.Value = (string)key.GetValue("name", fileName);
-                        fileName.Source = IParameter.SourceType.Registry;
+                        fileName.Source = Parameter<string>.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value Name=" + fileName);
                     }
                 }
@@ -146,7 +149,7 @@ namespace BasicForm
                     if (key.GetValue("path", "").ToString().Length > 0)
                     {
                         filePath.Value = (string)key.GetValue("path", filePath);
-                        filePath.Source = IParameter.SourceType.Registry;
+                        filePath.Source = Parameter<string>.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value Path=" + filePath);
                     }
                 }
@@ -166,7 +169,7 @@ namespace BasicForm
                     if (key.GetValue("debug", "").ToString().Length > 0)
                     {
                         traceLevels.Value = TraceInternal.TraceLookup((string)key.GetValue("debug", "verbose"));
-                        traceLevels.Source = IParameter.SourceType.Registry;
+                        traceLevels.Source = Parameter<SourceLevels>.SourceType.Registry;
                         TraceInternal.TraceVerbose("Use registry value; Debug=" + traceLevels.Value);
                     }
                 }
@@ -191,21 +194,21 @@ namespace BasicForm
                 if (pos > 0)
                 {
                     fileExtension.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
-                    filePath.Source = IParameter.SourceType.Command;
+                    filePath.Source = Parameter<string>.SourceType.Command;
                     filenamePath = filenamePath.Substring(0, pos);
                 }
                 pos = filenamePath.LastIndexOf('\\');
                 if (pos > 0)
                 {
                     filePath.Value = filenamePath.Substring(0, pos);
-                    filePath.Source = IParameter.SourceType.Command;
+                    filePath.Source = Parameter<string>.SourceType.Command;
                     fileName.Value = filenamePath.Substring(pos + 1, filenamePath.Length - pos - 1);
-                    fileName.Source = IParameter.SourceType.Command;
+                    fileName.Source = Parameter<string>.SourceType.Command;
                 }
                 else
                 {
                     fileName.Value = filenamePath;
-                    fileName.Source = IParameter.SourceType.Command;
+                    fileName.Source = Parameter<string>.SourceType.Command;
                 }
                 TraceInternal.TraceVerbose("Use filename=" + fileName.Value.ToString());
                 TraceInternal.TraceVerbose("use filePath=" + filePath.Value.ToString());
@@ -232,7 +235,7 @@ namespace BasicForm
                                 traceName = traceName.TrimStart('"');
                                 traceName = traceName.TrimEnd('"');
                                 traceLevels.Value = TraceInternal.TraceLookup(traceName);
-                                traceLevels.Source = IParameter.SourceType.Command;
+                                traceLevels.Source = Parameter<SourceLevels>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value traceLevels=" + traceLevels);
                                 break;
                             }
@@ -242,7 +245,7 @@ namespace BasicForm
                                 logName.Value = args[item + 1];
                                 logName.Value = logName.Value.ToString().TrimStart('"');
                                 logName.Value = logName.Value.ToString().TrimEnd('"');
-                                logName.Source = IParameter.SourceType.Command;
+                                logName.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value logName=" + logName);
                                 break;
                             }
@@ -252,7 +255,7 @@ namespace BasicForm
                                 logPath.Value = args[item + 1];
                                 logPath.Value = logPath.Value.ToString().TrimStart('"');
                                 logPath.Value = logPath.Value.ToString().TrimEnd('"');
-                                logPath.Source = IParameter.SourceType.Command;
+                                logPath.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value logPath=" + logPath);
                                 break;
                             }
@@ -262,7 +265,7 @@ namespace BasicForm
 	                            fileName.Value = args[item + 1];
 	                            fileName.Value = fileName.Value.ToString().TrimStart('"');
 	                            fileName.Value = fileName.Value.ToString().TrimEnd('"');
-	                            fileName.Source = IParameter.SourceType.Command;
+	                            fileName.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Name=" + fileName);
                             	break;
                             }
@@ -272,7 +275,7 @@ namespace BasicForm
 	                            filePath.Value = args[item + 1];
 	                            filePath.Value = filePath.Value.ToString().TrimStart('"');
 	                            filePath.Value = filePath.Value.ToString().TrimEnd('"');
-	                            filePath.Source = IParameter.SourceType.Command;
+	                            filePath.Source = Parameter<string>.SourceType.Command;
                                 TraceInternal.TraceVerbose("Use command value Path=" + filePath);
                            	 	break;
                             }

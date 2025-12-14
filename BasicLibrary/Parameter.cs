@@ -6,41 +6,54 @@ using System.Text;
 
 namespace BasicLibrary
 {
-    public class Parameter<T>
+    /// <summary>
+    /// Storage class for a parameter
+    /// </summary>
+    public class Parameter : IParameter, IEquatable<Parameter>
     {
+
         #region Fields
 
-        T _value = default(T);
-        SourceType _source = SourceType.None;
-
-        public enum SourceType: int
-        {
-            None = 0,
-            Command = 1,
-            Registry = 2,
-            App = 3
-        }
+        internal string _name = String.Empty;
+        internal object _value = null;
+        internal IParameter.SourceType _source = IParameter.SourceType.None;
 
         #endregion
         #region Constructor
-        public Parameter()
-        {
-            this._value = typeof(T) == typeof(string) ? (T)(object)string.Empty : default(T);
-        }
+        //public Parameter(string name)
+        //{
+        //    _value = null;
+        //    _name = name;
+        //}
 
-        public Parameter(T value)
-        {
-            this._value = value;
-            _source = SourceType.App;
-        }
-        public Parameter(T value, SourceType source)
+        public Parameter(string name, object value)
         {
             _value = value;
-            this._source = source;
+            _source = IParameter.SourceType.App;
+            _name = name;
+        }
+        public Parameter(string name, object value, IParameter.SourceType source)
+        {
+            _value = value;
+            _source = source;
+            _name = name;
         }
         #endregion
         #region Parameters
-        public T Value
+
+        public string Name
+        {
+            set
+            {
+                _name = value;
+            }
+            get
+            {
+                return _name;
+            }
+        }
+
+        public object Value
         {
             set
             {
@@ -52,7 +65,7 @@ namespace BasicLibrary
             }
         }
 
-        public SourceType Source
+        public IParameter.SourceType Source
         {
             set
             {
@@ -63,11 +76,30 @@ namespace BasicLibrary
                 return (_source);
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            Parameter objAsPart = obj as Parameter;
+            if (objAsPart == null) return false;
+            else return Equals(objAsPart);
+        }
+
+        public bool Equals(Parameter? other)
+        {
+            return (other != null && other.Name == this.Name);
+        }
+
         #endregion
         #region Methods
         public override string ToString()
         {
             return (Convert.ToString(_value));
+        }
+
+        public override int GetHashCode()
+        {
+            return (GetHashCode());
         }
         #endregion
     }

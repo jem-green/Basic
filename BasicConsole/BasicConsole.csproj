@@ -6,7 +6,7 @@
     <StartupObject>BasicConsole.Program</StartupObject>
     <PreBuildEvent>if exist "$(TargetPath).locked" del "$(TargetPath).locked"
 if exist "$(TargetPath)" if not exist "$(TargetPath).locked" move "$(TargetPath)" "$(TargetPath).locked"</PreBuildEvent>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyTitle>BasicConsole</AssemblyTitle>
     <Product>BasicConsole</Product>
     <Copyright>Copyright ©  2015</Copyright>
