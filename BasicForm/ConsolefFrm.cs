@@ -12,6 +12,8 @@ namespace BasicForm
 {
     public partial class ConsoleForm : Form
     {
+        #region Fields
+
         // Prepare Basic
         static IDefaultIO _textBoxIO = null;
         IInterpreter _basic = null;
@@ -32,13 +34,14 @@ namespace BasicForm
         // Most recently used
         protected MruStripMenu _mruMenu;
 
+        #endregion
+        #region Constructor
+
         public ConsoleForm(string path, string name)
         {
             Debug.WriteLine("In ConsoleForm()");
 
             InitializeComponent();
-
-            this.Icon = Resources.Basic;
 
             _textBoxIO = new TextBoxIO();
             _textBoxIO.TextReceived += new EventHandler<TextEventArgs>(OnMessageReceived);
@@ -85,6 +88,9 @@ namespace BasicForm
             }
 			Debug.WriteLine("Out ConsoleForm()");
         }
+
+        #endregion
+        #region Private
 
         private void OnMruFile(int number, String filenamePath)
         {
@@ -450,7 +456,7 @@ namespace BasicForm
             Debug.WriteLine("Out LoadFiles()");
         }
 
-        public void SaveFiles()
+        private void SaveFiles()
         {
             Debug.WriteLine("In SaveFiles");
             string[] files = _mruMenu.GetFiles();
@@ -472,5 +478,7 @@ namespace BasicForm
             }
             Debug.WriteLine("Out SaveFiles");
         }
+
+        #endregion
     }
 }

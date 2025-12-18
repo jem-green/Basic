@@ -39,8 +39,6 @@ namespace BasicLibrary
     {
         #region Fields
 
-        
-
         public enum Token : int
         {
             TOKENIZER_NULL = 0,

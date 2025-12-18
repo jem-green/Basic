@@ -3,8 +3,6 @@ using System.Windows.Forms;
 
 namespace BasicForm
 {
-    #region MruMenuItem
-
     /// <summary>
     /// The menu item which will contain the MRU entry.
     /// </summary>
@@ -54,5 +52,4 @@ namespace BasicForm
         }
         #endregion
     }
-    #endregion
 }

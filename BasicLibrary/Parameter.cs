@@ -11,7 +11,6 @@ namespace BasicLibrary
     /// </summary>
     public class Parameter : IParameter, IEquatable<Parameter>
     {
-
         #region Fields
 
         internal string _name = String.Empty;

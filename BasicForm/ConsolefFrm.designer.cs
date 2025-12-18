@@ -48,7 +48,7 @@
             consoleTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             consoleTextBox.Enabled = false;
             consoleTextBox.Location = new System.Drawing.Point(0, 42);
-            consoleTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            consoleTextBox.Margin = new System.Windows.Forms.Padding(4);
             consoleTextBox.Multiline = true;
             consoleTextBox.Name = "consoleTextBox";
             consoleTextBox.ReadOnly = true;
@@ -136,7 +136,7 @@
             Controls.Add(consoleMenuStrip);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = consoleMenuStrip;
-            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            Margin = new System.Windows.Forms.Padding(4);
             Name = "ConsoleForm";
             Text = "Basic";
             FormClosing += ConsoleForm_FormClosing;

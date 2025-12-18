@@ -164,6 +164,53 @@ namespace Altair
             Debug.WriteLine("Out Init()");
         }
 
+        /// <summary>
+        /// Run()
+        /// </summary>
+        public void Run()
+        {
+            Debug.WriteLine("In Run()");
+            if (tokenizer.IsFinished())
+            {
+                TraceInternal.TraceVerbose("Program finished");
+                return;
+            }
+            LineStatement();
+            Debug.WriteLine("Out Run()");
+        }
+
+        public void Stop()
+        {
+            Debug.WriteLine("In Stop()");
+            ended = true;
+            Debug.WriteLine("Out Stop()");
+        }
+
+        /// <summary>
+        /// Raise exception
+        /// </summary>
+        /// <param name="text"></param>
+        public void Abort(string text)
+        {
+            string message = text + " @ " + currentLineNumber;
+            throw new Exception(message);
+        }
+
+        /// <summary>
+        /// Finished()
+        /// </summary>
+        /// <returns></returns>
+        public bool IsFinished()
+        {
+            Debug.WriteLine("In Finished()");
+            bool finished = ended || tokenizer.IsFinished();
+            Debug.WriteLine("Out Finished()");
+            return (finished);
+        }
+
+        #endregion
+        #region Private
+
         private void IndexFree()
         {
             Debug.WriteLine("In IndexFree()");
@@ -360,6 +407,76 @@ namespace Altair
             tokenizer.Init(current_pos);
             Debug.WriteLine("Out ReadData()");
             return (read);
+        }
+
+        /// <summary>
+        /// Output data
+        /// </summary>
+        /// <param name="s"></param>
+        private void Emit(string s)
+        {
+            _IO.Out(s);
+        }
+
+        private string FormatNumber(Double number)
+        {
+            Debug.WriteLine("In FormatNumber()");
+            char sign = ' ';
+
+
+            // a number may contain up to 9 digits excluding the decimal point, and 1 digit for sign (+ve is space)
+            // , so 11 total
+            // it appears that the leading zero of a number is removed 
+            //
+            // need to format the numeric string
+            // {sign}{integer} <= 11 digits
+            // {sign}{integer}{.}{decimal} <= 11 digits
+            // {sign}{integer}{.}{decimal}{E}{sign}{exponent}
+            //
+
+            string value;
+            // check if +/- integer
+
+            if (Math.Truncate(number) == number)
+            {
+                value = Convert.ToString(number);
+                if (value.Substring(0, 1) == "-")
+                {
+                    sign = '-';
+                    value = value.Substring(1);     // remove the sign
+                }
+                if (value.Length > 9)
+                {
+                    value = Math.Abs(number).ToString("0.##### E+0");
+                }
+                value = sign + value;
+            }
+            else
+            {
+                value = Convert.ToString(number);
+                if (value.Substring(0, 1) == "-")
+                {
+                    sign = '-';
+                }
+                if ((Math.Abs(number) < 0.1) && (value.Length > 6))
+                {
+                    value = Math.Abs(number).ToString("0.##### E+0");
+                }
+                else
+                {
+                    if (Math.Abs(number) < 1)
+                    {
+                        value = Math.Abs(number).ToString(".######");
+                    }
+                    else
+                    {
+                        value = Math.Abs(number).ToString("0.#####");
+                    }
+                }
+                value = sign + value;
+            }
+            Debug.WriteLine("Out FormatNumber()");
+            return (value);
         }
 
         #region Statements
@@ -1951,124 +2068,6 @@ namespace Altair
         }
 
         #endregion Statements
-
-        private string FormatNumber(Double number)
-        {
-            Debug.WriteLine("In FormatNumber()");
-            char sign = ' ';
-
-
-            // a number may contain up to 9 digits excluding the decimal point, and 1 digit for sign (+ve is space)
-            // , so 11 total
-            // it appears that the leading zero of a number is removed 
-            //
-            // need to format the numeric string
-            // {sign}{integer} <= 11 digits
-            // {sign}{integer}{.}{decimal} <= 11 digits
-            // {sign}{integer}{.}{decimal}{E}{sign}{exponent}
-            //
-
-            string value;
-            // check if +/- integer
-
-            if (Math.Truncate(number) == number)
-            {
-                value = Convert.ToString(number);
-                if (value.Substring(0, 1) == "-")
-                {
-                    sign = '-';
-                    value = value.Substring(1);     // remove the sign
-                }
-                if (value.Length > 9)
-                {
-                    value = Math.Abs(number).ToString("0.##### E+0");
-                }
-                value = sign + value;
-            }
-            else
-            {
-                value = Convert.ToString(number);
-                if (value.Substring(0, 1) == "-")
-                {
-                    sign = '-';
-                }
-                if ((Math.Abs(number) < 0.1) && (value.Length > 6))
-                {
-                    value = Math.Abs(number).ToString("0.##### E+0");
-                }
-                else
-                {
-                    if (Math.Abs(number) < 1)
-                    {
-                        value = Math.Abs(number).ToString(".######");
-                    }
-                    else
-                    {
-                        value = Math.Abs(number).ToString("0.#####");
-                    }
-                }
-                value = sign + value;
-            }
-            Debug.WriteLine("Out FormatNumber()");
-            return (value);
-        }
-
-        /// <summary>
-        /// Run()
-        /// </summary>
-        public void Run()
-        {
-            Debug.WriteLine("In Run()");
-            if (tokenizer.IsFinished())
-            {
-                TraceInternal.TraceVerbose("Program finished");
-                return;
-            }
-            LineStatement();
-            Debug.WriteLine("Out Run()");
-        }
-
-        public void Stop()
-        {
-            Debug.WriteLine("In Stop()");
-            ended = true;
-            Debug.WriteLine("Out Stop()");
-        }
-
-        /// <summary>
-        /// Finished()
-        /// </summary>
-        /// <returns></returns>
-        public bool IsFinished()
-        {
-            Debug.WriteLine("In Finished()");
-            bool finished = ended || tokenizer.IsFinished();
-            Debug.WriteLine("Out Finished()");
-            return (finished);
-        }
-
-        #endregion Methods
-        #region Private
-
-        /// <summary>
-        /// Raise exception
-        /// </summary>
-        /// <param name="text"></param>
-        public void Abort(string text)
-        {
-            string message = text + " @ " + currentLineNumber;
-            throw new Exception(message);
-        }
-
-        /// <summary>
-        /// Output data
-        /// </summary>
-        /// <param name="s"></param>
-        private void Emit(string s)
-        {
-            _IO.Out(s);
-        }
-
         #endregion
     }
 }

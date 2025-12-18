@@ -180,7 +180,7 @@ namespace BasicForm
                 }
             }
 
-            // Check if the config file has been paased in and overwrite the registry
+            // Check if the config file has been passed in and overwrite the registry
 
             string filenamePath = "";
             int items = args.Length;
