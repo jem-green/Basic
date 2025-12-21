@@ -8,6 +8,7 @@ namespace BasicLibrary
 {
     public interface IInterpreter
     {
+        void Abort(string text);
         void Init(int pos);
         void Run();
         bool IsFinished();

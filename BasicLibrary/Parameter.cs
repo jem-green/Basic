@@ -84,7 +84,7 @@ namespace BasicLibrary
             else return Equals(objAsPart);
         }
 
-        public bool Equals(Parameter? other)
+        public bool Equals(Parameter other)
         {
             return (other != null && other.Name == this.Name);
         }
