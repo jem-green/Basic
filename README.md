@@ -1,4 +1,4 @@
-# uBasic
+# Basic
 Port of ubasic into c#
 
 Blend of and Jack W. Crenshaw and Adam Dunkels
@@ -16,6 +16,6 @@ The aim was to work through the various published documents relating to Dartmout
 * Basic 5 - ?
 * Altair - August 1975
 * ECMA-55 - January 1978
-* Microsoft - 1982
+* Micro-soft - 1982
 * ISO/IEC 10279 - October 1991
  
