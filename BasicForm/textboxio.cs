@@ -9,7 +9,7 @@ namespace BasicForm
         #region Event handling
 
         /// <summary>
-        /// Occurs when the Zmachine recives a message.
+        /// Occurs when basic receives a message.
         /// </summary>
         public event EventHandler<TextEventArgs> TextReceived;
 

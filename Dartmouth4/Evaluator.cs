@@ -323,7 +323,7 @@ namespace Dartmouth4
                         num = varName[0] - (int)'a';
                         function = functions[num];
 
-                        // a number of paramerters that could be expressions until the ')'
+                        // a number of parameters that could be expressions until the ')'
 
                         do
                         {
@@ -626,7 +626,7 @@ namespace Dartmouth4
         // ABS Top of Stack with Primary
         private void Abs()
         {
-            // This just removes the ecimal part with no rounding acording to the specification
+            // This just removes the decimal part with no rounding according to the specification
 
             object first;
             double number;
@@ -654,7 +654,7 @@ namespace Dartmouth4
         // INT Top of Stack with Primary
         private void Int()
         {
-            // This just removes the decimal part with no rounding acording to the specification
+            // This just removes the decimal part with no rounding according to the specification
 
             object first;
             double number;

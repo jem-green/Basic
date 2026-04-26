@@ -435,7 +435,7 @@ namespace MicroSoft
 
                             if (source[nextptr] == '$')
                             {
-                                // String viarable
+                                // String variable
                                 nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
                             }
@@ -444,7 +444,7 @@ namespace MicroSoft
                         {
                             if (source[nextptr] == '$')
                             {
-                                // String viarable
+                                // String variable
                                 nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
 
@@ -630,7 +630,7 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insentitive
+                value += c.ToString().ToLower(); // Make variables case insensitive
                 ptr++;
             }
 
@@ -655,7 +655,7 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insentitive
+                value += c.ToString().ToLower(); // Make variables case insensitive
                 ptr++;
             }
             Debug.WriteLine("Out GetNumericArrayVariable()");
@@ -674,7 +674,7 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insentitive
+                value += c.ToString().ToLower(); // Make variables case insensitive
                 ptr++;
             }
             Debug.WriteLine("Out GetStringArrayVariable()");
@@ -692,7 +692,7 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insentitive
+                value += c.ToString().ToLower(); // Make variables case insensitive
                 ptr++;
             }
 

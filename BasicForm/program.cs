@@ -309,7 +309,7 @@ namespace BasicForm
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ConsoleForm(filePath.Value.ToString(), fileName.Value.ToString()));
+            Application.Run(new BasicUI(filePath.Value.ToString(), fileName.Value.ToString()));
 
             Debug.WriteLine("Exit Main()");
 

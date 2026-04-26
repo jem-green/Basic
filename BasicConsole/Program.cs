@@ -99,108 +99,119 @@ namespace BasicConsole
                     }
                 }
 
-                // Get the log path
-
-                try
+                if (key == null)
                 {
-                    if (key.GetValue("logpath", "").ToString().Length > 0)
+                    TraceInternal.TraceVerbose("Registry key not found use default values");
+                }
+                else
+                {
+                    // Get the log path
+
+                    try
                     {
-                        logPath.Value = (string)key.GetValue("logpath", logPath);
-                        logPath.Source = IParameter.SourceType.Registry;
-                        TraceInternal.TraceVerbose("Use registry value; logPath=" + logPath);
+                        if (key.GetValue("logpath", "").ToString().Length > 0)
+                        {
+                            logPath.Value = (string)key.GetValue("logpath", logPath);
+                            logPath.Source = IParameter.SourceType.Registry;
+                            TraceInternal.TraceVerbose("Use registry value; logPath=" + logPath);
+                        }
                     }
-                }
-                catch (NullReferenceException)
-                {
-                    TraceInternal.TraceVerbose("Registry error use default values; logPath=" + logPath.Value);
-                }
-                catch (Exception e)
-                {
-                    TraceInternal.TraceError(e.ToString());
-                }
-
-                // Get the log name
-
-                try
-                {
-                    if (key.GetValue("logname", "").ToString().Length > 0)
+                    catch (NullReferenceException)
                     {
-                        logName.Value = (string)key.GetValue("logname", logName);
-                        logName.Source = IParameter.SourceType.Registry;
-                        TraceInternal.TraceVerbose("Use registry value; LogName=" + logName);
+                        TraceInternal.TraceVerbose("Registry error use default values; logPath=" + logPath.Value);
                     }
-                }
-                catch (NullReferenceException)
-                {
-                    TraceInternal.TraceVerbose("Registry error use default values; LogName=" + logName.Value);
-                }
-                catch (Exception e)
-                {
-                    TraceInternal.TraceError(e.ToString());
-                }
-
-                // Get the name
-
-                try
-                {
-                    if (key.GetValue("name", "").ToString().Length > 0)
+                    catch (Exception e)
                     {
-                        fileName.Value = (string)key.GetValue("name", fileName);
-                        fileName.Source = IParameter.SourceType.Registry;
-                        TraceInternal.TraceVerbose("Use registry value Name=" + fileName);
+                        TraceInternal.TraceError(e.ToString());
                     }
-                }
-                catch (NullReferenceException)
-                {
-                    TraceInternal.TraceVerbose("Registry error use default values; Name=" + fileName.Value);
-                }
-                catch (Exception e)
-                {
-                    TraceInternal.TraceError(e.ToString());
-                }
 
-                // Get the path
+                    // Get the log name
 
-                try
-                {
-                    if (key.GetValue("path", "").ToString().Length > 0)
+                    try
                     {
-                        filePath.Value = (string)key.GetValue("path", filePath);
-                        filePath.Source = IParameter.SourceType.Registry;
-                        TraceInternal.TraceVerbose("Use registry value Path=" + filePath);
+                        if (key.GetValue("logname", "").ToString().Length > 0)
+                        {
+                            logName.Value = (string)key.GetValue("logname", logName);
+                            logName.Source = IParameter.SourceType.Registry;
+                            TraceInternal.TraceVerbose("Use registry value; LogName=" + logName);
+                        }
                     }
-                }
-                catch (NullReferenceException)
-                {
-                    TraceInternal.TraceVerbose("Registry error use default values; Path=" + filePath.Value);
-                }
-                catch (Exception e)
-                {
-                    TraceInternal.TraceError(e.ToString());
-                }
-
-                // Get the traceLevels
-
-                try
-                {
-                    if (key.GetValue("debug", "").ToString().Length > 0)
+                    catch (NullReferenceException)
                     {
-                        traceLevels.Value = TraceInternal.TraceLookup((string)key.GetValue("debug", "verbose"));
-                        traceLevels.Source = IParameter.SourceType.Registry;
-                        TraceInternal.TraceVerbose("Use registry value; Debug=" + traceLevels.Value);
+                        TraceInternal.TraceVerbose("Registry error use default values; LogName=" + logName.Value);
                     }
-                }
-                catch (NullReferenceException)
-                {
-                    TraceInternal.TraceWarning("Registry error use default values; Debug=" + traceLevels.Value);
-                }
-                catch (Exception e)
-                {
-                    TraceInternal.TraceError(e.ToString());
+                    catch (Exception e)
+                    {
+                        TraceInternal.TraceError(e.ToString());
+                    }
+
+                    // Get the name
+
+                    try
+                    {
+                        if (key.GetValue("name", "").ToString().Length > 0)
+                        {
+                            fileName.Value = (string)key.GetValue("name", fileName);
+                            fileName.Source = IParameter.SourceType.Registry;
+                            TraceInternal.TraceVerbose("Use registry value Name=" + fileName);
+                        }
+                    }
+                    catch (NullReferenceException)
+                    {
+                        TraceInternal.TraceVerbose("Registry error use default values; Name=" + fileName.Value);
+                    }
+                    catch (Exception e)
+                    {
+                        TraceInternal.TraceError(e.ToString());
+                    }
+
+                    // Get the path
+
+                    try
+                    {
+                        if (key.GetValue("path", "").ToString().Length > 0)
+                        {
+                            filePath.Value = (string)key.GetValue("path", filePath);
+                            filePath.Source = IParameter.SourceType.Registry;
+                            TraceInternal.TraceVerbose("Use registry value Path=" + filePath);
+                        }
+                    }
+                    catch (NullReferenceException)
+                    {
+                        TraceInternal.TraceVerbose("Registry error use default values; Path=" + filePath.Value);
+                    }
+                    catch (Exception e)
+                    {
+                        TraceInternal.TraceError(e.ToString());
+                    }
+
+                    // Get the traceLevels
+
+                    try
+                    {
+                        if (key.GetValue("debug", "").ToString().Length > 0)
+                        {
+                            traceLevels.Value = TraceInternal.TraceLookup((string)key.GetValue("debug", "verbose"));
+                            traceLevels.Source = IParameter.SourceType.Registry;
+                            TraceInternal.TraceVerbose("Use registry value; Debug=" + traceLevels.Value);
+                        }
+                    }
+                    catch (NullReferenceException)
+                    {
+                        TraceInternal.TraceWarning("Registry error use default values; Debug=" + traceLevels.Value);
+                    }
+                    catch (Exception e)
+                    {
+                        TraceInternal.TraceError(e.ToString());
+                    }
                 }
             }
+            else
+            {
+                TraceInternal.TraceVerbose("Linux OS - skip registry check");
+            }
 
-            // Check if the config file has been paased in and overwrite the registry
+            // Check if the config file has been passed in and overwrite the registry
 
             string filenamePath = "";
             int items = args.Length;

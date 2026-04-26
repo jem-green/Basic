@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace BasicForm
 {
-    public partial class ConsoleForm : Form
+    public partial class BasicUI : Form
     {
         #region Fields
 
@@ -37,7 +37,7 @@ namespace BasicForm
         #endregion
         #region Constructor
 
-        public ConsoleForm(string path, string name)
+        public BasicUI(string path, string name)
         {
             Debug.WriteLine("In ConsoleForm()");
 

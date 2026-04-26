@@ -1,6 +1,6 @@
 ﻿namespace BasicForm
 {
-    partial class ConsoleForm
+    partial class BasicUI
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConsoleForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BasicUI));
             consoleTextBox = new System.Windows.Forms.TextBox();
             consoleMenuStrip = new System.Windows.Forms.MenuStrip();
             fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();

@@ -496,6 +496,16 @@ namespace Dartmouth4
                             ReadStatement();
                             break;
                         }
+                    case Tokenizer.Token.TOKENIZER_RESTORE:
+                        {
+                            RestoreStatement();
+                            break;
+                        }
+                    case Tokenizer.Token.TOKENIZER_CHANGE:
+                        {
+                            ChangeStatement();
+                            break;
+                        }
                     case Tokenizer.Token.TOKENIZER_DEF:
                         {
                             DefStatement();
@@ -564,6 +574,27 @@ namespace Dartmouth4
         }
 
         /// <summary>
+        /// RESTORE
+        /// </summary>
+        private void RestoreStatement()
+        {
+            Debug.WriteLine("In RestoreStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RESTORE);
+            dataPos = 0;
+            Debug.WriteLine("Out RestoreStatement()");
+        }
+
+        /// <summary>
+        /// CHANGE
+        /// </summary>
+        private void ChangeStatement()
+        {
+            Debug.WriteLine("In ChangeStatement()");
+            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CHANGE);
+            throw new NotImplementedException("CHANGE statement not yet implemented");
+        }
+
+        /// <summary>
         /// GOTO
         /// </summary>
         private void GotoStatement()
@@ -628,7 +659,7 @@ namespace Dartmouth4
                 {
                     if ((previous == Tokenizer.Token.TOKENIZER_STRING) || (previous == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (previous == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
                     {
-                        // additional rule appears to be that if the ';' folows text then it concatinates
+                        // additional rule appears to be that if the ';' follows text then it concatinates
                         // if ';' follows a number then it move tab zones.
                     }
                     else
@@ -1740,7 +1771,7 @@ namespace Dartmouth4
             char sign = ' ';
 
 
-            // a number may contain upto 9 digits excuding the decimal point, and 1 digit for sign (+ve is space)
+            // a number may contain up to 9 digits exceeding the decimal point, and 1 digit for sign (+ve is space)
             // , so 11 total
             // it appears that the leading zero of a number is removed 
             //

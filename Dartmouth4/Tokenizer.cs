@@ -107,13 +107,15 @@ namespace Dartmouth4
             TOKENIZER_COS,
             TOKENIZER_TAN,
             TOKENIZER_RND,
-            TOKENIZER_ABS,
-            TOKENIZER_ATN,
+			TOKENIZER_ABS,
+			TOKENIZER_ATN,
 			TOKENIZER_COT,
-            TOKENIZER_EXP,
-            TOKENIZER_LOG,
-            TOKENIZER_RANDOMIZE
-        };
+			TOKENIZER_EXP,
+			TOKENIZER_LOG,
+			TOKENIZER_RESTORE,
+			TOKENIZER_CHANGE,
+			TOKENIZER_RANDOMIZE
+		};
 
         int ptr;
         int nextptr;
@@ -170,6 +172,8 @@ namespace Dartmouth4
                 new  TokenKeyword("int", Token.TOKENIZER_INT),
                 new  TokenKeyword("read", Token.TOKENIZER_READ),
                 new  TokenKeyword("data", Token.TOKENIZER_DATA),
+                new  TokenKeyword("restore", Token.TOKENIZER_RESTORE),
+                new  TokenKeyword("change", Token.TOKENIZER_CHANGE),
                 new  TokenKeyword("stop", Token.TOKENIZER_STOP),
                 new  TokenKeyword("sin", Token.TOKENIZER_SIN),
                 new  TokenKeyword("cos", Token.TOKENIZER_COS),
