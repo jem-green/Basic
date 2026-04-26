@@ -39,7 +39,7 @@ using TracerLibrary;
 namespace Dartmouth5
 {
     /// <summary>
-    /// Dartmouth basic version 4 - Oct 68 
+    /// Dartmouth basic version 5
     /// </summary>
     public class Interpreter : IInterpreter
     {
@@ -824,6 +824,7 @@ namespace Dartmouth5
             //
             // <OnStatement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
             // <OnStatement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
+            // <OnStatement> ::= "ON" <expression> "GOSUB" <line> [ "," <line> ]*
             //
             // 
 
@@ -831,6 +832,7 @@ namespace Dartmouth5
             int integer;
             int parameter = 0;
             bool check = true;
+            bool isGosub = false;
 
             Debug.WriteLine("In OnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ON);
@@ -843,6 +845,11 @@ namespace Dartmouth5
             else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GOTO)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
+            }
+            else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GOSUB)
+            {
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
+                isGosub = true;
             }
 
             integer = (int)Math.Truncate(number);
@@ -860,8 +867,27 @@ namespace Dartmouth5
                         parameter++;
                         if (integer == parameter)
                         {
-                            TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
-                            JumpLineNumber(lineNumber);
+                            if (isGosub)
+                            {
+                                tokenizer.NextToken();
+                                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);
+                                if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                                {
+                                    gosubStack[gosubStackPointer] = tokenizer.GetInteger();
+                                    gosubStackPointer++;
+                                    TraceInternal.TraceInformation("ON " + integer + " GOSUB " + lineNumber);
+                                    JumpLineNumber(lineNumber);
+                                }
+                                else
+                                {
+                                    Abort("OnStatement: gosub stack exhausted");
+                                }
+                            }
+                            else
+                            {
+                                TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
+                                JumpLineNumber(lineNumber);
+                            }
                             check = false;
                         }
                         else

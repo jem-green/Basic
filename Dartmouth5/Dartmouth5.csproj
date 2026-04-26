@@ -2,10 +2,10 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <RootNamespace>Dartmouth4</RootNamespace>
-    <AssemblyName>Dartmouth4</AssemblyName>
+    <AssemblyName>Dartmouth5</AssemblyName>
     <TargetFramework>net8.0</TargetFramework>
-    <AssemblyTitle>Datmouth4</AssemblyTitle>
-    <Product>Datmouth 4</Product>
+    <AssemblyTitle>Datmouth5</AssemblyTitle>
+    <Product>Dartmouth 5</Product>
     <Copyright>Copyright ©  2016</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>

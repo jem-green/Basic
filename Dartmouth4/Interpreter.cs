@@ -39,7 +39,7 @@ using TracerLibrary;
 namespace Dartmouth4
 {
     /// <summary>
-    /// Dartmouth basic version 4 - Oct 68 
+    /// Dartmouth basic version 4 - Jan 68 
     /// </summary>
     public class Interpreter : IInterpreter
     {

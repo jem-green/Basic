@@ -14,9 +14,9 @@ symbol =  "|" | " " | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," 
 statement = data_statement | def_statement | dim_statement | end_statement | for_statement | gosub_statement | goto_statement | if_statement | input_statement | let_statement | next_statement | on_statement | print_statement | read_statement | rem_statement | restore_statement | return_statement | stop_statement ;
 data_statement = "DATA" , data_item , { separator , data_item } ;
 data_item = number | string ;
-def_statement = "DEF" , " " , "FN" , letter , "(" , variable , ")" , "=" , expression ;
+def_statement = "DEF FN" , letter , "(" , variable , ")" , "=" , expression ;
 dim_statement = "DIM" , dim_item , { separator , dim_item } ;
-dim_item = letter , [ digit ] , "(" , integer , { separator , integer } , ")" ;
+dim_item = letter , [ digit ] , [ "$" ] , "(" , integer , { separator , integer } , ")" ;
 end_statement = "END" ;
 for_statement = "FOR" , numeric_variable , "=" , expression , "TO" , expression , [ "STEP" , expression ] ;
 next_statement = "NEXT" , numeric_variable ;
@@ -70,7 +70,7 @@ square_root_function = "SQR" , "(" , expression , ")" ;
 def_function = "FN" , letter , "(" , variable , ")" ;
 integer_function = "INT" , "(" , expression , ")" ;
 random_function = "RND" , "(" , expression , ")" ;
-tab_function = "TAB" , "{" , expression , ")" ;
+tab_function = "TAB" , "(" , expression , ")" ;
 
 
 
