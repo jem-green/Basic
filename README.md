@@ -1,7 +1,7 @@
 # Basic
 A basic emulator written in c# that support a number of the early BASIC dialects
 
-Blend of and Jack W. Crenshaw
+Blend of Jack W. Crenshaw
 
 https://thaliaarchi.github.io/letsbuildacompiler-crenshaw/about.html?utm_source=copilot.com
 
