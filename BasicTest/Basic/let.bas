@@ -1,4 +1,0 @@
-10 LET A = -7
-20 PRINT "A=";A
-30 END
-

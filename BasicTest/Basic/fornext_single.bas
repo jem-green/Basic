@@ -1,2 +1,0 @@
-10 FOR I = 1 TO 10: PRINT "I=";I: NEXT I
-40 END

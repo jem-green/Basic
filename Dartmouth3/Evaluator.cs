@@ -75,7 +75,7 @@ namespace Dartmouth3
 
         public void Randomize()
         {
-            Debug.WriteLine("In Randomize()");
+            Debug.WriteLine("In Evaluator.Randomize()");
             randomize = Environment.TickCount;
             Trace.TraceInformation("Out Randomize()");
         }
@@ -95,7 +95,7 @@ namespace Dartmouth3
         {
             Tokenizer.Token op;
 
-            Debug.WriteLine("In Relation()");
+            Debug.WriteLine("In Evaluator.Relation()");
             Expression();
             op = tokenizer.GetToken();
 
@@ -168,7 +168,7 @@ namespace Dartmouth3
         public void Expression()
         {
             Tokenizer.Token op;
-            Debug.WriteLine("In Expression()");
+            Debug.WriteLine("In Evaluator.Expression()");
 
             // check if negative number
 
@@ -213,7 +213,7 @@ namespace Dartmouth3
         /// <returns></returns>
         private void Term()
         {
-            Debug.WriteLine("In Term()");
+            Debug.WriteLine("In Evaluator.Term()");
             Tokenizer.Token op;
 
             TraceInternal.TraceVerbose("Term: token " + tokenizer.GetToken());
@@ -252,7 +252,7 @@ namespace Dartmouth3
         private void Exponent()
         {
             Tokenizer.Token op;
-            Debug.WriteLine("In Exponent()");
+            Debug.WriteLine("In Evaluator.Exponent()");
 
             TraceInternal.TraceVerbose("Exponent: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
@@ -311,7 +311,7 @@ namespace Dartmouth3
             FunctionIndex function;
             int num;
 
-            Debug.WriteLine("In Factor()");
+            Debug.WriteLine("In Evaluator.Factor()");
 
             TraceInternal.TraceVerbose("Factor: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
@@ -546,7 +546,7 @@ namespace Dartmouth3
         {
             object first;
             double number;
-            Debug.WriteLine("In SquareRoot()");
+            Debug.WriteLine("In Evaluator.SquareRoot()");
 
             if (stack.Count > 0)
             {
@@ -581,7 +581,7 @@ namespace Dartmouth3
 
             object first;
             double number;
-            Debug.WriteLine("In Abs()");
+            Debug.WriteLine("In Evaluator.Abs()");
 
             if (stack.Count > 0)
             {
@@ -609,7 +609,7 @@ namespace Dartmouth3
 
             object first;
             double number;
-            Debug.WriteLine("In Int()");
+            Debug.WriteLine("In Evaluator.Int()");
 
             if (stack.Count > 0)
             {
@@ -635,7 +635,7 @@ namespace Dartmouth3
         {
             object first;
             double number;
-            Debug.WriteLine("In Rnd()");
+            Debug.WriteLine("In Evaluator.Rnd()");
 
             if (stack.Count > 0)
             {
@@ -666,7 +666,7 @@ namespace Dartmouth3
         private void Sin()
         {
             object first;
-            Debug.WriteLine("In Sin()");
+            Debug.WriteLine("In Evaluator.Sin()");
 
             if (stack.Count > 0)
             {
@@ -689,7 +689,7 @@ namespace Dartmouth3
         private void Cos()
         {
             object first;
-            Debug.WriteLine("In Cos()");
+            Debug.WriteLine("In Evaluator.Cos()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
@@ -711,7 +711,7 @@ namespace Dartmouth3
         private void Tan()
         {
             object first;
-            Debug.WriteLine("In Tan()");
+            Debug.WriteLine("In Evaluator.Tan()");
 
             if (stack.Count > 0)
             {
@@ -734,7 +734,7 @@ namespace Dartmouth3
         private void Atn()
         {
             object first;
-            Debug.WriteLine("In Atn()");
+            Debug.WriteLine("In Evaluator.Atn()");
 
             if (stack.Count > 0)
             {
@@ -757,7 +757,7 @@ namespace Dartmouth3
         private void Exp()
         {
             object first;
-            Debug.WriteLine("In Exp()");
+            Debug.WriteLine("In Evaluator.Exp()");
 
             if (stack.Count > 0)
             {
@@ -780,7 +780,7 @@ namespace Dartmouth3
         private void Log()
         {
             object first;
-            Debug.WriteLine("In Log()");
+            Debug.WriteLine("In Evaluator.Log()");
 
             if (stack.Count > 0)
             {
@@ -809,7 +809,7 @@ namespace Dartmouth3
             object second;
             int compare;
 			
-			Debug.WriteLine("In Less()");
+			Debug.WriteLine("In Evaluator.Less()");
 			
             if (stack.Count > 1)
             {
@@ -874,7 +874,7 @@ namespace Dartmouth3
             object second;
             int compare;
 			
-			Debug.WriteLine("In LessEqual()");
+			Debug.WriteLine("In Evaluator.LessEqual()");
 			
             if (stack.Count > 1)
             {
@@ -939,7 +939,7 @@ namespace Dartmouth3
             object second;
             int compare;
 			
-			Debug.WriteLine("In Greater()");
+			Debug.WriteLine("In Evaluator.Greater()");
 			
             if (stack.Count > 1)
             {
@@ -1009,7 +1009,7 @@ namespace Dartmouth3
             object second;
             int compare;
 			
-			Debug.WriteLine("In GreaterEqual()");
+			Debug.WriteLine("In Evaluator.GreaterEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1073,7 +1073,7 @@ namespace Dartmouth3
             object first;
             object second;
 			
-			Debug.WriteLine("In Equal()");
+			Debug.WriteLine("In Evaluator.Equal()");
 			
             if (stack.Count > 1)
             {
@@ -1128,7 +1128,7 @@ namespace Dartmouth3
             object first;
             object second;
 			
-			Debug.WriteLine("In NotEqual()");
+			Debug.WriteLine("In Evaluator.NotEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1187,7 +1187,7 @@ namespace Dartmouth3
             object first;
             Boolean value = false;
 			
-			Debug.WriteLine("In PopBoolean()");
+			Debug.WriteLine("In Evaluator.PopBoolean()");
 
             if (stack.Count > 0)
             {
@@ -1215,7 +1215,7 @@ namespace Dartmouth3
             object first;
             Double number = 0;
 			
-			Debug.WriteLine("In PopDouble()");
+			Debug.WriteLine("In Evaluator.PopDouble()");
 
             if (stack.Count > 0)
             {
@@ -1243,7 +1243,7 @@ namespace Dartmouth3
             object first;
             int integer = 0;
 			
-			Debug.WriteLine("In PopInteger()");
+			Debug.WriteLine("In Evaluator.PopInteger()");
 
             if (stack.Count > 0)
             {
@@ -1269,7 +1269,7 @@ namespace Dartmouth3
         public object PopObject()
         {
             object first = null;
-			Debug.WriteLine("In PopObject()");
+			Debug.WriteLine("In Evaluator.PopObject()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
@@ -1291,7 +1291,7 @@ namespace Dartmouth3
             double number;
             string value;
 			
-			Debug.WriteLine("In Add()");
+			Debug.WriteLine("In Evaluator.Add()");
 
             if (stack.Count > 1)
             {
@@ -1344,7 +1344,7 @@ namespace Dartmouth3
             object second;
             double number;
 
-            Debug.WriteLine("In Subtract()");
+            Debug.WriteLine("In Evaluator.Subtract()");
 
             if (stack.Count > 1)
             {
@@ -1384,7 +1384,7 @@ namespace Dartmouth3
             object second;
             double numeric;
 
-            Debug.WriteLine("In Multiply()");
+            Debug.WriteLine("In Evaluator.Multiply()");
 
             if (stack.Count > 1)
             {
@@ -1424,7 +1424,7 @@ namespace Dartmouth3
             object second;
             double number;
 
-            Debug.WriteLine("In Divide()");
+            Debug.WriteLine("In Evaluator.Divide()");
 
             if (stack.Count > 1)
             {
@@ -1464,7 +1464,7 @@ namespace Dartmouth3
             object second;
             double number;
 
-            Debug.WriteLine("In Power()");
+            Debug.WriteLine("In Evaluator.Power()");
 
             if (stack.Count > 1)
             {
@@ -1500,7 +1500,7 @@ namespace Dartmouth3
 
         public int GetIntVariable(int varnum)
         {
-            Debug.WriteLine("In GetIntVariable()");
+            Debug.WriteLine("In Evaluator.GetIntVariable()");
             int integer;
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
@@ -1519,7 +1519,7 @@ namespace Dartmouth3
         public double GetNumericVariable(string varName)
         {
             double number;
-            Debug.WriteLine("In GetNumericVariable()");
+            Debug.WriteLine("In Evaluator.GetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 number = (double)numericVariables[varName];
@@ -1535,7 +1535,7 @@ namespace Dartmouth3
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            Debug.WriteLine("In GetNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetNumericArrayVariable()");
 
             BasicLibrary.Array data;
             double number;
@@ -1556,7 +1556,7 @@ namespace Dartmouth3
         
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Debug.WriteLine("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareNumericArrayVariable()");
             BasicLibrary.Array data;
             if (numericArrayVariables.ContainsKey(varName))
             {
@@ -1564,14 +1564,14 @@ namespace Dartmouth3
             }
             data = new BasicLibrary.Array(varName, dimensions, dimension,(double)0);
             numericArrayVariables.Add(varName, data);
-            Debug.WriteLine("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareNumericArrayVariable()");
         }
 
         
 
         public void SetIntVariable(int varnum, int integer)
         {
-            Debug.WriteLine("In SetIntVariable()");
+            Debug.WriteLine("In Evaluator.SetIntVariable()");
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
                 variables[varnum] = integer;
@@ -1583,7 +1583,7 @@ namespace Dartmouth3
 
         public void SetNumericVariable(string varName, double number)
         {
-            Debug.WriteLine("In SetNumericVariable()");
+            Debug.WriteLine("In Evaluator.SetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 numericVariables.Remove(varName);
@@ -1595,7 +1595,7 @@ namespace Dartmouth3
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
-            Debug.WriteLine("In SetNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.SetNumericArrayVariable()");
             BasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {

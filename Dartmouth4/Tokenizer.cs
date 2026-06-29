@@ -145,7 +145,7 @@ namespace Dartmouth4
 
         public Tokenizer(char[] program)
         {
-            Debug.WriteLine("In Tokenizer()");
+            Debug.WriteLine("In Tokenizer.Tokenizer()");
 
             //by default, read from/write to standard streams
 
@@ -192,7 +192,7 @@ namespace Dartmouth4
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
-            Debug.WriteLine("Out Tokenizer()");
+            Debug.WriteLine("Out Tokenizer.Tokenizer()");
         }
 
         #endregion
@@ -200,19 +200,19 @@ namespace Dartmouth4
 
         public void AcceptToken(Token token)
         {
-            Debug.WriteLine("In AcceptToken()");
+            Debug.WriteLine("In Tokenizer.AcceptToken()");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
             }
             TraceInternal.TraceVerbose("accept: Expected " + token + ", got it");
             NextToken();
-            Debug.WriteLine("Out AcceptToken()");
+            Debug.WriteLine("Out Tokenizer.AcceptToken()");
         }
         
         public Token CheckSingleChar()
         {
-            Debug.WriteLine("In CheckSingleChar()");
+            Debug.WriteLine("In Tokenizer.CheckSingleChar()");
 
             Token token = 0;
             if(source[ptr] == '\n')
@@ -295,13 +295,13 @@ namespace Dartmouth4
             {
                 token = Token.TOKENIZER_EQ;
             }
-            Debug.WriteLine("Out CheckSingleChar()");
+            Debug.WriteLine("Out Tokenizer.CheckSingleChar()");
             return (token);
         }
 
         public Token GetNextToken()
         {
-            Debug.WriteLine("In GetNextToken()");
+            Debug.WriteLine("In Tokenizer.GetNextToken()");
 
             Token token = Token.TOKENIZER_NONE;
             int i;
@@ -439,35 +439,35 @@ namespace Dartmouth4
                     }
                 }
             }
-            Debug.WriteLine("Out GetNextToken()");
+            Debug.WriteLine("Out Tokenizer.GetNextToken()");
             return (token);
         }
 
         public void GotoPosition(int position)
         {
-            Debug.WriteLine("In GotoPosition()");
+            Debug.WriteLine("In Tokenizer.GotoPosition()");
             ptr = position;
             currentToken = GetNextToken();
-            Debug.WriteLine("Out GotoPosition()");
+            Debug.WriteLine("Out Tokenizer.GotoPosition()");
         }
     
         public void Init(int position)
         {
-            Debug.WriteLine("In Init()");
+            Debug.WriteLine("In Tokenizer.Init()");
             GotoPosition(position);
             currentToken = GetNextToken();
-            Debug.WriteLine("Out Init()");
+            Debug.WriteLine("Out Tokenizer.Init()");
         }
 
         public Token GetToken()
         {
-            Debug.WriteLine("In GetToken()");
+            Debug.WriteLine("In Tokenizer.GetToken()");
             return (currentToken);
         }
 
         public void NextToken()
         {
-            Debug.WriteLine("In NextToken()");
+            Debug.WriteLine("In Tokenizer.NextToken()");
             if (!IsFinished())
             {
                 TraceInternal.TraceVerbose("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
@@ -485,12 +485,12 @@ namespace Dartmouth4
             {
                 currentToken = Token.TOKENIZER_ENDOFINPUT;
             }
-            Debug.WriteLine("Out NextToken()");
+            Debug.WriteLine("Out Tokenizer.NextToken()");
         }
 
         public void SkipTokens()
         {
-            Debug.WriteLine("Out SkipTokens()");
+            Debug.WriteLine("Out Tokenizer.SkipTokens()");
             if (!IsFinished())
             {
                 while (!(IsFinished() || source[nextptr] == '\n'))
@@ -505,12 +505,12 @@ namespace Dartmouth4
 
             TraceInternal.TraceVerbose("SkipTokens: " + Convert.ToString(ptr) + " " + Convert.ToString(currentToken));
             
-            Debug.WriteLine("Out SkipTokens()");
+            Debug.WriteLine("Out Tokenizer.SkipTokens()");
         }
 
         public int GetInteger()
         {
-            Debug.WriteLine("In GetInteger()");
+            Debug.WriteLine("In Tokenizer.GetInteger()");
             int integer= 0;
             int i = ptr;
             while (IsDigit(source[i]))
@@ -518,13 +518,13 @@ namespace Dartmouth4
                 integer = 10 * integer + Convert.ToInt16(source[i]) - Convert.ToInt16('0');
                 i++;
             }
-            Debug.WriteLine("Out GetInteger()");
+            Debug.WriteLine("Out Tokenizer.GetInteger()");
             return (integer);
         }
 
         public double GetNumber()
         {
-            Debug.WriteLine("In GetNumber()");
+            Debug.WriteLine("In Tokenizer.GetNumber()");
             double number = 0;
             int i = ptr;
             int j = ptr;
@@ -547,13 +547,13 @@ namespace Dartmouth4
                 }
                 i++;
             }
-            Debug.WriteLine("Out GetNumber()");
+            Debug.WriteLine("Out Tokenizer.GetNumber()");
             return (number);
         }
 
         public string Getstring()
         {
-            Debug.WriteLine("In Getstring()");
+            Debug.WriteLine("In Tokenizer.Getstring()");
             string _string = "";
             int i = ptr;
 
@@ -570,13 +570,13 @@ namespace Dartmouth4
                     i++;
                 }
             }
-            Debug.WriteLine("Out Getstring()");
+            Debug.WriteLine("Out Tokenizer.Getstring()");
             return (_string);
         }
 
         public bool IsFinished()
         {
-            Debug.WriteLine("In IsFinished()");
+            Debug.WriteLine("In Tokenizer.IsFinished()");
             return ((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
         }
 
@@ -592,7 +592,7 @@ namespace Dartmouth4
             {
                 integer = (int)source[ptr] - (int)'A';
             }
-            Debug.WriteLine("Out GetIntegerVariable()");
+            Debug.WriteLine("Out Tokenizer.GetIntegerVariable()");
             return (integer);
         }
 
@@ -614,13 +614,13 @@ namespace Dartmouth4
             {
                 value += c;
             }
-            Debug.WriteLine("Out GetNumericVariable()");
+            Debug.WriteLine("Out Tokenizer.GetNumericVariable()");
             return (value);
         }
 
         public string GetNumericArrayVariable()
         {
-            Debug.WriteLine("In GetNumericArrayVariable()");
+            Debug.WriteLine("In Tokenizer.GetNumericArrayVariable()");
 
             // Numeric array variables are single digit
 
@@ -633,13 +633,13 @@ namespace Dartmouth4
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
-            Debug.WriteLine("Out GetNumericArrayVariable()");
+            Debug.WriteLine("Out Tokenizer.GetNumericArrayVariable()");
             return (value);
         }
 
         public string GetStringArrayVariable()
         {
-            Debug.WriteLine("In GetStringArrayVariable()");
+            Debug.WriteLine("In Tokenizer.GetStringArrayVariable()");
 
             // String array variables are single digit
 
@@ -652,14 +652,14 @@ namespace Dartmouth4
                 value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
-            Debug.WriteLine("Out GetStringArrayVariable()");
+            Debug.WriteLine("Out Tokenizer.GetStringArrayVariable()");
 
             return (value);
         }
 
         public string GetStringVariable()
         {
-            Debug.WriteLine("In GetStringVariable()");
+            Debug.WriteLine("In Tokenizer.GetStringVariable()");
 
             string value = "";
             char c;
@@ -677,15 +677,15 @@ namespace Dartmouth4
                 value += c;
             }
 
-            Debug.WriteLine("Out GetStringVariable()");
+            Debug.WriteLine("Out Tokenizer.GetStringVariable()");
 
             return (value);
         }
 
         public int GetPosition()
         {
-            Debug.WriteLine("In GetPosition()");
-            Debug.WriteLine("Out GetPosition()");
+            Debug.WriteLine("In Tokenizer.GetPosition()");
+            Debug.WriteLine("Out Tokenizer.GetPosition()");
             return ptr;
         }
 

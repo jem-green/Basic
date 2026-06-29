@@ -139,7 +139,7 @@ namespace Dartmouth3
 
         public void Init(int position)
         {
-            Debug.WriteLine("In Init()");
+            Debug.WriteLine("In Interpreter.Init()");
             program_ptr = position;
             forStackPointer = 0;
             gosubStackPointer = 0;
@@ -151,21 +151,21 @@ namespace Dartmouth3
 
         public void Stop()
         {
-            Debug.WriteLine("In Stop()");
+            Debug.WriteLine("In Interpreter.Stop()");
             ended = true;
-            Debug.WriteLine("Out Stop()");
+            Debug.WriteLine("Out Interpreter.Stop()");
         }
 
         private void IndexFree()
         {
-            Debug.WriteLine("In IndexFree()");
+            Debug.WriteLine("In Interpreter.IndexFree()");
             lineIndex.Clear();
             Trace.TraceInformation("Out IndexFree()");
         }
 
         private int IndexFind(int lineNumber)
         {
-            Debug.WriteLine("In IndexFind()");
+            Debug.WriteLine("In Interpreter.IndexFind()");
             int line = 0;
             LineIndex idx = lineIndex.Find(x => x.LineNumber == lineNumber);
             if (idx.LineNumber == 0)
@@ -184,7 +184,7 @@ namespace Dartmouth3
 
         private void IndexAdd(int lineNumber, int sourcePosition)
         {
-            Debug.WriteLine("In IndexAdd()");
+            Debug.WriteLine("In Interpreter.IndexAdd()");
             LineIndex idx = new LineIndex(lineNumber, sourcePosition);
             lineIndex.Add(idx);
             TraceInternal.TraceVerbose("IndexAdd: Adding index for line " + Convert.ToString(lineNumber) + " @ " + Convert.ToString(sourcePosition));
@@ -193,7 +193,7 @@ namespace Dartmouth3
 
         private void JumpLineNumberSlow(int lineNumber)
         {
-            Debug.WriteLine("In JumpLineNumberSlow()");
+            Debug.WriteLine("In Interpreter.JumpLineNumberSlow()");
             tokenizer.Init(program_ptr);
 
             while (tokenizer.GetInteger() != lineNumber)
@@ -225,7 +225,7 @@ namespace Dartmouth3
         /// <param name="lineNumber"></param>
         private void JumpLineNumber(int lineNumber)
         {
-            Debug.WriteLine("In JumpLineNumber()");
+            Debug.WriteLine("In Interpreter.JumpLineNumber()");
             int pos = IndexFind(lineNumber);
             if (pos > 0)
             {
@@ -244,17 +244,17 @@ namespace Dartmouth3
 
         private string ReadInput()
         {
-            Debug.WriteLine("In ReadInput()");
+            Debug.WriteLine("In Interpreter.ReadInput()");
             string value = _IO.In();
             value = value.TrimEnd('\r');
             value = value.TrimEnd('\n');
-            Debug.WriteLine("In ReadInput()");
+            Debug.WriteLine("In Interpreter.ReadInput()");
             return (value);
         }
 
         private bool ReadData(int position)
         {
-            Debug.WriteLine("In ReadData()");
+            Debug.WriteLine("In Interpreter.ReadData()");
             bool read = false;
             int current_pos = tokenizer.GetPosition();
             bool negative = false;
@@ -393,7 +393,7 @@ namespace Dartmouth3
         /// </summary>
         private void LineStatement()
         {
-            Debug.WriteLine("In LineStatement()");
+            Debug.WriteLine("In Interpreter.LineStatement()");
             currentLineNumber = tokenizer.GetInteger();
             TraceInternal.TraceInformation("----------- Line number " + currentLineNumber + " ---------");
             IndexAdd(currentLineNumber, tokenizer.GetPosition());
@@ -411,7 +411,7 @@ namespace Dartmouth3
             nested++;
             Tokenizer.Token token;
 
-            Debug.WriteLine("In Statement()");
+            Debug.WriteLine("In Interpreter.Statement()");
 
             // Might need to consider a loop here for multilne statements
             // otherwise it will error saying the line number is missing.
@@ -540,7 +540,7 @@ namespace Dartmouth3
         /// </summary>
         private void DataStatement()
         {
-           Debug.WriteLine("In In DataStatement()");
+           Debug.WriteLine("In Interpreter.In DataStatement()");
 
             tokenizer.SkipTokens();
 
@@ -552,7 +552,7 @@ namespace Dartmouth3
         /// </summary>
         private void GotoStatement()
         {
-            Debug.WriteLine("In GotoStatement()");
+            Debug.WriteLine("In Interpreter.GotoStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
             int lineNumber = tokenizer.GetInteger();
             TraceInternal.TraceInformation("GOTO " + lineNumber);
@@ -567,7 +567,7 @@ namespace Dartmouth3
         {
             Tokenizer.Token previous = Tokenizer.Token.TOKENIZER_NULL;
 
-            Debug.WriteLine("In PrintStatement()");
+            Debug.WriteLine("In Interpreter.PrintStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PRINT);
             // Print
             // PRINT "HELLO"{CR}
@@ -705,7 +705,7 @@ namespace Dartmouth3
             // IF A=1 PRINT "a=";a{COLON}GOTO 20{CR}
 
             bool jump = true;
-            Debug.WriteLine("In IfStatement()");
+            Debug.WriteLine("In Interpreter.IfStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_IF);
             TraceInternal.TraceInformation("IF");
             evaluator.Relation();
@@ -758,7 +758,7 @@ namespace Dartmouth3
             // LET A=1{COMMA}B=2{CR}
             // LET A=1{COMMA}B=2:
 
-            Debug.WriteLine("In LetStatement()");
+            Debug.WriteLine("In Interpreter.LetStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LET);
             do
             {
@@ -840,7 +840,7 @@ namespace Dartmouth3
             // ? 10,10 will read in the two values and assign to A and B.
             // this means I need an input buffer that can be parsed.
 
-            Debug.WriteLine("In InputStatement()");
+            Debug.WriteLine("In Interpreter.InputStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INPUT);
 
             do
@@ -963,7 +963,7 @@ namespace Dartmouth3
             // The dim statement can loop through a series of comma separated declarations
             // DIM A(1,1),B(1,2)....{CR}
 
-            Debug.WriteLine("In DimStatement()");
+            Debug.WriteLine("In Interpreter.DimStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DIM);
             do
@@ -1022,7 +1022,7 @@ namespace Dartmouth3
             // The def statement is followed by they function reference and then an expression
             // DEF FN{function}({parameters})={expresion}
 
-            Debug.WriteLine("In DefStatement()");
+            Debug.WriteLine("In Interpreter.DefStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_DEF);
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_FN)
@@ -1067,7 +1067,7 @@ namespace Dartmouth3
         {
             int lineNumber;
 
-            Debug.WriteLine("In GosubStatement()");
+            Debug.WriteLine("In Interpreter.GosubStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
             lineNumber = tokenizer.GetInteger();
@@ -1093,7 +1093,7 @@ namespace Dartmouth3
         /// </summary>
         private void ReturnStatement()
         {
-            Debug.WriteLine("In ReturnStatement()");
+            Debug.WriteLine("In Interpreter.ReturnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RETURN);
             if (gosubStackPointer > 0)
             {
@@ -1112,7 +1112,7 @@ namespace Dartmouth3
         /// </summary>
         private void RemStatement()
         {
-            Debug.WriteLine("In RemStatement");
+            Debug.WriteLine("In Interpreter.RemStatement");
             tokenizer.SkipTokens();
             Trace.TraceInformation("Out RemStatement");
         }
@@ -1123,7 +1123,7 @@ namespace Dartmouth3
         private void NextStatement()
         {
             double var;
-            Debug.WriteLine("In NextStatement()");
+            Debug.WriteLine("In Interpreter.NextStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_NEXT);
             string varName = tokenizer.GetNumericVariable();
@@ -1176,7 +1176,7 @@ namespace Dartmouth3
         {
             double step = 1;
 
-            Debug.WriteLine("In ForStatement()");
+            Debug.WriteLine("In Interpreter.ForStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FOR);
             string varName = tokenizer.GetNumericVariable();
@@ -1262,7 +1262,7 @@ namespace Dartmouth3
         /// </summary>
         private void EndStatement()
         {
-            Debug.WriteLine("In EndStatement()");
+            Debug.WriteLine("In Interpreter.EndStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_END);
             TraceInternal.TraceInformation("END");
             ended = true;
@@ -1274,7 +1274,7 @@ namespace Dartmouth3
         /// </summary>
         private void StopStatement()
         {
-            Debug.WriteLine("In StopStatement()");
+            Debug.WriteLine("In Interpreter.StopStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STOP);
             TraceInternal.TraceInformation("STOP");
             ended = true;
@@ -1297,7 +1297,7 @@ namespace Dartmouth3
             // READ A{COMMA}B{CR}
             // READ A{COMMA}B{COLON}
 
-            Debug.WriteLine("In ReadStatement()");
+            Debug.WriteLine("In Interpreter.ReadStatement()");
 
             do
             {
@@ -1385,7 +1385,7 @@ namespace Dartmouth3
 
         private string FormatNumber(Double number)
         {
-            Debug.WriteLine("In FormatNumber()");
+            Debug.WriteLine("In Interpreter.FormatNumber()");
             char sign = ' ';
 
 
@@ -1449,7 +1449,7 @@ namespace Dartmouth3
         /// </summary>
         public void Run()
         {
-            Debug.WriteLine("In Run()");
+            Debug.WriteLine("In Interpreter.Run()");
             if (tokenizer.IsFinished())
             {
                 TraceInternal.TraceVerbose("Program finished");
@@ -1465,7 +1465,7 @@ namespace Dartmouth3
         /// <returns></returns>
         public bool IsFinished()
         {
-            Debug.WriteLine("In Finished()");
+            Debug.WriteLine("In Interpreter.Finished()");
             bool finished = ended || tokenizer.IsFinished();
             Trace.TraceInformation("Out Finished()");
             return (finished);

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 1988 Jack W. Crenshaw. All rights reserved. 
+// Copyright (C) 1988 Jack W. Crenshaw. All rights reserved. 
 
 using System;
 using System.Collections.Generic;
@@ -48,14 +48,16 @@ namespace Altair
         public FunctionIndex[] functions;
 
         int randomize = 0;
+        private readonly IDefaultIO _IO;
 
         #endregion
         #region Constructors
 
-        public Evaluator(Tokenizer tokenizer)
+        public Evaluator(Tokenizer tokenizer, IDefaultIO io)
         {
             stack = new Stack<object>();
             this.tokenizer = tokenizer;
+            this._IO = io;
             stringVariables = new Hashtable();
             numericVariables = new Hashtable();
             numericArrayVariables = new Hashtable();
@@ -73,9 +75,9 @@ namespace Altair
 
         public void Randomize()
         {
-            Debug.WriteLine("In Randomize()");
+            Debug.WriteLine("In Evaluator.Randomize()");
             randomize = Environment.TickCount;
-            Debug.WriteLine("Out Randomize()");
+            Debug.WriteLine("Out Evaluator.Randomize()");
         }
 
         // <b-expression>  ::= <b-term> [<orop> <b-term>]*
@@ -96,7 +98,7 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Debug.WriteLine("In BinaryExpression()");
+            Debug.WriteLine("In Evaluator.BinaryExpression()");
             BinaryTerm();
 
             op = tokenizer.GetToken();
@@ -121,7 +123,7 @@ namespace Altair
                 op = tokenizer.GetToken();
             }
 
-            Debug.WriteLine("Out BinaryExpression()");
+            Debug.WriteLine("Out Evaluator.BinaryExpression()");
         }
 
         /// <summary>
@@ -131,7 +133,7 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Debug.WriteLine("In BinaryTerm()");
+            Debug.WriteLine("In Evaluator.BinaryTerm()");
             BinaryNotFactor();
 
             op = tokenizer.GetToken();
@@ -151,7 +153,7 @@ namespace Altair
                 op = tokenizer.GetToken();
             }
 
-            Debug.WriteLine("Out BinaryTerm()");
+            Debug.WriteLine("Out Evaluator.BinaryTerm()");
         }
 
         /// <summary>
@@ -162,7 +164,7 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Debug.WriteLine("In BinaryNotFactor()");
+            Debug.WriteLine("In Evaluator.BinaryNotFactor()");
             BinaryFactor();
 
             op = tokenizer.GetToken();
@@ -182,14 +184,14 @@ namespace Altair
                 op = tokenizer.GetToken();
             }
 
-            Debug.WriteLine("Out BinaryNotFactor()");
+            Debug.WriteLine("Out Evaluator.BinaryNotFactor()");
         }
 
         public void BinaryFactor()
         {
-            Debug.WriteLine("In BinaryFactor()");
+            Debug.WriteLine("In Evaluator.BinaryFactor()");
             Relation();
-            Debug.WriteLine("Out BinaryFactor()");
+            Debug.WriteLine("Out Evaluator.BinaryFactor()");
 
         }
 
@@ -201,7 +203,7 @@ namespace Altair
         {
             Tokenizer.Token op;
 
-            Debug.WriteLine("In Relation()");
+            Debug.WriteLine("In Evaluator.Relation()");
             Expression();
             op = tokenizer.GetToken();
 
@@ -265,7 +267,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Relation()");
+            Debug.WriteLine("Out Evaluator.Relation()");
         }
 
         /// <summary>
@@ -274,7 +276,7 @@ namespace Altair
         public void Expression()
         {
             Tokenizer.Token op;
-            Debug.WriteLine("In Expression()");
+            Debug.WriteLine("In Evaluator.Expression()");
 
             // check if negative number
 
@@ -310,7 +312,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Expression()");
+            Debug.WriteLine("Out Evaluator.Expression()");
         }
 
         /// <summary>
@@ -319,7 +321,7 @@ namespace Altair
         /// <returns></returns>
         private void Term()
         {
-            Debug.WriteLine("In Term()");
+            Debug.WriteLine("In Evaluator.Term()");
             Tokenizer.Token op;
 
             TraceInternal.TraceVerbose("Term: token " + tokenizer.GetToken());
@@ -348,7 +350,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Term()");
+            Debug.WriteLine("Out Evaluator.Term()");
         }
 
         /// <summary>
@@ -358,7 +360,7 @@ namespace Altair
         private void Exponent()
         {
             Tokenizer.Token op;
-            Debug.WriteLine("In Exponent()");
+            Debug.WriteLine("In Evaluator.Exponent()");
 
             TraceInternal.TraceVerbose("Exponent: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
@@ -404,7 +406,7 @@ namespace Altair
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Exponent()");
+            Debug.WriteLine("Out Evaluator.Exponent()");
         }
 
         /// <summary>
@@ -417,7 +419,7 @@ namespace Altair
             FunctionIndex function;
             int num;
 
-            Debug.WriteLine("In Factor()");
+            Debug.WriteLine("In Evaluator.Factor()");
 
             TraceInternal.TraceVerbose("Factor: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
@@ -656,6 +658,48 @@ namespace Altair
                         Str();
                         break;
                     }
+                case Tokenizer.Token.TOKENIZER_POS:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_POS);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        stack.Pop();
+                        stack.Push((double)_IO.CursorLeft);
+                        break;
+                    }
+                case Tokenizer.Token.TOKENIZER_USR:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_USR);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("USR");
+                    }
+                case Tokenizer.Token.TOKENIZER_FRE:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FRE);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("FRE");
+                    }
+                case Tokenizer.Token.TOKENIZER_INP:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INP);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("INP");
+                    }
+                case Tokenizer.Token.TOKENIZER_PEEK:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PEEK);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("PEEK");
+                    }
                 case Tokenizer.Token.TOKENIZER_NUMBER:
                     {
                         f = tokenizer.GetNumber();
@@ -779,7 +823,7 @@ namespace Altair
                         break;
                     }
             }
-            Debug.WriteLine("Out Factor()");
+            Debug.WriteLine("Out Evaluator.Factor()");
         }
 
         #region functions
@@ -790,7 +834,7 @@ namespace Altair
         {
             object first;
             double number;
-            Debug.WriteLine("In SquareRoot()");
+            Debug.WriteLine("In Evaluator.SquareRoot()");
 
             if (stack.Count > 0)
             {
@@ -814,7 +858,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out SquareRoot()");
+            Debug.WriteLine("Out Evaluator.SquareRoot()");
         }
 
         //---------------------------------------------------------------}
@@ -825,7 +869,7 @@ namespace Altair
 
             object first;
             double number;
-            Debug.WriteLine("In Abs()");
+            Debug.WriteLine("In Evaluator.Abs()");
 
             if (stack.Count > 0)
             {
@@ -842,7 +886,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Abs()");
+            Debug.WriteLine("Out Evaluator.Abs()");
         }
 
         //---------------------------------------------------------------}
@@ -853,7 +897,7 @@ namespace Altair
 
             object first;
             double number;
-            Debug.WriteLine("In Int()");
+            Debug.WriteLine("In Evaluator.Int()");
 
             if (stack.Count > 0)
             {
@@ -871,7 +915,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Int()");
+            Debug.WriteLine("Out Evaluator.Int()");
         }
 
         //---------------------------------------------------------------}
@@ -880,7 +924,7 @@ namespace Altair
         {
             object first;
             double number;
-            Debug.WriteLine("In Rnd()");
+            Debug.WriteLine("In Evaluator.Rnd()");
 
             if (stack.Count > 0)
             {
@@ -903,7 +947,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Rnd()");
+            Debug.WriteLine("Out Evaluator.Rnd()");
         }
 
         //---------------------------------------------------------------}
@@ -911,7 +955,7 @@ namespace Altair
         private void Sgn()
         {
             object first;
-            Debug.WriteLine("In Sgn()");
+            Debug.WriteLine("In Evaluator.Sgn()");
 
             if (stack.Count > 0)
             {
@@ -929,7 +973,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Sgn()");
+            Debug.WriteLine("Out Evaluator.Sgn()");
         }
 
         //---------------------------------------------------------------}
@@ -937,7 +981,7 @@ namespace Altair
         private void Sin()
         {
             object first;
-            Debug.WriteLine("In Sin()");
+            Debug.WriteLine("In Evaluator.Sin()");
 
             if (stack.Count > 0)
             {
@@ -952,7 +996,7 @@ namespace Altair
                     stack.Push(Math.Sin((double)first));
                 }
             }
-            Debug.WriteLine("Out Sin()");
+            Debug.WriteLine("Out Evaluator.Sin()");
         }
 
         //---------------------------------------------------------------}
@@ -960,7 +1004,7 @@ namespace Altair
         private void Cos()
         {
             object first;
-            Debug.WriteLine("In Cos()");
+            Debug.WriteLine("In Evaluator.Cos()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
@@ -974,7 +1018,7 @@ namespace Altair
                     stack.Push(Math.Cos((double)first));
                 }
             }
-            Debug.WriteLine("Out Cos()");
+            Debug.WriteLine("Out Evaluator.Cos()");
         }
 
         //---------------------------------------------------------------}
@@ -982,7 +1026,7 @@ namespace Altair
         private void Tan()
         {
             object first;
-            Debug.WriteLine("In Tan()");
+            Debug.WriteLine("In Evaluator.Tan()");
 
             if (stack.Count > 0)
             {
@@ -997,7 +1041,7 @@ namespace Altair
                     stack.Push(Math.Tan((double)first));
                 }
             }
-            Debug.WriteLine("Out Tan()");
+            Debug.WriteLine("Out Evaluator.Tan()");
         }
 
         //---------------------------------------------------------------}
@@ -1005,7 +1049,7 @@ namespace Altair
         private void Atn()
         {
             object first;
-            Debug.WriteLine("In Atn()");
+            Debug.WriteLine("In Evaluator.Atn()");
 
             if (stack.Count > 0)
             {
@@ -1020,7 +1064,7 @@ namespace Altair
                     stack.Push(Math.Atan((double)first));
                 }
             }
-            Debug.WriteLine("Out Atn()");
+            Debug.WriteLine("Out Evaluator.Atn()");
         }
 
         //---------------------------------------------------------------}
@@ -1028,7 +1072,7 @@ namespace Altair
         private void Exp()
         {
             object first;
-            Debug.WriteLine("In Exp()");
+            Debug.WriteLine("In Evaluator.Exp()");
 
             if (stack.Count > 0)
             {
@@ -1043,7 +1087,7 @@ namespace Altair
                     stack.Push(Math.Exp((double)first));
                 }
             }
-            Debug.WriteLine("Out Exp()");
+            Debug.WriteLine("Out Evaluator.Exp()");
         }
 
         //---------------------------------------------------------------}
@@ -1051,7 +1095,7 @@ namespace Altair
         private void Log()
         {
             object first;
-            Debug.WriteLine("In Log()");
+            Debug.WriteLine("In Evaluator.Log()");
 
             if (stack.Count > 0)
             {
@@ -1066,7 +1110,7 @@ namespace Altair
                     stack.Push(Math.Log((double)first));
                 }
             }
-            Debug.WriteLine("Out Log()");
+            Debug.WriteLine("Out Evaluator.Log()");
         }
 
         //---------------------------------------------------------------}
@@ -1075,7 +1119,7 @@ namespace Altair
         {
             object first;
             double number = 0;
-            Debug.WriteLine("In Asc()");
+            Debug.WriteLine("In Evaluator.Asc()");
 
             if (stack.Count > 0)
             {
@@ -1096,7 +1140,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Asc()");
+            Debug.WriteLine("Out Evaluator.Asc()");
         }
 
         //---------------------------------------------------------------}
@@ -1105,7 +1149,7 @@ namespace Altair
         {
             object first;
             string text = "";
-            Debug.WriteLine("In Chr()");
+            Debug.WriteLine("In Evaluator.Chr()");
 
             if (stack.Count > 0)
             {
@@ -1127,7 +1171,7 @@ namespace Altair
                     stack.Push(text);
                 }
             }
-            Debug.WriteLine("Out Chr()");
+            Debug.WriteLine("Out Evaluator.Chr()");
         }
 
         //---------------------------------------------------------------}
@@ -1135,7 +1179,7 @@ namespace Altair
         private void Len()
         {
             object first;
-            Debug.WriteLine("In Len()");
+            Debug.WriteLine("In Evaluator.Len()");
 
             if (stack.Count > 0)
             {
@@ -1154,7 +1198,7 @@ namespace Altair
 
                 }
             }
-            Debug.WriteLine("Out Len()");
+            Debug.WriteLine("Out Evaluator.Len()");
         }
 
         //---------------------------------------------------------------}
@@ -1163,7 +1207,7 @@ namespace Altair
         {
             object first;
             string value = "";
-            Debug.WriteLine("In Str()");
+            Debug.WriteLine("In Evaluator.Str()");
 
             if (stack.Count > 0)
             {
@@ -1183,7 +1227,7 @@ namespace Altair
                     Expected("double");
                 }
             }
-            Debug.WriteLine("Out Str()");
+            Debug.WriteLine("Out Evaluator.Str()");
         }
 
         //---------------------------------------------------------------}
@@ -1192,7 +1236,7 @@ namespace Altair
         {
             object first;
             double number = 0;
-            Debug.WriteLine("In Val()");
+            Debug.WriteLine("In Evaluator.Val()");
 
             if (stack.Count > 0)
             {
@@ -1213,7 +1257,7 @@ namespace Altair
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Val()");
+            Debug.WriteLine("Out Evaluator.Val()");
         }
 
         //---------------------------------------------------------------}
@@ -1228,7 +1272,7 @@ namespace Altair
             string value;
             int length;
 
-            Debug.WriteLine("In Left()");
+            Debug.WriteLine("In Evaluator.Left()");
 
             if (stack.Count > 1)
             {
@@ -1272,7 +1316,7 @@ namespace Altair
                     Expected("double");
                 }
             }
-            Debug.WriteLine("Out Left()");
+            Debug.WriteLine("Out Evaluator.Left()");
         }
 
         //---------------------------------------------------------------}
@@ -1286,7 +1330,7 @@ namespace Altair
             object second;
             string value;
             int length;
-            Debug.WriteLine("In Right()");
+            Debug.WriteLine("In Evaluator.Right()");
 
             if (stack.Count > 1)
             {
@@ -1330,7 +1374,7 @@ namespace Altair
                     Expected("double");
                 }
             }
-            Debug.WriteLine("Out Right()");
+            Debug.WriteLine("Out Evaluator.Right()");
         }
 
         //---------------------------------------------------------------}
@@ -1348,7 +1392,7 @@ namespace Altair
             int length;
             int number;
 
-            Debug.WriteLine("In Mid()");
+            Debug.WriteLine("In Evaluator.Mid()");
 
             if (parameters == 2)
             {
@@ -1466,7 +1510,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Mid()");
+            Debug.WriteLine("Out Evaluator.Mid()");
         }
 
         #endregion functions
@@ -1480,7 +1524,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Debug.WriteLine("In Less()");
+			Debug.WriteLine("In Evaluator.Less()");
 			
             if (stack.Count > 1)
             {
@@ -1534,7 +1578,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out Less()");
+			Debug.WriteLine("Out Evaluator.Less()");
         }
 
         //---------------------------------------------------------------}
@@ -1545,7 +1589,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Debug.WriteLine("In LessEqual()");
+			Debug.WriteLine("In Evaluator.LessEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1599,7 +1643,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out LessEqual()");
+			Debug.WriteLine("Out Evaluator.LessEqual()");
         }
 
         //---------------------------------------------------------------}
@@ -1610,7 +1654,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Debug.WriteLine("In Greater()");
+			Debug.WriteLine("In Evaluator.Greater()");
 			
             if (stack.Count > 1)
             {
@@ -1669,7 +1713,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out Greater()");
+			Debug.WriteLine("Out Evaluator.Greater()");
         }
 
         //---------------------------------------------------------------}
@@ -1680,7 +1724,7 @@ namespace Altair
             object second;
             int compare;
 			
-			Debug.WriteLine("In GreaterEqual()");
+			Debug.WriteLine("In Evaluator.GreaterEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1734,7 +1778,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out GreaterEqual()");
+			Debug.WriteLine("Out Evaluator.GreaterEqual()");
         }
 
         //---------------------------------------------------------------}
@@ -1744,7 +1788,7 @@ namespace Altair
             object first;
             object second;
 			
-			Debug.WriteLine("In Equal()");
+			Debug.WriteLine("In Evaluator.Equal()");
 			
             if (stack.Count > 1)
             {
@@ -1789,7 +1833,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out Equal()");
+			Debug.WriteLine("Out Evaluator.Equal()");
         }
 
         //---------------------------------------------------------------}
@@ -1799,7 +1843,7 @@ namespace Altair
             object first;
             object second;
 			
-			Debug.WriteLine("In NotEqual()");
+			Debug.WriteLine("In Evaluator.NotEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1844,7 +1888,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out NotEqual()");
+			Debug.WriteLine("Out Evaluator.NotEqual()");
         }
 
         #endregion
@@ -1858,7 +1902,7 @@ namespace Altair
             object first;
             Boolean value = false;
 			
-			Debug.WriteLine("In PopBoolean()");
+			Debug.WriteLine("In Evaluator.PopBoolean()");
 
             if (stack.Count > 0)
             {
@@ -1874,7 +1918,7 @@ namespace Altair
                 }
 				TraceInternal.TraceVerbose("PopBoolean: " + value);
             }
-            Debug.WriteLine("Out PopBoolean()");
+            Debug.WriteLine("Out Evaluator.PopBoolean()");
             return (value);
         }
 
@@ -1886,7 +1930,7 @@ namespace Altair
             object first;
             Double number = 0;
 			
-			Debug.WriteLine("In PopDouble()");
+			Debug.WriteLine("In Evaluator.PopDouble()");
 
             if (stack.Count > 0)
             {
@@ -1902,7 +1946,7 @@ namespace Altair
                 }
 				TraceInternal.TraceVerbose("PopDouble: " + number);
             }
-            Debug.WriteLine("Out PopDouble()");
+            Debug.WriteLine("Out Evaluator.PopDouble()");
             return (number);
         }
 
@@ -1914,7 +1958,7 @@ namespace Altair
             object first;
             int integer = 0;
 			
-			Debug.WriteLine("In PopInteger()");
+			Debug.WriteLine("In Evaluator.PopInteger()");
 
             if (stack.Count > 0)
             {
@@ -1930,7 +1974,7 @@ namespace Altair
                 }
 				TraceInternal.TraceVerbose("PopInteger: " + integer);
             }
-			Debug.WriteLine("Out PopInteger()");
+			Debug.WriteLine("Out Evaluator.PopInteger()");
             return (integer);
         }
 
@@ -1942,7 +1986,7 @@ namespace Altair
             object first;
             string value = "";
 			
-			Debug.WriteLine("In PopString()");
+			Debug.WriteLine("In Evaluator.PopString()");
 
             if (stack.Count > 0)
             {
@@ -1958,7 +2002,7 @@ namespace Altair
                 }
 				TraceInternal.TraceVerbose("PopString: " + value);
             }
-            Debug.WriteLine("Out PopString()");
+            Debug.WriteLine("Out Evaluator.PopString()");
             return (value);
         }
 
@@ -1967,13 +2011,13 @@ namespace Altair
         public object PopObject()
         {
             object first = null;
-			Debug.WriteLine("In PopObject()");
+			Debug.WriteLine("In Evaluator.PopObject()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
 				TraceInternal.TraceVerbose("PopObject: " + first.ToString());
             }
-			Debug.WriteLine("Out PopObject()");
+			Debug.WriteLine("Out Evaluator.PopObject()");
             return (first);
         }
 
@@ -1989,7 +2033,7 @@ namespace Altair
             double number;
             string value;
 			
-			Debug.WriteLine("In Add()");
+			Debug.WriteLine("In Evaluator.Add()");
 
             if (stack.Count > 1)
             {
@@ -2031,7 +2075,7 @@ namespace Altair
                     }
                 }
             }
-			Debug.WriteLine("Out Add()");
+			Debug.WriteLine("Out Evaluator.Add()");
         }
 
         //---------------------------------------------------------------}
@@ -2042,7 +2086,7 @@ namespace Altair
             object second;
             double number;
 
-            Debug.WriteLine("In Subtract()");
+            Debug.WriteLine("In Evaluator.Subtract()");
 
             if (stack.Count > 1)
             {
@@ -2071,7 +2115,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Subtract()");
+            Debug.WriteLine("Out Evaluator.Subtract()");
         }
 
         //---------------------------------------------------------------}
@@ -2082,7 +2126,7 @@ namespace Altair
             object second;
             double numeric;
 
-            Debug.WriteLine("In Multiply()");
+            Debug.WriteLine("In Evaluator.Multiply()");
 
             if (stack.Count > 1)
             {
@@ -2111,7 +2155,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Multiply()");
+            Debug.WriteLine("Out Evaluator.Multiply()");
         }
 
         //---------------------------------------------------------------}
@@ -2122,7 +2166,7 @@ namespace Altair
             object second;
             double number;
 
-            Debug.WriteLine("In Divide()");
+            Debug.WriteLine("In Evaluator.Divide()");
 
             if (stack.Count > 1)
             {
@@ -2151,7 +2195,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Divide()");
+            Debug.WriteLine("Out Evaluator.Divide()");
         }
 
         //---------------------------------------------------------------} 
@@ -2160,7 +2204,7 @@ namespace Altair
         {
             object first;
 
-            Debug.WriteLine("In Not()");
+            Debug.WriteLine("In Evaluator.Not()");
 
             if (stack.Count > 0)
             {
@@ -2175,7 +2219,7 @@ namespace Altair
                     stack.Push(!(bool)first);
                 }
             }
-            Debug.WriteLine("Out Not()");
+            Debug.WriteLine("Out Evaluator.Not()");
         }
 
         //---------------------------------------------------------------} 
@@ -2185,7 +2229,7 @@ namespace Altair
             object first;
             object second;
 
-            Debug.WriteLine("In And()");
+            Debug.WriteLine("In Evaluator.And()");
 
             if (stack.Count > 1)
             {
@@ -2212,7 +2256,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out And()");
+            Debug.WriteLine("Out Evaluator.And()");
         }
 
         //---------------------------------------------------------------} 
@@ -2222,7 +2266,7 @@ namespace Altair
             object first;
             object second;
 
-            Debug.WriteLine("In Or()");
+            Debug.WriteLine("In Evaluator.Or()");
 
             if (stack.Count > 1)
             {
@@ -2249,7 +2293,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Or()");
+            Debug.WriteLine("Out Evaluator.Or()");
         }
 
         //---------------------------------------------------------------} 
@@ -2259,7 +2303,7 @@ namespace Altair
             object first;
             object second;
 
-            Debug.WriteLine("In Xor()");
+            Debug.WriteLine("In Evaluator.Xor()");
 
             if (stack.Count > 1)
             {
@@ -2286,7 +2330,7 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Xor()");
+            Debug.WriteLine("Out Evaluator.Xor()");
         }
 
         //---------------------------------------------------------------}
@@ -2297,7 +2341,7 @@ namespace Altair
             object second;
             double number;
 
-            Debug.WriteLine("In Power()");
+            Debug.WriteLine("In Evaluator.Power()");
 
             if (stack.Count > 1)
             {
@@ -2326,14 +2370,14 @@ namespace Altair
                     }
                 }
             }
-            Debug.WriteLine("Out Power()");
+            Debug.WriteLine("Out Evaluator.Power()");
         }
 
         #endregion operators
 
         public int GetIntVariable(int varnum)
         {
-            Debug.WriteLine("In GetIntVariable()");
+            Debug.WriteLine("In Evaluator.GetIntVariable()");
             int integer;
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
@@ -2344,13 +2388,13 @@ namespace Altair
                 integer = 0;
             }
             TraceInternal.TraceVerbose("varNum" + varnum + " integer=" + integer);
-            Debug.WriteLine("Out GetIntVariable()");
+            Debug.WriteLine("Out Evaluator.GetIntVariable()");
             return (integer);
         }
 
         public string GetStringVariable(string varName)
         {
-            Debug.WriteLine("In GetStringVariable()");
+            Debug.WriteLine("In Evaluator.GetStringVariable()");
 
             // Not sure what happens if the variable doesnt exit
             // think this should error but wonder what the specification says
@@ -2365,14 +2409,14 @@ namespace Altair
                 value = "";
             }
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("Out GetStringVariable()");
+            Debug.WriteLine("Out Evaluator.GetStringVariable()");
             return (value);
         }
 
         public double GetNumericVariable(string varName)
         {
             double number;
-            Debug.WriteLine("In GetNumericVariable()");
+            Debug.WriteLine("In Evaluator.GetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 number = (double)numericVariables[varName];
@@ -2382,13 +2426,13 @@ namespace Altair
                 number = 0;
             }
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out GetNumericVariable()");
+            Debug.WriteLine("Out Evaluator.GetNumericVariable()");
             return (number);
         }
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            Debug.WriteLine("In GetNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetNumericArrayVariable()");
 
             BasicLibrary.Array data;
             double number;
@@ -2402,13 +2446,13 @@ namespace Altair
                 number = 0;
             }
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out GetNumericArrayVariable()");
+            Debug.WriteLine("Out Evaluator.GetNumericArrayVariable()");
             return (number);
         }
 
         public string GetStringArrayVariable(string varName, int positions, int[] position)
         {
-            Debug.WriteLine("In GetStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetStringArrayVariable()");
 
             BasicLibrary.Array data;
             string value;
@@ -2422,13 +2466,13 @@ namespace Altair
                 value = "";
             }
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("In GetStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetStringArrayVariable()");
             return (value);
         }
 
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Debug.WriteLine("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareNumericArrayVariable()");
             BasicLibrary.Array data;
             if (numericArrayVariables.ContainsKey(varName))
             {
@@ -2436,12 +2480,12 @@ namespace Altair
             }
             data = new BasicLibrary.Array(varName, dimensions, dimension,(double)0);
             numericArrayVariables.Add(varName, data);
-            Debug.WriteLine("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareNumericArrayVariable()");
         }
 
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Debug.WriteLine("In DeclareStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareStringArrayVariable()");
             BasicLibrary.Array data;
             if (stringArrayVariables.ContainsKey(varName))
             {
@@ -2449,51 +2493,51 @@ namespace Altair
             }
             data = new BasicLibrary.Array(varName, dimensions, dimension, (string)"");
             stringArrayVariables.Add(varName, data);
-            Debug.WriteLine("Out DeclareStringArrayVariable()");
+            Debug.WriteLine("Out Evaluator.DeclareStringArrayVariable()");
         }
 
         public void SetIntVariable(int varnum, int integer)
         {
-            Debug.WriteLine("In SetIntVariable()");
+            Debug.WriteLine("In Evaluator.SetIntVariable()");
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
                 variables[varnum] = integer;
             }
             TraceInternal.TraceVerbose("varNum=" + varnum + " integer=" + integer);
-            Debug.WriteLine("Out SetIntVariable()");
+            Debug.WriteLine("Out Evaluator.SetIntVariable()");
         }
 
         public void SetStringVariable(string varName, string value)
         {
-            Debug.WriteLine("In SetStringVariable()");
+            Debug.WriteLine("In Evaluator.SetStringVariable()");
             if (stringVariables.ContainsKey(varName))
             {
                 stringVariables.Remove(varName);
             }
             stringVariables.Add(varName, value);
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("Out SetStringVariable()");
+            Debug.WriteLine("Out Evaluator.SetStringVariable()");
         }
 
         public void SetNumericVariable(string varName, double number)
         {
-            Debug.WriteLine("In SetNumericVariable()");
+            Debug.WriteLine("In Evaluator.SetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 numericVariables.Remove(varName);
             }
             numericVariables.Add(varName, number);
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out SetNumericVariable()");
+            Debug.WriteLine("Out Evaluator.SetNumericVariable()");
         }
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
-            Debug.WriteLine("In SetNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.SetNumericArrayVariable()");
             BasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
-                // it apperas that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
+                // it appears that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
                 int[] dimension = new int[2];
                 dimension[1] = 10;
                 DeclareNumericArrayVariable(varName, positions, dimension);
@@ -2502,16 +2546,16 @@ namespace Altair
             data.Set(position, number);
         
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out SetNumericArrayVariable()");
+            Debug.WriteLine("Out Evaluator.SetNumericArrayVariable()");
         }
 
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
-            Debug.WriteLine("In SetStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.SetStringArrayVariable()");
             BasicLibrary.Array data;
             if (!stringArrayVariables.ContainsKey(varName))
             {
-                // it apperas that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
+                // it appears that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
                 int[] dimension = new int[2];
                 dimension[1] = 10;
                 DeclareStringArrayVariable(varName, positions, dimension);
@@ -2520,7 +2564,7 @@ namespace Altair
             data.Set(position, value);
 
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("Out SetStringArrayVariable()");
+            Debug.WriteLine("Out Evaluator.SetStringArrayVariable()");
         }
 
         #endregion

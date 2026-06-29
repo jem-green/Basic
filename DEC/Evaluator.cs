@@ -8,7 +8,7 @@ using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace MicroSoft
+namespace DEC
 {
     public class Evaluator
     {
@@ -48,14 +48,16 @@ namespace MicroSoft
         public FunctionIndex[] functions;
 
         int randomize = 0;
+        private readonly IDefaultIO _IO;
 
         #endregion
         #region Constructors
 
-        public Evaluator(Tokenizer tokenizer)
+        public Evaluator(Tokenizer tokenizer, IDefaultIO io)
         {
             stack = new Stack<object>();
             this.tokenizer = tokenizer;
+            this._IO = io;
             stringVariables = new Hashtable();
             numericVariables = new Hashtable();
             numericArrayVariables = new Hashtable();
@@ -532,6 +534,15 @@ namespace MicroSoft
                         Rnd();
                         break;
                     }
+                case Tokenizer.Token.TOKENIZER_SGN:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_SGN);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        Sgn();
+                        break;
+                    }
                 case Tokenizer.Token.TOKENIZER_SIN:
                     {
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_SIN);
@@ -613,7 +624,7 @@ namespace MicroSoft
                     }
                 case Tokenizer.Token.TOKENIZER_VAL:
                     {
-                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ASC);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_VAL);
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
                         BinaryExpression();
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
@@ -646,6 +657,48 @@ namespace MicroSoft
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                         Str();
                         break;
+                    }
+                case Tokenizer.Token.TOKENIZER_POS:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_POS);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        stack.Pop();
+                        stack.Push((double)_IO.CursorLeft);
+                        break;
+                    }
+                case Tokenizer.Token.TOKENIZER_USR:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_USR);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("USR");
+                    }
+                case Tokenizer.Token.TOKENIZER_FRE:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_FRE);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("FRE");
+                    }
+                case Tokenizer.Token.TOKENIZER_INP:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INP);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("INP");
+                    }
+                case Tokenizer.Token.TOKENIZER_PEEK:
+                    {
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_PEEK);
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_LEFTPAREN);
+                        BinaryExpression();
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
+                        throw new NotImplementedException("PEEK");
                     }
                 case Tokenizer.Token.TOKENIZER_NUMBER:
                     {
@@ -733,7 +786,7 @@ namespace MicroSoft
                         int numeric;
                         int dimension = 0;
                         int[] dimensions = new int[10];
-                        varName = tokenizer.GetNumericArrayVariable();
+                        varName = tokenizer.GetStringArrayVariable();
 
                         dimensions[0] = 0;
                         tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);
@@ -895,6 +948,32 @@ namespace MicroSoft
                 }
             }
             Debug.WriteLine("Out Evaluator.Rnd()");
+        }
+
+        //---------------------------------------------------------------}
+        // SGN Top of Stack with Primary
+        private void Sgn()
+        {
+            object first;
+            Debug.WriteLine("In Evaluator.Sgn()");
+
+            if (stack.Count > 0)
+            {
+                first = stack.Pop();
+                if (first.GetType() == typeof(string))
+                {
+                    // only expecting an integer or double
+                    Expected("double");
+                }
+                else
+                {
+                    double number = Math.Sign((double)first);                
+                    TraceInternal.TraceInformation("SGN(\"" + first + "\")");
+                    TraceInternal.TraceVerbose("Sgn: '" + number + "'");
+                    stack.Push(number);
+                }
+            }
+            Debug.WriteLine("Out Evaluator.Sgn()");
         }
 
         //---------------------------------------------------------------}
@@ -2155,7 +2234,7 @@ namespace MicroSoft
             if (stack.Count > 1)
             {
                 first = stack.Pop();
-                if (first.GetType() != typeof(bool))
+                if (first.GetType() != typeof(Boolean))
                 {
                     // only expecting a boolean
                     Expected("boolean");
@@ -2165,14 +2244,14 @@ namespace MicroSoft
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() != typeof(bool))
+                        if (second.GetType() != typeof(Boolean))
                         {
                             // only expecting a boolean
                             Expected("boolean");
                         }
                         else
                         {
-                            stack.Push((bool)first && (bool)second);
+                            stack.Push((Boolean)first && (Boolean)second);
                         }
                     }
                 }
@@ -2192,7 +2271,7 @@ namespace MicroSoft
             if (stack.Count > 1)
             {
                 first = stack.Pop();
-                if (first.GetType() != typeof(bool))
+                if (first.GetType() != typeof(Boolean))
                 {
                     // only expecting a boolean
                     Expected("boolean");
@@ -2202,14 +2281,14 @@ namespace MicroSoft
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() != typeof(bool))
+                        if (second.GetType() != typeof(Boolean))
                         {
                             // only expecting a boolean
                             Expected("boolean");
                         }
                         else
                         {
-                            stack.Push((bool)first || (bool)second);
+                            stack.Push((Boolean)first || (Boolean)second);
                         }
                     }
                 }
@@ -2229,7 +2308,7 @@ namespace MicroSoft
             if (stack.Count > 1)
             {
                 first = stack.Pop();
-                if (first.GetType() != typeof(bool))
+                if (first.GetType() != typeof(Boolean))
                 {
                     // only expecting a boolean
                     Expected("boolean");
@@ -2239,14 +2318,14 @@ namespace MicroSoft
                     if (stack.Count > 0)
                     {
                         second = stack.Pop();
-                        if (second.GetType() != typeof(bool))
+                        if (second.GetType() != typeof(Boolean))
                         {
                             // only expecting a boolean
                             Expected("boolean");
                         }
                         else
                         {
-                            stack.Push((bool)first || (bool)second);
+                            stack.Push((Boolean)first || (Boolean)second);
                         }
                     }
                 }
@@ -2458,9 +2537,9 @@ namespace MicroSoft
             BasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
-                // it apperas that if no DIM then defaults to 10 items
-                int[] dimension = new int[10];
-                dimension[0] = 1;
+                // it appears that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
+                int[] dimension = new int[2];
+                dimension[1] = 10;
                 DeclareNumericArrayVariable(varName, positions, dimension);
             }
             data = (BasicLibrary.Array)numericArrayVariables[varName];
@@ -2476,9 +2555,9 @@ namespace MicroSoft
             BasicLibrary.Array data;
             if (!stringArrayVariables.ContainsKey(varName))
             {
-                // it apperas that if no DIM then defaults to 10 items
-                int[] dimension = new int[10];
-                dimension[0] = 1;
+                // it appears that if no DIM then defaults to 1 dimension, and 11 elements (0-10)
+                int[] dimension = new int[2];
+                dimension[1] = 10;
                 DeclareStringArrayVariable(varName, positions, dimension);
             }
             data = (BasicLibrary.Array)stringArrayVariables[varName];

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicConsole", "BasicConsole\BasicConsole.csproj", "{5B071C05-CEC0-439D-A581-78113AC31366}"
 EndProject
@@ -63,6 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manuals", "Manuals", "{02EA
 		Manuals\MITS_AltairBASIC_1975.pdf = Manuals\MITS_AltairBASIC_1975.pdf
 		Manuals\MITS_AltairBasic_1975_Aug75.pdf = Manuals\MITS_AltairBasic_1975_Aug75.pdf
 		Manuals\MITS_AltairBASIC_1975_text.pdf = Manuals\MITS_AltairBASIC_1975_text.pdf
+		Manuals\MITS_AltairBASIC_1975_text.txt = Manuals\MITS_AltairBASIC_1975_text.txt
 		Manuals\MITS_GettingStarted.pdf = Manuals\MITS_GettingStarted.pdf
 		Manuals\MITS_Introduction_1975.pdf = Manuals\MITS_Introduction_1975.pdf
 	EndProjectSection
@@ -71,6 +72,90 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net6.0", "Net6.0", "{8D54D4
 	ProjectSection(SolutionItems) = preProject
 		ThirdParty\Tracer\net6.0\TracerLibrary.dll = ThirdParty\Tracer\net6.0\TracerLibrary.dll
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FC5E328D-268C-49CA-842A-2CF1491CFF61}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\and.bas = Tests\and.bas
+		Tests\case.bas = Tests\case.bas
+		Tests\compound.bas = Tests\compound.bas
+		Tests\def.bas = Tests\def.bas
+		Tests\dim.bas = Tests\dim.bas
+		Tests\dim_0.bas = Tests\dim_0.bas
+		Tests\dim_1.bas = Tests\dim_1.bas
+		Tests\dim_2.bas = Tests\dim_2.bas
+		Tests\dim_3.bas = Tests\dim_3.bas
+		Tests\dim_4.bas = Tests\dim_4.bas
+		Tests\dim_5.bas = Tests\dim_5.bas
+		Tests\dim_6.bas = Tests\dim_6.bas
+		Tests\fornext.bas = Tests\fornext.bas
+		Tests\fornext_single.bas = Tests\fornext_single.bas
+		Tests\for_next_goto.bas = Tests\for_next_goto.bas
+		Tests\gosub.bas = Tests\gosub.bas
+		Tests\gosub_inline.bas = Tests\gosub_inline.bas
+		Tests\goto.bas = Tests\goto.bas
+		Tests\if.bas = Tests\if.bas
+		Tests\input.bas = Tests\input.bas
+		Tests\jan68_page3.bas = Tests\jan68_page3.bas
+		Tests\jan68_page64.bas = Tests\jan68_page64.bas
+		Tests\jan68_page65.bas = Tests\jan68_page65.bas
+		Tests\jan68_page66.bas = Tests\jan68_page66.bas
+		Tests\jan68_page66a.bas = Tests\jan68_page66a.bas
+		Tests\let.bas = Tests\let.bas
+		Tests\logic.bas = Tests\logic.bas
+		Tests\nolet.bas = Tests\nolet.bas
+		Tests\numbers.bas = Tests\numbers.bas
+		Tests\oct64_page12.bas = Tests\oct64_page12.bas
+		Tests\oct64_page13.bas = Tests\oct64_page13.bas
+		Tests\oct64_page3.bas = Tests\oct64_page3.bas
+		Tests\oct64_page32.bas = Tests\oct64_page32.bas
+		Tests\oct64_page33.bas = Tests\oct64_page33.bas
+		Tests\oct64_page35.bas = Tests\oct64_page35.bas
+		Tests\oct64_page37.bas = Tests\oct64_page37.bas
+		Tests\oct64_page40a.bas = Tests\oct64_page40a.bas
+		Tests\oct64_page40b.bas = Tests\oct64_page40b.bas
+		Tests\oct64_page42b.bas = Tests\oct64_page42b.bas
+		Tests\oct64_page44.bas = Tests\oct64_page44.bas
+		Tests\oct64_page46.bas = Tests\oct64_page46.bas
+		Tests\oct64_page47a.bas = Tests\oct64_page47a.bas
+		Tests\oct64_page47a1.bas = Tests\oct64_page47a1.bas
+		Tests\oct64_page47b.bas = Tests\oct64_page47b.bas
+		Tests\oct75_page11.bas = Tests\oct75_page11.bas
+		Tests\oct75_page15.bas = Tests\oct75_page15.bas
+		Tests\oct75_page15a.bas = Tests\oct75_page15a.bas
+		Tests\oct75_page18.bas = Tests\oct75_page18.bas
+		Tests\oct75_page18a.bas = Tests\oct75_page18a.bas
+		Tests\oct75_page18b.bas = Tests\oct75_page18b.bas
+		Tests\oct75_page18c.bas = Tests\oct75_page18c.bas
+		Tests\oct75_page18d.bas = Tests\oct75_page18d.bas
+		Tests\oct75_page19a.bas = Tests\oct75_page19a.bas
+		Tests\oct75_page19b.bas = Tests\oct75_page19b.bas
+		Tests\oct75_page20a.bas = Tests\oct75_page20a.bas
+		Tests\oct75_page21.bas = Tests\oct75_page21.bas
+		Tests\oct75_page28.bas = Tests\oct75_page28.bas
+		Tests\ongosub.bas = Tests\ongosub.bas
+		Tests\ongoto.bas = Tests\ongoto.bas
+		Tests\onthen.bas = Tests\onthen.bas
+		Tests\or.bas = Tests\or.bas
+		Tests\print.bas = Tests\print.bas
+		Tests\read.bas = Tests\read.bas
+		Tests\sep66_page23.bas = Tests\sep66_page23.bas
+		Tests\sep66_page23a.bas = Tests\sep66_page23a.bas
+		Tests\sep66_page23b.bas = Tests\sep66_page23b.bas
+		Tests\sep66_page23c.bas = Tests\sep66_page23c.bas
+		Tests\sep66_page25.bas = Tests\sep66_page25.bas
+		Tests\sep66_page26a.bas = Tests\sep66_page26a.bas
+		Tests\sep66_page26b.bas = Tests\sep66_page26b.bas
+		Tests\sep66_page26c.bas = Tests\sep66_page26c.bas
+		Tests\sep66_page27.bas = Tests\sep66_page27.bas
+		Tests\string.bas = Tests\string.bas
+		Tests\stringconcatinate.bas = Tests\stringconcatinate.bas
+		Tests\stringconcatinatearrary.bas = Tests\stringconcatinatearrary.bas
+		Tests\val.bas = Tests\val.bas
+		Tests\variables.bas = Tests\variables.bas
+		Tests\variables_nolet.bas = Tests\variables_nolet.bas
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DEC", "DEC\DEC.csproj", "{7C385005-C70A-1A22-602A-59078E0C485D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,6 +211,10 @@ Global
 		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9AB22CE-7E51-4956-9A1F-3D9CF82AA9AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C385005-C70A-1A22-602A-59078E0C485D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C385005-C70A-1A22-602A-59078E0C485D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C385005-C70A-1A22-602A-59078E0C485D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C385005-C70A-1A22-602A-59078E0C485D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

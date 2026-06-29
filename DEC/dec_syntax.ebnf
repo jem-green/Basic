@@ -74,6 +74,8 @@ right_function = "RIGHT" , "$" , "(" , expression , "," , expression , ")" ;
 str_function = "STR" , "$" , "(" , expression , ")" ;
 val_function = "VAL" , "(" , expression , ")" ;
 tab_function = "TAB" , "(" , expression , ")" ;
+randomize_statement = "RANDOMIZE" ;
+
 
 
 

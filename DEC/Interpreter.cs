@@ -35,10 +35,10 @@ using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace MicroSoft
+namespace DEC
 {
     /// <summary>
-    /// Microsoft basic ????
+    /// DEC basic 1976
     /// </summary>
     public class Interpreter : IInterpreter
     {
@@ -49,7 +49,7 @@ namespace MicroSoft
         int program_ptr;
         const int MAX_STRINGLEN = 40;
 
-        // Gosub
+        // Go-sub
 
         public struct Gosub
         {
@@ -145,11 +145,11 @@ namespace MicroSoft
             this._IO = consoleIO;        
             lineIndex = new List<LineIndex>();
             tokenizer = new Tokenizer(program);
-            evaluator = new Evaluator(tokenizer);
+            evaluator = new Evaluator(tokenizer, consoleIO);
             this.program = program;
         }
 
-        #endregion Contructors
+        #endregion Constructors
         #region Methods
 
         public void Init(int position)
@@ -164,12 +164,52 @@ namespace MicroSoft
             Debug.WriteLine("Out Interpreter.Init()");
         }
 
+        /// <summary>
+        /// Run()
+        /// </summary>
+        public void Run()
+        {
+            Debug.WriteLine("In Interpreter.Run()");
+            if (tokenizer.IsFinished())
+            {
+                TraceInternal.TraceVerbose("Program finished");
+                return;
+            }
+            LineStatement();
+            Debug.WriteLine("Out Interpreter.Run()");
+        }
+
         public void Stop()
         {
             Debug.WriteLine("In Interpreter.Stop()");
             ended = true;
             Debug.WriteLine("Out Interpreter.Stop()");
         }
+
+        /// <summary>
+        /// Raise exception
+        /// </summary>
+        /// <param name="text"></param>
+        public void Abort(string text)
+        {
+            string message = text + " @ " + currentLineNumber;
+            throw new Exception(message);
+        }
+
+        /// <summary>
+        /// Finished()
+        /// </summary>
+        /// <returns></returns>
+        public bool IsFinished()
+        {
+            Debug.WriteLine("In Interpreter.Finished()");
+            bool finished = ended || tokenizer.IsFinished();
+            Debug.WriteLine("Out Interpreter.Finished()");
+            return (finished);
+        }
+
+        #endregion
+        #region Private
 
         private void IndexFree()
         {
@@ -249,7 +289,7 @@ namespace MicroSoft
             }
             else
             {
-                // We'll try to find a yet-unindexed line to jump to.
+                // We'll try to find a yet un-indexed line to jump to.
                 TraceInternal.TraceVerbose("JumpLineNumber: Calling JumpLineNumber_slow " + lineNumber);
                 JumpLineNumberSlow(lineNumber);
             }
@@ -369,6 +409,76 @@ namespace MicroSoft
             return (read);
         }
 
+        /// <summary>
+        /// Output data
+        /// </summary>
+        /// <param name="s"></param>
+        private void Emit(string s)
+        {
+            _IO.Out(s);
+        }
+
+        private string FormatNumber(Double number)
+        {
+            Debug.WriteLine("In Interpreter.FormatNumber()");
+            char sign = ' ';
+
+
+            // a number may contain up to 9 digits excluding the decimal point, and 1 digit for sign (+ve is space)
+            // , so 11 total
+            // it appears that the leading zero of a number is removed 
+            //
+            // need to format the numeric string
+            // {sign}{integer} <= 11 digits
+            // {sign}{integer}{.}{decimal} <= 11 digits
+            // {sign}{integer}{.}{decimal}{E}{sign}{exponent}
+            //
+
+            string value;
+            // check if +/- integer
+
+            if (Math.Truncate(number) == number)
+            {
+                value = Convert.ToString(number);
+                if (value.Substring(0, 1) == "-")
+                {
+                    sign = '-';
+                    value = value.Substring(1);     // remove the sign
+                }
+                if (value.Length > 9)
+                {
+                    value = Math.Abs(number).ToString("0.##### E+0");
+                }
+                value = sign + value;
+            }
+            else
+            {
+                value = Convert.ToString(number);
+                if (value.Substring(0, 1) == "-")
+                {
+                    sign = '-';
+                }
+                if ((Math.Abs(number) < 0.1) && (value.Length > 6))
+                {
+                    value = Math.Abs(number).ToString("0.##### E+0");
+                }
+                else
+                {
+                    if (Math.Abs(number) < 1)
+                    {
+                        value = Math.Abs(number).ToString(".######");
+                    }
+                    else
+                    {
+                        value = Math.Abs(number).ToString("0.#####");
+                    }
+                }
+                value = sign + value;
+            }
+            Debug.WriteLine("Out Interpreter.FormatNumber()");
+            return (value);
+        }
+
         #region Statements
 
         // <program> ::= <line> [ <line> ]*;
@@ -417,7 +527,7 @@ namespace MicroSoft
 
             Debug.WriteLine("In Interpreter.Statement()");
 
-            // Might need to consider a loop here for multilne statements
+            // Might need to consider a loop here for multi-line statements
             // otherwise it will error saying the line number is missing.
 
             do
@@ -533,7 +643,7 @@ namespace MicroSoft
                         }
                     default:
                         {
-                            Abort("statement: Not implemented " + token);
+                            Abort("Statement: Not implemented " + token);
                             break;
                         }
                 }
@@ -660,7 +770,7 @@ namespace MicroSoft
                 {
                     if ((previous == Tokenizer.Token.TOKENIZER_SEMICOLON) || (previous == Tokenizer.Token.TOKENIZER_STRING) || (previous == Tokenizer.Token.TOKENIZER_STRING_VARIABLE) || (previous == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE))
                     {
-                        // additional rule appears to be that if the ';' folows text then it concatinates
+                        // additional rule appears to be that if the ';' follows text then it concatenates
                         // if ';' follows a number then it move tab zones.
                     }
                     else
@@ -826,8 +936,24 @@ namespace MicroSoft
                         JumpLineNumber(lineNumber);
                         jump = false;
                     }
+                    //else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
+                    //{
+                    //    evaluator.Expression();
+                    //}
+                    else
+                    {
+                        jump = Statement();
+                    }
                 }
-
+                else
+                {
+                    do
+                    {
+                        tokenizer.NextToken();
+                    }
+                    // Wonder if this should include separator
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
+                }
             }
             else if (token == Tokenizer.Token.TOKENIZER_THEN)
             {
@@ -841,10 +967,10 @@ namespace MicroSoft
                         JumpLineNumber(lineNumber);
                         jump = false;
                     }
-                    else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
-                    {
-                        evaluator.Expression();
-                    }
+                    //else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_NUMERIC_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTERGER_VARIABLE) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_VARIABLE))
+                    //{
+                    //    evaluator.Expression();
+                    //}
                     else
                     {
                         jump = Statement();
@@ -852,18 +978,17 @@ namespace MicroSoft
                 }
                 else
                 {
-                do
-                {
-                    tokenizer.NextToken();
-                }
-				// Wonder if this should inlcude separator
-                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
-
+                    do
+                    {
+                        tokenizer.NextToken();
+                    }
+				    // Wonder if this should include separator
+                    while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT));
                 }
             }
             else
             {
-                Abort("statement not implemented " + token);
+                Abort("IfStatement: Not implemented " + token);
             }
             Debug.WriteLine("Out Interpreter.IfStatement()");
             return (jump);
@@ -880,8 +1005,10 @@ namespace MicroSoft
             //
             // <OnStatement> ::= "ON" <expression> "THEN" <line> [ "," <line> ]*
             // <OnStatement> ::= "ON" <expression> "GOTO" <line> [ "," <line> ]*
-            //
+            // <OnStatement> ::= "ON" <expression> "GOSUB" <line> [ "," <line> ]*
             // 
+            // If expression > number of elements then goes to next statement.
+            //
 
             bool jump = true;
 
@@ -889,6 +1016,8 @@ namespace MicroSoft
             int integer;
             int parameter = 0;
             bool check = true;
+            int mode = -1;
+            int lineNumber = 0;
 
             Debug.WriteLine("In Interpreter.OnStatement()");
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_ON);
@@ -897,16 +1026,28 @@ namespace MicroSoft
             if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_THEN)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_THEN);
+                mode = 0;
             }
             else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GOTO)
             {
                 tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOTO);
+                mode = 1;
+            }
+            else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_GOSUB)
+            {
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
+                mode = 2;
             }
 
             integer = (int)Math.Truncate(number);
+
             if (integer < 1)
             {
-                Abort("Expected: > 1");
+                Abort("OnStstement: Expected: > 1");
+            }
+            else if (integer > 255)
+            {
+                Abort("OnStstement: Expected: < 256");
             }
             else
             {
@@ -914,35 +1055,81 @@ namespace MicroSoft
                 {
                     if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_INTEGER)
                     {
-                        int lineNumber = tokenizer.GetInteger();
                         parameter++;
                         if (integer == parameter)
                         {
-                            TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
-                            JumpLineNumber(lineNumber);
-                            jump = false;
-                            check = false;
+                            lineNumber = tokenizer.GetInteger();
                         }
-                        else
-                        {
-                            tokenizer.NextToken();
-                        }
+                        tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
                     }
                     else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                     {
                         tokenizer.NextToken();
                     }
-                    else if ((tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_ENDOFINPUT) || (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON))
+                }
+                while ((tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) && (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON));
+
+                if (lineNumber > 0)
+                {
+                    if (mode == 0) // Then
                     {
-                        check = false;
+                        TraceInternal.TraceVerbose("OnStatement: " + lineNumber);
+                        TraceInternal.TraceInformation("ON " + integer + " THEN " + lineNumber);
+                        JumpLineNumber(lineNumber);
+                        jump = false;
+                    }
+                    else if (mode == 1)
+                    {
+                        TraceInternal.TraceVerbose("OnStatement: " + lineNumber);
+                        TraceInternal.TraceInformation("ON " + integer + " GOTO " + lineNumber);
+                        JumpLineNumber(lineNumber);
+                        jump = false;
+                    }
+                    else if (mode == 2)
+                    {
+                        if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR)
+                        {
+                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
+
+                            if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                            {
+                                gosubStack[gosubStackPointer].Line_number = tokenizer.GetInteger();
+                                gosubStack[gosubStackPointer].Pos_after_gosub = 0;
+                                gosubStackPointer++;
+                                TraceInternal.TraceVerbose("OnStatement: " + lineNumber);
+                                TraceInternal.TraceInformation("ON " + integer + " GOSUB " + lineNumber);
+                                JumpLineNumber(lineNumber);
+                                jump = false;
+                            }
+                            else
+                            {
+                                Abort("GosubStatement: gosub stack exhausted");
+                            }
+                        }
+                        // Statement of followed by another statement
+                        else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COLON)
+                        {
+                            tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
+
+                            if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
+                            {
+                                gosubStack[gosubStackPointer].Line_number = currentLineNumber;
+                                gosubStack[gosubStackPointer].Pos_after_gosub = tokenizer.GetPosition();
+                                gosubStackPointer++;
+                                TraceInternal.TraceVerbose("OnStatement: " + lineNumber + "," + tokenizer.GetPosition());
+                                TraceInternal.TraceInformation("ON " + integer + " GOSUB " + lineNumber + "," + tokenizer.GetPosition());
+                                JumpLineNumber(lineNumber);
+                                jump = false;
+                            }
+                            else
+                            {
+                                Abort("GosubStatement: gosub stack exhausted");
+                            }
+                        }
                     }
                 }
-                while (check == true);
             }
-            if (integer > parameter)
-            {
-                Abort("Expected: < " + parameter);
-            }
+
             Debug.WriteLine("Out Interpreter.OnStatement()");
             return (jump);
         }
@@ -956,7 +1143,7 @@ namespace MicroSoft
             int integer;
             double number;
             string value;
-            int dimensions = 0;
+            int positions = 0;
 
             // The let statement can loop through a series of comma separated values and finish at a terminator
             // LET A=1{COMMA}B=2{CR}
@@ -1004,8 +1191,8 @@ namespace MicroSoft
                         {
                             evaluator.Expression();
                             integer = (int)Math.Truncate(evaluator.PopDouble());
-                            dimensions++;
-                            dimension[dimensions] = integer;
+                            positions++;
+                            dimension[positions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
@@ -1015,7 +1202,7 @@ namespace MicroSoft
                     number = evaluator.PopDouble();
                     try
                     {
-                        evaluator.SetNumericArrayVariable(varName, dimensions, dimension, number);
+                        evaluator.SetNumericArrayVariable(varName, positions, dimension, number);
                     }
                     catch(Exception e)
                     {
@@ -1027,8 +1214,8 @@ namespace MicroSoft
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
                     varName = tokenizer.GetNumericArrayVariable();
-                    int[] dimension = new int[10]; // 10 dimensional array limit !!!
-                    dimension[0] = 0;
+                    int[] position = new int[10]; // 10 dimensional array limit !!!
+                    position[0] = 0;
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE);
                     do
                     {
@@ -1040,8 +1227,8 @@ namespace MicroSoft
                         {
                             evaluator.Expression();
                             integer = (int)Math.Truncate(evaluator.PopDouble());
-                            dimensions++;
-                            dimension[dimensions] = integer;
+                            positions++;
+                            position[positions] = integer;
                         }
                     }
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
@@ -1049,7 +1236,7 @@ namespace MicroSoft
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_EQ);
                     evaluator.Expression();
                     value = evaluator.PopString();
-                    evaluator.SetStringArrayVariable(varName, dimensions, dimension, value);
+                    evaluator.SetStringArrayVariable(varName, positions, position, value);
                     TraceInternal.TraceVerbose("LetStatement: assign '" + value + "' to string array variable " + Convert.ToString(varName) + "(");
                     TraceInternal.TraceInformation("LET " + Convert.ToString(varName) + "$()" + "=\"" + value + "\"");
                 }
@@ -1330,8 +1517,8 @@ namespace MicroSoft
                     while (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_RIGHTPAREN);
                     evaluator.DeclareNumericArrayVariable(varName, dimensions, dimension);
-                    TraceInternal.TraceVerbose("DimStatement: declare string array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
-                    TraceInternal.TraceInformation("DIM " + Convert.ToString(varName) + "$(" + Convert.ToString(dimensions) + ")");
+                    TraceInternal.TraceVerbose("DimStatement: declare numeric array variable " + varName + " as " + Convert.ToString(dimensions) + " dimensional");
+                    TraceInternal.TraceInformation("DIM " + Convert.ToString(varName) + "(" + Convert.ToString(dimensions) + ")");
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_STRING_ARRAY_VARIABLE)
                 {
@@ -1383,7 +1570,7 @@ namespace MicroSoft
             string[] parameter = new string[10]; // 10 parameter array limit !!!
 
             // The def statement is followed by the function reference and then an expression
-            // DEF FN{function}({parameters})={expresion}
+            // DEF FN{function}({parameters})={expression}
 
             Debug.WriteLine("In Interpreter.DefStatement()");
 
@@ -1429,27 +1616,28 @@ namespace MicroSoft
         private bool GosubStatement()
         {
             bool jump = false;
-            int linenum;
+            int lineNumber;
 
             Debug.WriteLine("In Interpreter.GosubStatement()");
 
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_GOSUB);
-            linenum = tokenizer.GetInteger();
+            lineNumber = tokenizer.GetInteger();
             tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_INTEGER);
 
+            // Last statement on the line
             if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_CR)
             {
 
-                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is probematic
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_CR);  // this is problematic
 
                 if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
                 {
                     gosubStack[gosubStackPointer].Line_number = tokenizer.GetInteger();
                     gosubStack[gosubStackPointer].Pos_after_gosub = 0;
                     gosubStackPointer++;
-                    TraceInternal.TraceVerbose("GosubStatement: " + linenum);
-                    TraceInternal.TraceInformation("GOSUB " + linenum);
-                    JumpLineNumber(linenum);
+                    TraceInternal.TraceVerbose("GosubStatement: " + lineNumber);
+                    TraceInternal.TraceInformation("GOSUB " + lineNumber);
+                    JumpLineNumber(lineNumber);
                     jump = false;
                 }
                 else
@@ -1457,18 +1645,19 @@ namespace MicroSoft
                     Abort("GosubStatement: gosub stack exhausted");
                 }
             }
+            // Statement of followed by another statement
             else if (tokenizer.GetNextToken() == Tokenizer.Token.TOKENIZER_COLON)
             {
-                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is probematic
+                tokenizer.AcceptToken(Tokenizer.Token.TOKENIZER_COLON);  // this is problematic
 
                 if (gosubStackPointer < MAX_GOSUB_STACK_DEPTH)
                 {
                     gosubStack[gosubStackPointer].Line_number = currentLineNumber;
                     gosubStack[gosubStackPointer].Pos_after_gosub = tokenizer.GetPosition();
                     gosubStackPointer++;
-                    TraceInternal.TraceVerbose("GosubStatement: " + linenum + "," + tokenizer.GetPosition());
-                    TraceInternal.TraceInformation("GOSUB " + linenum + "," + tokenizer.GetPosition());
-                    JumpLineNumber(linenum);
+                    TraceInternal.TraceVerbose("GosubStatement: " + lineNumber + "," + tokenizer.GetPosition());
+                    TraceInternal.TraceInformation("GOSUB " + lineNumber + "," + tokenizer.GetPosition());
+                    JumpLineNumber(lineNumber);
                     jump = false;
                 }
                 else
@@ -1494,7 +1683,7 @@ namespace MicroSoft
                 gosubStackPointer--;
                 if (gosubStack[gosubStackPointer].Pos_after_gosub > 0)
                 {
-                    // use the position to determine the muti-statement return point
+                    // use the position to determine the multi-statement return point
 
                     TraceInternal.TraceVerbose("ReturnStatement: " + gosubStack[gosubStackPointer].Line_number + "," + gosubStack[gosubStackPointer].Pos_after_gosub);
                     TraceInternal.TraceInformation("RETURN " + gosubStack[gosubStackPointer].Line_number + "," + gosubStack[gosubStackPointer].Pos_after_gosub);
@@ -1584,6 +1773,7 @@ namespace MicroSoft
                     else
                     {
                         TraceInternal.TraceError("non-matching next (expected " + forStack[forStackPointer - 1].ForVariable + ", found " + Convert.ToString(var) + ")\n");
+                        Abort("NextStatement: Non-matching next " + Convert.ToString(var));
                     }
                 }
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
@@ -1742,7 +1932,7 @@ namespace MicroSoft
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                         else
                         {
@@ -1773,7 +1963,7 @@ namespace MicroSoft
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                         else
                         {
@@ -1799,7 +1989,7 @@ namespace MicroSoft
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                     }
 
@@ -1837,7 +2027,7 @@ namespace MicroSoft
                         if (read == false)
                         {
                             ended = true;
-                            Abort("out of data");
+                            Abort("ReadStatement: Out of data");
                         }
                     }
 
@@ -1878,117 +2068,6 @@ namespace MicroSoft
         }
 
         #endregion Statements
-
-        private string FormatNumber(Double number)
-        {
-            Debug.WriteLine("In Interpreter.FormatNumber()");
-            char sign = ' ';
-
-
-            // a number may contain upto 9 digits excuding the decimal point, and 1 digit for sign (+ve is space)
-            // , so 11 total
-            // it appears that the leading zero of a number is removed 
-            //
-            // need to format the numeric string
-            // {sign}{integer} <= 11 digits
-            // {sign}{integer}{.}{decimal} <= 11 digits
-            // {sign}{integer}{.}{decimal}{E}{sign}{exponent}
-            //
-
-            string value;
-            // check if +/- integer
-
-            if (Math.Truncate(number) == number)
-            {
-                value = Convert.ToString(number);
-                if (value.Substring(0, 1) == "-")
-                {
-                    sign = '-';
-                    value = value.Substring(1);     // remove the sign
-                }
-                if (value.Length > 9)
-                {
-                    value = Math.Abs(number).ToString("0.##### E+0");
-                }
-                value = sign + value;
-            }
-            else
-            {
-                value = Convert.ToString(number);
-                if (value.Substring(0, 1) == "-")
-                {
-                    sign = '-';
-                }
-                if ((Math.Abs(number) < 0.1) && (value.Length > 6))
-                {
-                    value = Math.Abs(number).ToString("0.##### E+0");
-                }
-                else
-                {
-                    if (Math.Abs(number) < 1)
-                    {
-                        value = Math.Abs(number).ToString(".######");
-                    }
-                    else
-                    {
-                        value = Math.Abs(number).ToString("0.#####");
-                    }
-                }
-                value = sign + value;
-            }
-            Debug.WriteLine("Out Interpreter.FormatNumber()");
-            return (value);
-        }
-
-        /// <summary>
-        /// Run()
-        /// </summary>
-        public void Run()
-        {
-            Debug.WriteLine("In Interpreter.Run()");
-            if (tokenizer.IsFinished())
-            {
-                TraceInternal.TraceVerbose("Program finished");
-                return;
-            }
-            LineStatement();
-            Debug.WriteLine("Out Interpreter.Run()");
-        }
-
-        /// <summary>
-        /// Finished()
-        /// </summary>
-        /// <returns></returns>
-        public bool IsFinished()
-        {
-            Debug.WriteLine("In Interpreter.Finished()");
-            bool finished = ended || tokenizer.IsFinished();
-            Debug.WriteLine("Out Interpreter.Finished()");
-            return (finished);
-        }
-
-        #endregion Methods
-        #region Private
-
-        /// <summary>
-        /// Raise exception
-        /// </summary>
-        /// <param name="text"></param>
-        public void Abort(string text)
-        {
-            string message = text + " @ " + currentLineNumber;
-            throw new Exception(message);
-        }
-
-        /// <summary>
-        /// Output data
-        /// </summary>
-        /// <param name="s"></param>
-        private void Emit(string s)
-        {
-            _IO.Out(s);
-        }
-
         #endregion
     }
 }

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyTitle>Altair</AssemblyTitle>
+    <Product>Altair</Product>
+    <Copyright>Copyright ©  2016</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>
+    </DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\basicLibrary\basicLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="TracerLibrary">
+      <HintPath>..\ThirdParty\Tracer\net6.0\TracerLibrary.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

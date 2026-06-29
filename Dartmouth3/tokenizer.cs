@@ -138,7 +138,7 @@ namespace Dartmouth3
 
         public Tokenizer(char[] program)
         {
-            Debug.WriteLine("In Tokenizer()");
+            Debug.WriteLine("In Tokenizer.Tokenizer()");
             //by default, read from/write to standard streams
 
             keywords = new List<TokenKeyword>(
@@ -187,7 +187,7 @@ namespace Dartmouth3
 
         public void AcceptToken(Token token)
         {
-            Debug.WriteLine("In AcceptToken()");
+            Debug.WriteLine("In Tokenizer.AcceptToken()");
             if (token != GetToken())
             {
                 Expected("expected " + token + ", got " + GetToken());   
@@ -199,7 +199,7 @@ namespace Dartmouth3
         
         public Token CheckSingleChar()
         {
-            Debug.WriteLine("In CheckSingleChar()");
+            Debug.WriteLine("In Tokenizer.CheckSingleChar()");
 
             Token token = 0;
             if(source[ptr] == '\n')
@@ -288,7 +288,7 @@ namespace Dartmouth3
 
         public Token GetNextToken()
         {
-            Debug.WriteLine("In GetNextToken()");
+            Debug.WriteLine("In Tokenizer.GetNextToken()");
 
             Token token = Token.TOKENIZER_NONE;
             int i;
@@ -412,7 +412,7 @@ namespace Dartmouth3
 
         public void GotoPosition(int position)
         {
-            Debug.WriteLine("In GotoPosition()");
+            Debug.WriteLine("In Tokenizer.GotoPosition()");
             ptr = position;
             currentToken = GetNextToken();
             Trace.TraceInformation("Out GotoPosition()");
@@ -420,7 +420,7 @@ namespace Dartmouth3
     
         public void Init(int position)
         {
-            Debug.WriteLine("In Init()");
+            Debug.WriteLine("In Tokenizer.Init()");
             GotoPosition(position);
             currentToken = GetNextToken();
             Trace.TraceInformation("Out Init()");
@@ -428,13 +428,13 @@ namespace Dartmouth3
 
         public Token GetToken()
         {
-            Debug.WriteLine("In GetToken()");
+            Debug.WriteLine("In Tokenizer.GetToken()");
             return (currentToken);
         }
 
         public void NextToken()
         {
-            Debug.WriteLine("In NextToken()");
+            Debug.WriteLine("In Tokenizer.NextToken()");
             if (!IsFinished())
             {
                 TraceInternal.TraceVerbose("NextToken: pointer=" + Convert.ToString(ptr) + " token=" + Convert.ToString(currentToken));
@@ -477,7 +477,7 @@ namespace Dartmouth3
 
         public int GetInteger()
         {
-            Debug.WriteLine("In GetInteger()");
+            Debug.WriteLine("In Tokenizer.GetInteger()");
             int integer= 0;
             int i = ptr;
             while (IsDigit(source[i]))
@@ -491,7 +491,7 @@ namespace Dartmouth3
 
         public double GetNumber()
         {
-            Debug.WriteLine("In GetNumber()");
+            Debug.WriteLine("In Tokenizer.GetNumber()");
             double number = 0;
             int i = ptr;
             int j = ptr;
@@ -520,7 +520,7 @@ namespace Dartmouth3
 
         public string Getstring()
         {
-            Debug.WriteLine("In Getstring()");
+            Debug.WriteLine("In Tokenizer.Getstring()");
             string _string = "";
             int i = ptr;
 
@@ -543,7 +543,7 @@ namespace Dartmouth3
 
         public bool IsFinished()
         {
-            Debug.WriteLine("In IsFinished()");
+            Debug.WriteLine("In Tokenizer.IsFinished()");
             return ((ptr >= source.Length) || (nextptr >= source.Length) || (currentToken == Token.TOKENIZER_ENDOFINPUT));
         }
 
@@ -638,7 +638,7 @@ namespace Dartmouth3
 
         public int GetPosition()
         {
-            Debug.WriteLine("In GetPosition()");
+            Debug.WriteLine("In Tokenizer.GetPosition()");
             return ptr;
         }
 

@@ -33,7 +33,7 @@ using TracerLibrary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace MicroSoft
+namespace DEC
 {
     public class Tokenizer
     {
@@ -118,8 +118,11 @@ namespace MicroSoft
             TOKENIZER_LEFT,
             TOKENIZER_MID,
             TOKENIZER_NOT,
-            //TOKENIZER_POS,
-            //TOKENIZER_SPC,
+            TOKENIZER_POS,
+            TOKENIZER_USR,
+            TOKENIZER_FRE,
+            TOKENIZER_INP,
+            TOKENIZER_PEEK,
             TOKENIZER_VAL,
             TOKENIZER_ASC,
             TOKENIZER_LEN,
@@ -212,9 +215,12 @@ namespace MicroSoft
                 new  TokenKeyword("sgn", Token.TOKENIZER_SGN),
                 new  TokenKeyword("asc", Token.TOKENIZER_ASC),
                 new  TokenKeyword("len", Token.TOKENIZER_LEN),
-                //new  TokenKeyword("pos", Token.TOKENIZER_POS),
-				//new  TokenKeyword("spc", Token.TOKENIZER_SPC),
-                new  TokenKeyword("val", Token.TOKENIZER_VAL),
+				new  TokenKeyword("pos", Token.TOKENIZER_POS),
+				new  TokenKeyword("usr", Token.TOKENIZER_USR),
+				new  TokenKeyword("fre", Token.TOKENIZER_FRE),
+				new  TokenKeyword("inp", Token.TOKENIZER_INP),
+				new  TokenKeyword("peek", Token.TOKENIZER_PEEK),
+				new  TokenKeyword("val", Token.TOKENIZER_VAL),
                 new  TokenKeyword("null", Token.TOKENIZER_ERROR)
             });
             this.source = program;
@@ -229,7 +235,7 @@ namespace MicroSoft
             Debug.WriteLine("In Tokenizer.AcceptToken()");
             if (token != GetToken())
             {
-                Expected("expected " + token + ", got " + GetToken());   
+                Expected("expected " + token + ", got " + GetToken());
             }
             TraceInternal.TraceVerbose("accept: Expected " + token + ", got it");
             NextToken();
@@ -404,7 +410,7 @@ namespace MicroSoft
                         {
                             c = new string(source, ptr, keyword.Keyword.Length);
                         }
-                        // 205/06/29 Allowed keywords to be uppercase
+                        // 2015/06/29 Allowed keywords to be uppercase
                         if ((keyword.Keyword == c) || (keyword.Keyword == c.ToLower()))
                         {
                             nextptr = ptr + keyword.Keyword.Length;
@@ -435,16 +441,29 @@ namespace MicroSoft
 
                             if (source[nextptr] == '$')
                             {
-                                // String variable
+                                // String viarable
                                 nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
+
+                                if (source[nextptr] == '(')
+                                {
+                                    // String array variable
+                                    nextptr++;
+                                    token = Token.TOKENIZER_STRING_ARRAY_VARIABLE;
+                                }
+                            }
+                            else if (source[nextptr] == '(')
+                            {
+                                // Array variable
+                                nextptr++;
+                                token = Token.TOKENIZER_NUMERIC_ARRAY_VARIABLE;
                             }
                         }
                         else
                         {
                             if (source[nextptr] == '$')
                             {
-                                // String variable
+                                // String viarable
                                 nextptr++;
                                 token = Token.TOKENIZER_STRING_VARIABLE;
 
@@ -630,7 +649,7 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insensitive
+                value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
 
@@ -648,6 +667,7 @@ namespace MicroSoft
             Debug.WriteLine("In Tokenizer.GetNumericArrayVariable()");
 
             // Numeric array variables are single digit
+            // This appears not to be the case with ALTAIR
 
             string value = "";
             char c;
@@ -655,9 +675,16 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insensitive
+                value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
+
+            c = source[ptr];
+            if ((c >= '0') && (c <= '9'))
+            {
+                value += c;
+            }
+
             Debug.WriteLine("Out Tokenizer.GetNumericArrayVariable()");
             return (value);
         }
@@ -667,6 +694,7 @@ namespace MicroSoft
             Debug.WriteLine("In Tokenizer.GetStringArrayVariable()");
 
             // String array variables are single digit
+            // This appears not to be the case with ALTAIR
 
             string value = "";
             char c;
@@ -674,11 +702,17 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insensitive
+                value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
-            Debug.WriteLine("Out Tokenizer.GetStringArrayVariable()");
 
+            c = source[ptr];
+            if ((c >= '0') && (c <= '9'))
+            {
+                value += c;
+            }
+
+            Debug.WriteLine("Out Tokenizer.GetStringArrayVariable()");
             return (value);
         }
 
@@ -692,7 +726,7 @@ namespace MicroSoft
             c = source[ptr];
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
             {
-                value += c.ToString().ToLower(); // Make variables case insensitive
+                value += c.ToString().ToLower(); // Make variables case insentitive
                 ptr++;
             }
 
@@ -720,7 +754,7 @@ namespace MicroSoft
         //--------------------------------------------------------------
         // Recognize a Numeric Digit 
 
-        private Boolean IsDigit(char check)
+        private bool IsDigit(char check)
         {
             return (Char.IsDigit(check));
         }
@@ -728,13 +762,13 @@ namespace MicroSoft
         //--------------------------------------------------------------
         // Recognize a Number 
 
-        private Boolean IsNumber(char check)
+        private bool IsNumber(char check)
         {
             return (Char.IsDigit(check) || (check == '.'));
         }
 
         //--------------------------------------------------------------
-        // Report What Was Accepted
+        // Report What Was Expected
 
         private void Expected(string message)
         {

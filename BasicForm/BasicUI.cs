@@ -234,7 +234,9 @@ namespace BasicForm
             consoleTextBox.Visible = false;
             if (_stopped == false)
             {
-                _workerThread.Abort();
+                _textBoxIO.Input = "\r\n";
+                _basic.Stop();
+                _workerThread.Join(1000);
             }
 
             OpenFileDialog openFileDialog = new OpenFileDialog

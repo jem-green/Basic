@@ -73,9 +73,9 @@ namespace Dartmouth4
 
         public void Randomize()
         {
-            Debug.WriteLine("In Randomize()");
+            Debug.WriteLine("In Evaluator.Randomize()");
             randomize = Environment.TickCount;
-            Debug.WriteLine("Out Randomize()");
+            Debug.WriteLine("Out Evaluator.Randomize()");
         }
 
         // <relation>      ::= | <expression> [<relop> <expression]
@@ -93,7 +93,7 @@ namespace Dartmouth4
         {
             Tokenizer.Token op;
 
-            Debug.WriteLine("In Relation()");
+            Debug.WriteLine("In Evaluator.Relation()");
             Expression();
             op = tokenizer.GetToken();
 
@@ -157,7 +157,7 @@ namespace Dartmouth4
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Relation()");
+            Debug.WriteLine("Out Evaluator.Relation()");
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Dartmouth4
         public void Expression()
         {
             Tokenizer.Token op;
-            Debug.WriteLine("In Expression()");
+            Debug.WriteLine("In Evaluator.Expression()");
 
             // check if negative number
 
@@ -202,7 +202,7 @@ namespace Dartmouth4
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Expression()");
+            Debug.WriteLine("Out Evaluator.Expression()");
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Dartmouth4
         /// <returns></returns>
         private void Term()
         {
-            Debug.WriteLine("In Term()");
+            Debug.WriteLine("In Evaluator.Term()");
             Tokenizer.Token op;
 
             TraceInternal.TraceVerbose("Term: token " + tokenizer.GetToken());
@@ -240,7 +240,7 @@ namespace Dartmouth4
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Term()");
+            Debug.WriteLine("Out Evaluator.Term()");
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace Dartmouth4
         private void Exponent()
         {
             Tokenizer.Token op;
-            Debug.WriteLine("In Exponent()");
+            Debug.WriteLine("In Evaluator.Exponent()");
 
             TraceInternal.TraceVerbose("Exponent: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
@@ -296,7 +296,7 @@ namespace Dartmouth4
                 }
                 op = tokenizer.GetToken();
             }
-            Debug.WriteLine("Out Exponent()");
+            Debug.WriteLine("Out Evaluator.Exponent()");
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Dartmouth4
             FunctionIndex function;
             int num;
 
-            Debug.WriteLine("In Factor()");
+            Debug.WriteLine("In Evaluator.Factor()");
 
             TraceInternal.TraceVerbose("Factor: token " + tokenizer.GetToken());
             switch (tokenizer.GetToken())
@@ -584,7 +584,7 @@ namespace Dartmouth4
                         break;
                     }
             }
-            Debug.WriteLine("Out Factor()");
+            Debug.WriteLine("Out Evaluator.Factor()");
         }
 
         #region functions
@@ -595,7 +595,7 @@ namespace Dartmouth4
         {
             object first;
             double number;
-            Debug.WriteLine("In SquareRoot()");
+            Debug.WriteLine("In Evaluator.SquareRoot()");
 
             if (stack.Count > 0)
             {
@@ -619,7 +619,7 @@ namespace Dartmouth4
                     }
                 }
             }
-            Debug.WriteLine("Out SquareRoot()");
+            Debug.WriteLine("Out Evaluator.SquareRoot()");
         }
 
         //---------------------------------------------------------------}
@@ -630,7 +630,7 @@ namespace Dartmouth4
 
             object first;
             double number;
-            Debug.WriteLine("In Abs()");
+            Debug.WriteLine("In Evaluator.Abs()");
 
             if (stack.Count > 0)
             {
@@ -647,7 +647,7 @@ namespace Dartmouth4
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Abs()");
+            Debug.WriteLine("Out Evaluator.Abs()");
         }
 
         //---------------------------------------------------------------}
@@ -658,7 +658,7 @@ namespace Dartmouth4
 
             object first;
             double number;
-            Debug.WriteLine("In Int()");
+            Debug.WriteLine("In Evaluator.Int()");
 
             if (stack.Count > 0)
             {
@@ -675,7 +675,7 @@ namespace Dartmouth4
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Int()");
+            Debug.WriteLine("Out Evaluator.Int()");
         }
 
         //---------------------------------------------------------------}
@@ -684,7 +684,7 @@ namespace Dartmouth4
         {
             object first;
             double number;
-            Debug.WriteLine("In Rnd()");
+            Debug.WriteLine("In Evaluator.Rnd()");
 
             if (stack.Count > 0)
             {
@@ -707,7 +707,7 @@ namespace Dartmouth4
                     stack.Push(number);
                 }
             }
-            Debug.WriteLine("Out Rnd()");
+            Debug.WriteLine("Out Evaluator.Rnd()");
         }
 
         //---------------------------------------------------------------}
@@ -715,7 +715,7 @@ namespace Dartmouth4
         private void Sin()
         {
             object first;
-            Debug.WriteLine("In Sin()");
+            Debug.WriteLine("In Evaluator.Sin()");
 
             if (stack.Count > 0)
             {
@@ -730,7 +730,7 @@ namespace Dartmouth4
                     stack.Push(Math.Sin((double)first));
                 }
             }
-            Debug.WriteLine("Out Sin()");
+            Debug.WriteLine("Out Evaluator.Sin()");
         }
 
         //---------------------------------------------------------------}
@@ -738,7 +738,7 @@ namespace Dartmouth4
         private void Cos()
         {
             object first;
-            Debug.WriteLine("In Cos()");
+            Debug.WriteLine("In Evaluator.Cos()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
@@ -752,7 +752,7 @@ namespace Dartmouth4
                     stack.Push(Math.Cos((double)first));
                 }
             }
-            Debug.WriteLine("Out Cos()");
+            Debug.WriteLine("Out Evaluator.Cos()");
         }
 
         //---------------------------------------------------------------}
@@ -760,7 +760,7 @@ namespace Dartmouth4
         private void Tan()
         {
             object first;
-            Debug.WriteLine("In Tan()");
+            Debug.WriteLine("In Evaluator.Tan()");
 
             if (stack.Count > 0)
             {
@@ -775,7 +775,7 @@ namespace Dartmouth4
                     stack.Push(Math.Tan((double)first));
                 }
             }
-            Debug.WriteLine("Out Tan()");
+            Debug.WriteLine("Out Evaluator.Tan()");
         }
 
         //---------------------------------------------------------------}
@@ -783,7 +783,7 @@ namespace Dartmouth4
         private void Atn()
         {
             object first;
-            Debug.WriteLine("In Atn()");
+            Debug.WriteLine("In Evaluator.Atn()");
 
             if (stack.Count > 0)
             {
@@ -798,7 +798,7 @@ namespace Dartmouth4
                     stack.Push(Math.Atan((double)first));
                 }
             }
-            Debug.WriteLine("Out Atn()");
+            Debug.WriteLine("Out Evaluator.Atn()");
         }
 		
 		//---------------------------------------------------------------}
@@ -806,7 +806,7 @@ namespace Dartmouth4
         private void Cot()
         {
             object first;
-            Debug.WriteLine("In Cot()");
+            Debug.WriteLine("In Evaluator.Cot()");
 
             if (stack.Count > 0)
             {
@@ -821,7 +821,7 @@ namespace Dartmouth4
                     stack.Push(1 /Math.Tan((double)first));
                 }
             }
-            Debug.WriteLine("Out Cot()");
+            Debug.WriteLine("Out Evaluator.Cot()");
         }
 
         //---------------------------------------------------------------}
@@ -829,7 +829,7 @@ namespace Dartmouth4
         private void Exp()
         {
             object first;
-            Debug.WriteLine("In Exp()");
+            Debug.WriteLine("In Evaluator.Exp()");
 
             if (stack.Count > 0)
             {
@@ -844,7 +844,7 @@ namespace Dartmouth4
                     stack.Push(Math.Exp((double)first));
                 }
             }
-            Debug.WriteLine("Out Exp()");
+            Debug.WriteLine("Out Evaluator.Exp()");
         }
 
         //---------------------------------------------------------------}
@@ -852,7 +852,7 @@ namespace Dartmouth4
         private void Log()
         {
             object first;
-            Debug.WriteLine("In Log()");
+            Debug.WriteLine("In Evaluator.Log()");
 
             if (stack.Count > 0)
             {
@@ -867,7 +867,7 @@ namespace Dartmouth4
                     stack.Push(Math.Log((double)first));
                 }
             }
-            Debug.WriteLine("Out Log()");
+            Debug.WriteLine("Out Evaluator.Log()");
         }
 
         #endregion functions
@@ -881,7 +881,7 @@ namespace Dartmouth4
             object second;
             int compare;
 			
-			Debug.WriteLine("In Less()");
+			Debug.WriteLine("In Evaluator.Less()");
 			
             if (stack.Count > 1)
             {
@@ -935,7 +935,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out Less()");
+			Debug.WriteLine("Out Evaluator.Less()");
         }
 
         //---------------------------------------------------------------}
@@ -946,7 +946,7 @@ namespace Dartmouth4
             object second;
             int compare;
 			
-			Debug.WriteLine("In LessEqual()");
+			Debug.WriteLine("In Evaluator.LessEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1000,7 +1000,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out LessEqual()");
+			Debug.WriteLine("Out Evaluator.LessEqual()");
         }
 
         //---------------------------------------------------------------}
@@ -1011,7 +1011,7 @@ namespace Dartmouth4
             object second;
             int compare;
 			
-			Debug.WriteLine("In Greater()");
+			Debug.WriteLine("In Evaluator.Greater()");
 			
             if (stack.Count > 1)
             {
@@ -1070,7 +1070,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out Greater()");
+			Debug.WriteLine("Out Evaluator.Greater()");
         }
 
         //---------------------------------------------------------------}
@@ -1081,7 +1081,7 @@ namespace Dartmouth4
             object second;
             int compare;
 			
-			Debug.WriteLine("In GreaterEqual()");
+			Debug.WriteLine("In Evaluator.GreaterEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1135,7 +1135,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out GreaterEqual()");
+			Debug.WriteLine("Out Evaluator.GreaterEqual()");
         }
 
         //---------------------------------------------------------------}
@@ -1145,7 +1145,7 @@ namespace Dartmouth4
             object first;
             object second;
 			
-			Debug.WriteLine("In Equal()");
+			Debug.WriteLine("In Evaluator.Equal()");
 			
             if (stack.Count > 1)
             {
@@ -1190,7 +1190,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out Equal()");
+			Debug.WriteLine("Out Evaluator.Equal()");
         }
 
         //---------------------------------------------------------------}
@@ -1200,7 +1200,7 @@ namespace Dartmouth4
             object first;
             object second;
 			
-			Debug.WriteLine("In NotEqual()");
+			Debug.WriteLine("In Evaluator.NotEqual()");
 			
             if (stack.Count > 1)
             {
@@ -1245,7 +1245,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out NotEqual()");
+			Debug.WriteLine("Out Evaluator.NotEqual()");
         }
 
         #endregion
@@ -1259,7 +1259,7 @@ namespace Dartmouth4
             object first;
             Boolean value = false;
 			
-			Debug.WriteLine("In PopBoolean()");
+			Debug.WriteLine("In Evaluator.PopBoolean()");
 
             if (stack.Count > 0)
             {
@@ -1275,7 +1275,7 @@ namespace Dartmouth4
                 }
 				TraceInternal.TraceVerbose("PopBoolean: " + value);
             }
-            Debug.WriteLine("Out PopBoolean()");
+            Debug.WriteLine("Out Evaluator.PopBoolean()");
             return (value);
         }
 
@@ -1287,7 +1287,7 @@ namespace Dartmouth4
             object first;
             Double number = 0;
 			
-			Debug.WriteLine("In PopDouble()");
+			Debug.WriteLine("In Evaluator.PopDouble()");
 
             if (stack.Count > 0)
             {
@@ -1303,7 +1303,7 @@ namespace Dartmouth4
                 }
 				TraceInternal.TraceVerbose("PopDouble: " + number);
             }
-            Debug.WriteLine("Out PopDouble()");
+            Debug.WriteLine("Out Evaluator.PopDouble()");
             return (number);
         }
 
@@ -1315,7 +1315,7 @@ namespace Dartmouth4
             object first;
             int integer = 0;
 			
-			Debug.WriteLine("In PopInteger()");
+			Debug.WriteLine("In Evaluator.PopInteger()");
 
             if (stack.Count > 0)
             {
@@ -1331,7 +1331,7 @@ namespace Dartmouth4
                 }
 				TraceInternal.TraceVerbose("PopInteger: " + integer);
             }
-			Debug.WriteLine("Out PopInteger()");
+			Debug.WriteLine("Out Evaluator.PopInteger()");
             return (integer);
         }
 
@@ -1343,7 +1343,7 @@ namespace Dartmouth4
             object first;
             string value = "";
 			
-			Debug.WriteLine("In PopString()");
+			Debug.WriteLine("In Evaluator.PopString()");
 
             if (stack.Count > 0)
             {
@@ -1359,7 +1359,7 @@ namespace Dartmouth4
                 }
 				TraceInternal.TraceVerbose("PopString: " + value);
             }
-            Debug.WriteLine("Out PopString()");
+            Debug.WriteLine("Out Evaluator.PopString()");
             return (value);
         }
 
@@ -1368,13 +1368,13 @@ namespace Dartmouth4
         public object PopObject()
         {
             object first = null;
-			Debug.WriteLine("In PopObject()");
+			Debug.WriteLine("In Evaluator.PopObject()");
             if (stack.Count > 0)
             {
                 first = stack.Pop();
 				TraceInternal.TraceVerbose("PopObject: " + first.ToString());
             }
-			Debug.WriteLine("Out PopObject()");
+			Debug.WriteLine("Out Evaluator.PopObject()");
             return (first);
         }
 
@@ -1390,7 +1390,7 @@ namespace Dartmouth4
             double number;
             string value;
 			
-			Debug.WriteLine("In Add()");
+			Debug.WriteLine("In Evaluator.Add()");
 
             if (stack.Count > 1)
             {
@@ -1432,7 +1432,7 @@ namespace Dartmouth4
                     }
                 }
             }
-			Debug.WriteLine("Out Add()");
+			Debug.WriteLine("Out Evaluator.Add()");
         }
 
         //---------------------------------------------------------------}
@@ -1443,7 +1443,7 @@ namespace Dartmouth4
             object second;
             double number;
 
-            Debug.WriteLine("In Subtract()");
+            Debug.WriteLine("In Evaluator.Subtract()");
 
             if (stack.Count > 1)
             {
@@ -1472,7 +1472,7 @@ namespace Dartmouth4
                     }
                 }
             }
-            Debug.WriteLine("Out Subtract()");
+            Debug.WriteLine("Out Evaluator.Subtract()");
         }
 
         //---------------------------------------------------------------}
@@ -1483,7 +1483,7 @@ namespace Dartmouth4
             object second;
             double numeric;
 
-            Debug.WriteLine("In Multiply()");
+            Debug.WriteLine("In Evaluator.Multiply()");
 
             if (stack.Count > 1)
             {
@@ -1512,7 +1512,7 @@ namespace Dartmouth4
                     }
                 }
             }
-            Debug.WriteLine("Out Multiply()");
+            Debug.WriteLine("Out Evaluator.Multiply()");
         }
 
         //---------------------------------------------------------------}
@@ -1523,7 +1523,7 @@ namespace Dartmouth4
             object second;
             double number;
 
-            Debug.WriteLine("In Divide()");
+            Debug.WriteLine("In Evaluator.Divide()");
 
             if (stack.Count > 1)
             {
@@ -1552,7 +1552,7 @@ namespace Dartmouth4
                     }
                 }
             }
-            Debug.WriteLine("Out Divide()");
+            Debug.WriteLine("Out Evaluator.Divide()");
         }
       
         //---------------------------------------------------------------}
@@ -1563,7 +1563,7 @@ namespace Dartmouth4
             object second;
             double number;
 
-            Debug.WriteLine("In Power()");
+            Debug.WriteLine("In Evaluator.Power()");
 
             if (stack.Count > 1)
             {
@@ -1592,14 +1592,14 @@ namespace Dartmouth4
                     }
                 }
             }
-            Debug.WriteLine("Out Power()");
+            Debug.WriteLine("Out Evaluator.Power()");
         }
 
         #endregion operators
 
         public int GetIntVariable(int varnum)
         {
-            Debug.WriteLine("In GetIntVariable()");
+            Debug.WriteLine("In Evaluator.GetIntVariable()");
             int integer;
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
@@ -1610,13 +1610,13 @@ namespace Dartmouth4
                 integer = 0;
             }
             TraceInternal.TraceVerbose("varNum" + varnum + " integer=" + integer);
-            Debug.WriteLine("Out GetIntVariable()");
+            Debug.WriteLine("Out Evaluator.GetIntVariable()");
             return (integer);
         }
 
         public string GetStringVariable(string varName)
         {
-            Debug.WriteLine("In GetStringVariable()");
+            Debug.WriteLine("In Evaluator.GetStringVariable()");
 
             // Not sure what happens if the variable doesnt exit
             // think this should error but wonder what the specification says
@@ -1631,14 +1631,14 @@ namespace Dartmouth4
                 value = "";
             }
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("Out GetStringVariable()");
+            Debug.WriteLine("Out Evaluator.GetStringVariable()");
             return (value);
         }
 
         public double GetNumericVariable(string varName)
         {
             double number;
-            Debug.WriteLine("In GetNumericVariable()");
+            Debug.WriteLine("In Evaluator.GetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 number = (double)numericVariables[varName];
@@ -1648,13 +1648,13 @@ namespace Dartmouth4
                 number = 0;
             }
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out GetNumericVariable()");
+            Debug.WriteLine("Out Evaluator.GetNumericVariable()");
             return (number);
         }
 
         public double GetNumericArrayVariable(string varName, int positions, int[] position)
         {
-            Debug.WriteLine("In GetNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetNumericArrayVariable()");
 
             BasicLibrary.Array data;
             double number;
@@ -1668,13 +1668,13 @@ namespace Dartmouth4
                 number = 0;
             }
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out GetNumericArrayVariable()");
+            Debug.WriteLine("Out Evaluator.GetNumericArrayVariable()");
             return (number);
         }
 
         public string GetStringArrayVariable(string varName, int positions, int[] position)
         {
-            Debug.WriteLine("In GetStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetStringArrayVariable()");
 
             BasicLibrary.Array data;
             string value;
@@ -1688,13 +1688,13 @@ namespace Dartmouth4
                 value = "";
             }
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("In GetStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.GetStringArrayVariable()");
             return (value);
         }
 
         public void DeclareNumericArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Debug.WriteLine("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareNumericArrayVariable()");
             BasicLibrary.Array data;
             if (numericArrayVariables.ContainsKey(varName))
             {
@@ -1702,12 +1702,12 @@ namespace Dartmouth4
             }
             data = new BasicLibrary.Array(varName, dimensions, dimension,(double)0);
             numericArrayVariables.Add(varName, data);
-            Debug.WriteLine("In DeclareNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareNumericArrayVariable()");
         }
 
         public void DeclareStringArrayVariable(string varName, int dimensions, int[] dimension)
         {
-            Debug.WriteLine("In DeclareStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.DeclareStringArrayVariable()");
             BasicLibrary.Array data;
             if (stringArrayVariables.ContainsKey(varName))
             {
@@ -1715,47 +1715,47 @@ namespace Dartmouth4
             }
             data = new BasicLibrary.Array(varName, dimensions, dimension, (string)"");
             stringArrayVariables.Add(varName, data);
-            Debug.WriteLine("Out DeclareStringArrayVariable()");
+            Debug.WriteLine("Out Evaluator.DeclareStringArrayVariable()");
         }
 
         public void SetIntVariable(int varnum, int integer)
         {
-            Debug.WriteLine("In SetIntVariable()");
+            Debug.WriteLine("In Evaluator.SetIntVariable()");
             if (varnum >= 0 && varnum <= MAX_VARNUM)
             {
                 variables[varnum] = integer;
             }
             TraceInternal.TraceVerbose("varNum=" + varnum + " integer=" + integer);
-            Debug.WriteLine("Out SetIntVariable()");
+            Debug.WriteLine("Out Evaluator.SetIntVariable()");
         }
 
         public void SetStringVariable(string varName, string value)
         {
-            Debug.WriteLine("In SetStringVariable()");
+            Debug.WriteLine("In Evaluator.SetStringVariable()");
             if (stringVariables.ContainsKey(varName))
             {
                 stringVariables.Remove(varName);
             }
             stringVariables.Add(varName, value);
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("Out SetStringVariable()");
+            Debug.WriteLine("Out Evaluator.SetStringVariable()");
         }
 
         public void SetNumericVariable(string varName, double number)
         {
-            Debug.WriteLine("In SetNumericVariable()");
+            Debug.WriteLine("In Evaluator.SetNumericVariable()");
             if (numericVariables.ContainsKey(varName))
             {
                 numericVariables.Remove(varName);
             }
             numericVariables.Add(varName, number);
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out SetNumericVariable()");
+            Debug.WriteLine("Out Evaluator.SetNumericVariable()");
         }
 
         public void SetNumericArrayVariable(string varName, int positions, int[] position, double number)
         {
-            Debug.WriteLine("In SetNumericArrayVariable()");
+            Debug.WriteLine("In Evaluator.SetNumericArrayVariable()");
             BasicLibrary.Array data;
             if (!numericArrayVariables.ContainsKey(varName))
             {
@@ -1768,12 +1768,12 @@ namespace Dartmouth4
             data.Set(position, number);
         
             TraceInternal.TraceVerbose("varName=" + varName + " number=" + number);
-            Debug.WriteLine("Out SetNumericArrayVariable()");
+            Debug.WriteLine("Out Evaluator.SetNumericArrayVariable()");
         }
 
         public void SetStringArrayVariable(string varName, int positions, int[] position, string value)
         {
-            Debug.WriteLine("In SetStringArrayVariable()");
+            Debug.WriteLine("In Evaluator.SetStringArrayVariable()");
             BasicLibrary.Array data;
             if (!stringArrayVariables.ContainsKey(varName))
             {
@@ -1786,7 +1786,7 @@ namespace Dartmouth4
             data.Set(position, value);
 
             TraceInternal.TraceVerbose("varName=" + varName + " value=" + value);
-            Debug.WriteLine("Out SetStringArrayVariable()");
+            Debug.WriteLine("Out Evaluator.SetStringArrayVariable()");
         }
 
         #endregion
