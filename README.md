@@ -1,12 +1,15 @@
 # Basic
 A basic emulator written in c# that support a number of the early BASIC dialects
 
-Blend of and Jack W. Crenshaw and Adam Dunkels
+Blend of and Jack W. Crenshaw
+
+https://thaliaarchi.github.io/letsbuildacompiler-crenshaw/about.html?utm_source=copilot.com
+Copyright (C) 1988 Jack W. Crenshaw.
+
+and Adam Dunkels
 
 https://github.com/adamdunkels/ubasic
-
 Copyright (c) 2006, Adam Dunkels.
-Copyright (C) 1988 Jack W. Crenshaw. 
 
 The aim was to work through the various published documents relating to Dartmouth Basic, Altair, ECMA and ISO and build the versions of basic
 
