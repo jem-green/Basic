@@ -53,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manuals", "Manuals", "{02EA
 		Manuals\BASIC_3rd_Edition_Sep66.pdf = Manuals\BASIC_3rd_Edition_Sep66.pdf
 		Manuals\BASIC_3rd_Edition_Sep66.txt = Manuals\BASIC_3rd_Edition_Sep66.txt
 		Manuals\BASIC_4th_Edition_Jan68.pdf = Manuals\BASIC_4th_Edition_Jan68.pdf
+		Manuals\DEC-11-LIBBB-A-D_BASIC-11_Language_Reference_Manual_197609.pdf = Manuals\DEC-11-LIBBB-A-D_BASIC-11_Language_Reference_Manual_197609.pdf
+		Manuals\DEC-BASIC-PLUS-2_Reference_Manual_may_1991.pdf = Manuals\DEC-BASIC-PLUS-2_Reference_Manual_may_1991.pdf
 		Manuals\ECMA-116.pdf = Manuals\ECMA-116.pdf
 		Manuals\ECMA-53, 1st Edition, January 1978.pdf = Manuals\ECMA-53, 1st Edition, January 1978.pdf
 		Manuals\ECMA-55 SCOPE.pdf = Manuals\ECMA-55 SCOPE.pdf
@@ -155,7 +157,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FC5E328D
 		Tests\variables_nolet.bas = Tests\variables_nolet.bas
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DEC", "DEC\DEC.csproj", "{7C385005-C70A-1A22-602A-59078E0C485D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DEC80", "DEC\DEC80.csproj", "{7C385005-C70A-1A22-602A-59078E0C485D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
