@@ -8,7 +8,7 @@ using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace DEC
+namespace DEC80
 {
     public class Evaluator
     {

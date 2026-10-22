@@ -33,7 +33,7 @@ using TracerLibrary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace DEC
+namespace DEC80
 {
     public class Tokenizer
     {

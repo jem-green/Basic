@@ -8,7 +8,7 @@ using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace Altair
+namespace Altair2
 {
     public class Evaluator
     {

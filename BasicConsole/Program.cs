@@ -349,7 +349,7 @@ namespace BasicConsole
 
                     // 
 
-                    IInterpreter basic = new Altair.Interpreter(program, consoleIO);
+                    IInterpreter basic = new Altair2.Interpreter(program, consoleIO);
                     basic.Init(0);
 
                     try

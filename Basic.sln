@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicConsole", "BasicConsol
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{DB2F84D6-7991-42A4-AC8B-656E30F48A0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altair", "Altair\Altair.csproj", "{72098349-F135-4895-9D9A-1A52CF9E40EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altair2", "Altair\Altair2.csproj", "{72098349-F135-4895-9D9A-1A52CF9E40EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dartmouth1", "Dartmouth1\Dartmouth1.csproj", "{236647DD-946D-4A1E-8014-33CDF11881C9}"
 EndProject

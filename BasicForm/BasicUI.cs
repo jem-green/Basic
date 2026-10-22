@@ -72,7 +72,7 @@ namespace BasicForm
                     }
 
                     _mruMenu.AddFile(filenamePath);
-                    _basic = new Altair.Interpreter(program, _textBoxIO);
+                    _basic = new Altair2.Interpreter(program, _textBoxIO);
 
                     _stopped = false;
                     this._workerThread = new Thread(new ThreadStart(this.Run));
@@ -130,7 +130,7 @@ namespace BasicForm
                         program = sr.ReadToEnd().ToCharArray();
                     }
 
-                    _basic = new Altair.Interpreter(program, _textBoxIO);
+                    _basic = new Altair2.Interpreter(program, _textBoxIO);
 
                     _stopped = false;
                     this._workerThread = new Thread(new ThreadStart(this.Run));
@@ -276,7 +276,7 @@ namespace BasicForm
                         program = sr.ReadToEnd().ToCharArray();
                     }
                 	_mruMenu.AddFile(filenamePath);
-                    _basic = new Altair.Interpreter(program, _textBoxIO);
+                    _basic = new Altair2.Interpreter(program, _textBoxIO);
 
                     _stopped = false;
                     this._workerThread = new Thread(new ThreadStart(this.Run));

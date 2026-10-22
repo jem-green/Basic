@@ -35,7 +35,7 @@ using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace DEC
+namespace DEC80
 {
     /// <summary>
     /// DEC basic 1976
@@ -1729,6 +1729,8 @@ namespace DEC
             // Support compound next
             // NEXT I
             // NEXT I,J
+            // Support empty next
+            // NEXT
 
             do
             {
@@ -1755,6 +1757,11 @@ namespace DEC
                             }
                             else
                             {
+                                // This is more complicated for DEC because once complete
+                                // the entry is removed from the array and the variable is
+                                // no longer in scope.
+
+
                                 forStackPointer--;
                             }
                         }
@@ -1779,6 +1786,13 @@ namespace DEC
                 else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA)
                 {
                     tokenizer.NextToken();
+                }
+                else if (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_CR)
+                {
+                    // Assume that the next statement is for the last for statement on the stack
+
+                    string varName = forStack[forStackPointer - 1].ForVariable;
+
                 }
                 TraceInternal.TraceVerbose("NextStatement: " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_CR) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_ENDOFINPUT) + " " + (tokenizer.GetToken() != Tokenizer.Token.TOKENIZER_COLON) + " " + (tokenizer.GetToken() == Tokenizer.Token.TOKENIZER_COMMA));
             }

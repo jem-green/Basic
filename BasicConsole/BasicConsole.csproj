@@ -23,7 +23,7 @@ if exist "$(TargetPath)" if not exist "$(TargetPath).locked" move "$(TargetPath)
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Altair\Altair.csproj" />
+    <ProjectReference Include="..\Altair\Altair2.csproj" />
     <ProjectReference Include="..\BasicLibrary\BasicLibrary.csproj" />
   </ItemGroup>
 </Project>

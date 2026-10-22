@@ -5,7 +5,7 @@ using BasicLibrary;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Microsoft.Win32;
-using Altair;
+using Altair2;
 
 namespace BasicTest
 {
@@ -162,7 +162,7 @@ namespace BasicTest
                     program = sr.ReadToEnd().ToCharArray();
                 }
 
-                IInterpreter basic = new Altair.Interpreter(program, consoleIO);
+                IInterpreter basic = new Altair2.Interpreter(program, consoleIO);
                 basic.Init(0);
 
                 try

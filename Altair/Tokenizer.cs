@@ -33,7 +33,7 @@ using TracerLibrary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Altair
+namespace Altair2
 {
     public class Tokenizer
     {

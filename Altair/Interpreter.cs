@@ -35,10 +35,10 @@ using BasicLibrary;
 using System.Diagnostics;
 using TracerLibrary;
 
-namespace Altair
+namespace Altair2
 {
     /// <summary>
-    /// Altair basic 1975
+    /// Altair2 basic 1975
     /// </summary>
     public class Interpreter : IInterpreter
     {
@@ -1817,18 +1817,6 @@ namespace Altair
             {
                 if (forStackPointer < MAX_FOR_STACK_DEPTH)
                 {
-                    // nasty effect where a goto bypasses the next.
-                    // option is to check if the variable already exists and re-sue
-
-                    for (int i=0; i < MAX_FOR_STACK_DEPTH; i++)
-                    {
-                        if (forStack[i].ForVariable == varName)
-                        {
-                            forStackPointer = i;
-                            break;
-                        }
-                    }
-
                     forStack[forStackPointer].PositionAfterFor = tokenizer.GetPosition();
                     forStack[forStackPointer].ForVariable = varName;
                     forStack[forStackPointer].From = from;

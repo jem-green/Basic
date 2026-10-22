@@ -14,7 +14,7 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.8" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Altair\Altair.csproj" />
+    <ProjectReference Include="..\Altair\Altair2.csproj" />
     <ProjectReference Include="..\basicLibrary\basicLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
